@@ -33,7 +33,7 @@ const JobsPage = () => {
     };
 
     const filteredJobs = jobs.filter(job => {
-        const company = users.find(u => u.id === job.companyId);
+        const company = users.find(u => u.id === job.company_id);
         const companyName = company ? company.name.toLowerCase() : '';
 
         const matchesKeyword = job.title.toLowerCase().includes(filters.keyword.toLowerCase()) ||
@@ -43,7 +43,7 @@ const JobsPage = () => {
         const matchesState = filters.state ? job.location.includes(filters.state) : true;
         const matchesCategory = filters.category ? job.category === filters.category : true;
         return matchesKeyword && matchesState && matchesCategory && job.active;
-    }).sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+    }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     return (
         <div className="space-y-8">
@@ -108,19 +108,19 @@ const JobsPage = () => {
                 </h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filteredJobs.map(job => {
-                        const company = users.find(u => u.id === job.companyId);
+                        const company = users.find(u => u.id === job.company_id);
                         return (
                             <div key={job.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex-1 pr-4">
                                         <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">{job.title}</h3>
                                         <p className="text-slate-500 text-sm font-medium mt-1 line-clamp-1">
-                                            {job.isConfidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
                                         </p>
                                         <p className="text-primary-600 font-medium text-sm mt-1">{job.category}</p>
                                     </div>
                                     <div className="flex-shrink-0">
-                                        {!job.isConfidential && company?.logo ? (
+                                        {!job.is_confidential && company?.logo ? (
                                             <img
                                                 src={company.logo}
                                                 alt={company.name}

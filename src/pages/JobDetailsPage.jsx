@@ -11,7 +11,7 @@ const JobDetailsPage = () => {
     const { user } = useAuth();
 
     const job = jobs.find(j => j.id === Number(id));
-    const company = users.find(u => u.id === job?.companyId);
+    const company = users.find(u => u.id === job?.company_id);
 
     if (!job) {
         return <div className="text-center py-12">Vacante no encontrada.</div>;
@@ -50,7 +50,7 @@ const JobDetailsPage = () => {
                 <div className="flex justify-between items-start">
                     <div className="flex items-start space-x-6">
                         <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-sm">
-                            {!job.isConfidential && company?.logo ? (
+                            {!job.is_confidential && company?.logo ? (
                                 <img
                                     src={company.logo}
                                     alt={company.name}
@@ -66,7 +66,7 @@ const JobDetailsPage = () => {
                             <h1 className="text-3xl font-bold text-slate-900">{job.title}</h1>
                             <div className="flex items-center mt-2 text-primary-700 font-medium text-lg">
                                 <Building className="w-5 h-5 mr-2" />
-                                {job.isConfidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                                {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ const JobDetailsPage = () => {
                             </div>
                             <div className="flex items-center text-slate-600">
                                 <Calendar className="w-5 h-5 mr-3 text-slate-400" />
-                                Publicado: {new Date(job.postedAt).toLocaleDateString()}
+                                Publicado: {new Date(job.created_at).toLocaleDateString()}
                             </div>
                         </div>
                     </section>
