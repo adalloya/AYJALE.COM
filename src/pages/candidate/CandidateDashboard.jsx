@@ -5,7 +5,7 @@ const CandidateDashboard = () => {
     const { user } = useAuth();
     const { applications, jobs } = useData();
 
-    const myApplications = applications.filter(app => app.candidateId === user.id);
+    const myApplications = applications.filter(app => app.candidate_id === user.id);
 
     return (
         <div className="space-y-6">
@@ -13,7 +13,7 @@ const CandidateDashboard = () => {
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul className="divide-y divide-slate-200">
                     {myApplications.map(app => {
-                        const job = jobs.find(j => j.id === app.jobId);
+                        const job = jobs.find(j => j.id === app.job_id);
                         return (
                             <li key={app.id} className="px-4 py-4 sm:px-6">
                                 <div className="flex items-center justify-between">
@@ -30,7 +30,7 @@ const CandidateDashboard = () => {
                                 <div className="mt-2 sm:flex sm:justify-between">
                                     <div className="sm:flex">
                                         <p className="flex items-center text-sm text-slate-500">
-                                            Aplicado el: {new Date(app.appliedAt).toLocaleDateString()}
+                                            Aplicado el: {new Date(app.created_at).toLocaleDateString()}
                                         </p>
                                     </div>
                                 </div>
