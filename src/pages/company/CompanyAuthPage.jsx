@@ -1,0 +1,123 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Building2, Mail, Lock, ArrowRight } from 'lucide-react';
+
+const CompanyAuthPage = () => {
+    const [isLogin, setIsLogin] = useState(true);
+    const navigate = useNavigate();
+    const { login, register } = useAuth();
+
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: ''
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        let success = false;
+
+        if (isLogin) {
+            success = login(formData.email);
+        } else {
+            success = register({
+                name: formData.name,
+                email: formData.email
+            }, 'company');
+        }
+
+        if (success) {
+            navigate('/dashboard');
+        } else {
+            alert('Error en la autenticación. Intenta de nuevo.');
+        }
+    };
+
+    return (
+        <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+                <div className="text-center">
+                    <div className="mx-auto h-12 w-12 bg-secondary-100 rounded-full flex items-center justify-center mb-4">
+                        <Building2 className="h-6 w-6 text-secondary-600" />
+                    </div>
+                    <h2 className="text-3xl font-extrabold text-slate-900">
+                        {isLogin ? 'Acceso para Empresas' : 'Registra tu Empresa'}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-600">
+                        {isLogin ? 'Ingresa para gestionar tus vacantes' : 'Publica tus vacantes y encuentra talento'}
+                    </p>
+                </div>
+
+                <div className="flex border-b border-slate-200 mb-6">
+                    <button
+                        className={`flex-1 py-2 text-sm font-medium border-b-2 ${isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setIsLogin(true)}
+                    >
+                        Iniciar Sesión
+                    </button>
+                    <button
+                        className={`flex-1 py-2 text-sm font-medium border-b-2 ${!isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setIsLogin(false)}
+                    >
+                        Crear Cuenta
+                    </button>
+                </div>
+
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    <div className="space-y-4">
+                        {!isLogin && (
+                            <div className="relative">
+                                <Building2 className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    required
+                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                    placeholder="Nombre de la Empresa"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                        )}
+                        <div className="relative">
+                            <Mail className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                            <input
+                                type="email"
+                                required
+                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                placeholder="Correo Corporativo"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        </div>
+                        <div className="relative">
+                            <Lock className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                            <input
+                                type="password"
+                                required
+                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                placeholder="Contraseña"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
+                        >
+                            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />
+                            </span>
+                            {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default CompanyAuthPage;
