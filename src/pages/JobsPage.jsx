@@ -136,6 +136,9 @@ const JobsPage = () => {
 
                                 <div className="flex justify-between items-center mb-6">
                                     <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full whitespace-nowrap">{job.type}</span>
+                                    {job.is_external && (
+                                        <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full whitespace-nowrap">Externa</span>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2 mb-6">

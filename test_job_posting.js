@@ -75,12 +75,15 @@ async function testJobPosting() {
     const { data: jobData, error: jobError } = await supabaseAuth
         .from('jobs')
         .insert([{
-            title: 'Backend Verified Job',
-            description: 'This job was posted via script to verify RLS.',
+            title: 'Vacante Externa de Prueba',
+            description: 'Esta es una vacante externa simulada para probar la redirección.',
             company_id: authData.user.id,
-            location: 'Remote',
-            salary: '60000',
-            is_confidential: false
+            location: 'Remoto (Global)',
+            salary: '85000',
+            is_confidential: false,
+            is_external: true,
+            external_url: 'https://google.com',
+            source: 'Google Careers'
         }])
         .select();
 

@@ -20,19 +20,23 @@ const JobDetailsPage = () => {
     const hasApplied = user && applications.some(app => app.jobId === job.id && app.candidateId === user.id);
 
     const handleApply = () => {
-        if (job.externalUrl) {
-            window.open(job.externalUrl, '_blank', 'noopener,noreferrer');
+        if (!user) {
+            navigate(`/auth?returnUrl=/jobs/${id}`);
             return;
         }
 
-        if (!user) {
-            navigate(`/auth?returnUrl=/profile?applyingTo=${id}`);
-            return;
-        }
         if (user.role !== 'candidate') {
             alert('Solo los candidatos pueden postularse.');
             return;
         }
+
+        if (job.is_external && job.external_url) {
+            // Track application internally before redirecting (optional, but good for analytics)
+            // For now, just redirect
+            window.open(job.external_url, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
         navigate(`/profile?applyingTo=${job.id}`);
     };
 
@@ -69,6 +73,11 @@ const JobDetailsPage = () => {
                     <span className="bg-white text-primary-600 px-4 py-1 rounded-full text-sm font-semibold shadow-sm">
                         {job.type}
                     </span>
+                    {job.is_external && (
+                        <span className="ml-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+                            Externa
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -107,6 +116,13 @@ const JobDetailsPage = () => {
                 <div className="md:col-span-1">
                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 sticky top-8">
                         <h3 className="font-bold text-slate-900 mb-4">¿Te interesa?</h3>
+                        {job.is_external && (
+                            <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-100">
+                                Esta es una vacante externa de <strong>{job.source || 'un sitio asociado'}</strong>.
+                                Al postularte serás redirigido para completar el proceso.
+                            </div>
+                        )}
+
                         {hasApplied ? (
                             <button disabled className="w-full bg-green-600 text-white py-3 rounded-lg font-medium cursor-default opacity-90">
                                 Ya te has postulado
@@ -116,7 +132,7 @@ const JobDetailsPage = () => {
                                 onClick={handleApply}
                                 className="w-full bg-secondary-600 text-white py-3 rounded-lg font-medium hover:bg-secondary-700 transition-colors shadow-sm hover:shadow"
                             >
-                                Postularme Ahora
+                                {job.is_external ? 'Postularme en Sitio Externo' : 'Postularme Ahora'}
                             </button>
                         )}
                         <p className="mt-4 text-xs text-slate-500 text-center">
