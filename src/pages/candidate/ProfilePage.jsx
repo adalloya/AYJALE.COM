@@ -64,9 +64,18 @@ const ProfilePage = () => {
         e.preventDefault();
         const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s);
 
-        // Exclude address as it doesn't exist in DB schema
+        // Exclude fields that don't exist in DB schema
         // eslint-disable-next-line no-unused-vars
-        const { address, ...rest } = formData;
+        const {
+            address,
+            age,
+            civilStatus,
+            education,
+            lastJob,
+            lastPosition,
+            lastDuration,
+            ...rest
+        } = formData;
 
         const updatedData = {
             ...rest,
@@ -127,9 +136,19 @@ const ProfilePage = () => {
                             const newFormData = { ...formData, photo: photoData };
                             setFormData(newFormData);
 
-                            // Auto-save photo to persistence (excluding address)
+                            // Auto-save photo to persistence (excluding non-existent fields)
                             // eslint-disable-next-line no-unused-vars
-                            const { address, ...dataToSave } = newFormData;
+                            const {
+                                address,
+                                age,
+                                civilStatus,
+                                education,
+                                lastJob,
+                                lastPosition,
+                                lastDuration,
+                                ...dataToSave
+                            } = newFormData;
+
                             updateUser(dataToSave);
                             // Removed redundant updateUserProfile call
                             setToast({ message: 'Foto guardada correctamente', type: 'success' });
