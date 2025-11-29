@@ -10,8 +10,16 @@ const AuthPage = () => {
     const [userType, setUserType] = useState('candidate'); // 'candidate' or 'company'
     const navigate = useNavigate();
     const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const initialMode = searchParams.get('mode');
+    const initialRole = searchParams.get('role');
+
+    const [isLogin, setIsLogin] = useState(initialMode !== 'register');
+    const [userType, setUserType] = useState(initialRole === 'company' ? 'company' : 'candidate');
+
+    const navigate = useNavigate();
     const { login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
-    const returnUrl = new URLSearchParams(location.search).get('returnUrl') || '/dashboard';
+    const returnUrl = searchParams.get('returnUrl') || '/dashboard';
 
     const [formData, setFormData] = useState({
         name: '',

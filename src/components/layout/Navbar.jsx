@@ -38,7 +38,7 @@ const Navbar = () => {
                                 <Link to="/company/login" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
                                     Soy Empresa
                                 </Link>
-                                <Link to="/login" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
+                                <Link to="/auth?mode=register&role=candidate" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
                                     Soy Candidato
                                 </Link>
                             </>
