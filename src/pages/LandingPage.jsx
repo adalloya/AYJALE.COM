@@ -66,7 +66,7 @@ const LandingPage = () => {
                             value={filters.state}
                             onChange={(e) => setFilters({ ...filters, state: e.target.value })}
                         >
-                            <option value="">Ciudad, región, código postal...</option>
+                            <option value="">Selecciona un Estado...</option>
                             {MEXICAN_STATES.map(state => (
                                 <option key={state} value={state}>{state}</option>
                             ))}
