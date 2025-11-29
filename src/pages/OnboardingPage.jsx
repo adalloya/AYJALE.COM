@@ -37,12 +37,12 @@ const OnboardingPage = () => {
             const updates = {
                 location: formData.location,
                 bio: formData.bio,
-                onboarding_completed: true // Flag to mark completion
+                // onboarding_completed: true // Removed as it likely doesn't exist in DB
             };
 
             if (user.role === 'candidate') {
                 updates.title = formData.title;
-                updates.skills = formData.skills.split(',').map(s => s.trim()).filter(Boolean);
+                updates.skills = formData.skills; // Send as string, let DB handle it or store as text
             } else if (user.role === 'company') {
                 updates.industry = formData.industry;
                 updates.website = formData.website;
