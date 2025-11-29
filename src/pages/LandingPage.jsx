@@ -48,7 +48,7 @@ const LandingPage = () => {
 
             {/* Search Box */}
             <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-100 max-w-4xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
                         <input
@@ -69,19 +69,6 @@ const LandingPage = () => {
                             <option value="">Todo México</option>
                             {MEXICAN_STATES.map(state => (
                                 <option key={state} value={state}>{state}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="relative">
-                        <Briefcase className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                        <select
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none appearance-none bg-white"
-                            value={filters.category}
-                            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                        >
-                            <option value="">Todas las Categorías</option>
-                            {JOB_CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
                             ))}
                         </select>
                     </div>

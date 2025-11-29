@@ -37,20 +37,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     </select>
                 </div>
 
-                {/* Category */}
-                <div className="flex-1 relative">
-                    <Briefcase className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
-                    <select
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm"
-                        value={filters.category}
-                        onChange={(e) => handleChange('category', e.target.value)}
-                    >
-                        <option value="">Todas las Categorías</option>
-                        {JOB_CATEGORIES.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-                </div>
+
 
                 <button
                     onClick={onSearch}
@@ -66,6 +53,18 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     <Filter className="w-4 h-4 mr-2" />
                     Filtros:
                 </div>
+
+                {/* Category */}
+                <select
+                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-secondary-500 outline-none bg-white max-w-[200px]"
+                    value={filters.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                >
+                    <option value="">Todas las Categorías</option>
+                    {JOB_CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                </select>
 
                 {/* Job Type */}
                 <select
@@ -83,7 +82,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                 </select>
 
                 {/* Min Salary */}
-                <div className="relative w-40">
+                <div className="relative w-32">
                     <DollarSign className="absolute left-2 top-1.5 text-slate-400 w-4 h-4" />
                     <input
                         type="number"
