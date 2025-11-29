@@ -82,6 +82,12 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              <Route path="/users" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+
               <Route path="/jobs/:id" element={<JobDetailsPage />} />
 
               {/* Placeholder for other routes */}

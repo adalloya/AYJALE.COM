@@ -115,7 +115,13 @@ const JobsPage = () => {
                         return (
                             <div
                                 key={job.id}
-                                onClick={() => setSelectedJobId(job.id)}
+                                onClick={() => {
+                                    if (window.innerWidth < 1024) {
+                                        navigate(`/jobs/${job.id}`);
+                                    } else {
+                                        setSelectedJobId(job.id);
+                                    }
+                                }}
                                 className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
                                     ? 'border-orange-500 ring-1 ring-orange-500 shadow-md'
                                     : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
