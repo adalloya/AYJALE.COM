@@ -117,8 +117,8 @@ const JobsPage = () => {
                                 key={job.id}
                                 onClick={() => setSelectedJobId(job.id)}
                                 className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
-                                        ? 'border-secondary-500 ring-1 ring-secondary-500 shadow-md'
-                                        : 'border-slate-200 hover:border-secondary-300 hover:shadow-sm'
+                                    ? 'border-secondary-500 ring-1 ring-secondary-500 shadow-md'
+                                    : 'border-slate-200 hover:border-secondary-300 hover:shadow-sm'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-2">
@@ -126,8 +126,8 @@ const JobsPage = () => {
                                         {job.title}
                                     </h3>
                                     {job.is_external && (
-                                        <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                            Ext
+                                        <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide">
+                                            Externa
                                         </span>
                                     )}
                                 </div>
