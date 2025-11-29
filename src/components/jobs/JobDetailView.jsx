@@ -9,6 +9,16 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
 
     if (!job) return <div className="p-8 text-center text-slate-500">Selecciona una vacante para ver los detalles.</div>;
 
+    const handleShare = () => {
+        const url = `${window.location.origin}/jobs?jobId=${job.id}`;
+        navigator.clipboard.writeText(url);
+        alert('Enlace copiado al portapapeles');
+    };
+
+    const handleReport = () => {
+        window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
             {/* Header */}
@@ -76,7 +86,11 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                             </button>
                         )}
 
-                        <button className="p-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors" title="Compartir">
+                        <button
+                            onClick={handleShare}
+                            className="p-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors"
+                            title="Compartir"
+                        >
                             <Share2 className="w-5 h-5" />
                         </button>
                     </div>
@@ -126,7 +140,10 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                     </section>
 
                     <div className="pt-8 border-t border-slate-100">
-                        <button className="flex items-center text-slate-400 text-sm hover:text-slate-600 transition-colors bg-slate-50 px-4 py-2 rounded-lg">
+                        <button
+                            onClick={handleReport}
+                            className="flex items-center text-slate-400 text-sm hover:text-slate-600 transition-colors bg-slate-50 px-4 py-2 rounded-lg"
+                        >
                             <Flag className="w-4 h-4 mr-2" />
                             Reportar empleo
                         </button>
