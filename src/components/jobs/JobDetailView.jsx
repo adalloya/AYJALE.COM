@@ -147,7 +147,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                             <Flag className="w-4 h-4 mr-2" />
                             Reportar empleo
                         </button>
-                        <span className="text-xs text-slate-300 font-mono">ID: {job.id.slice(0, 8)}...</span>
+                        <span className="text-xs text-slate-300 font-mono">ID: {String(job.id).slice(0, 8)}...</span>
                     </div>
                 </div>
             </div>
