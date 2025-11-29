@@ -60,7 +60,7 @@ const ProfilePage = () => {
 
     const [comments, setComments] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s);
 
@@ -69,24 +69,29 @@ const ProfilePage = () => {
             skills: skillsArray
         };
 
-        // 1. Always update profile
-        updateUser(updatedData);
-        updateUserProfile(user.id, updatedData);
+        try {
+            // 1. Update profile
+            await updateUser(updatedData);
+            // Removed redundant updateUserProfile call
 
-        // 2. If applying, submit application
-        if (jobToApply) {
-            applyToJob(jobToApply.id, user.id, { ...updatedData, comments });
-            setToast({ message: '¡Solicitud enviada con éxito!', type: 'success' });
-            setTimeout(() => {
-                navigate(`/jobs/${jobToApply.id}`);
-            }, 2000);
-        } else {
-            setToast({ message: 'Perfil actualizado correctamente', type: 'success' });
-            if (returnUrl) {
+            // 2. If applying, submit application
+            if (jobToApply) {
+                await applyToJob(jobToApply.id, user.id, { ...updatedData, comments });
+                setToast({ message: '¡Solicitud enviada con éxito!', type: 'success' });
                 setTimeout(() => {
-                    navigate(returnUrl);
-                }, 1500);
+                    navigate(`/jobs/${jobToApply.id}`);
+                }, 2000);
+            } else {
+                setToast({ message: 'Perfil actualizado correctamente', type: 'success' });
+                if (returnUrl) {
+                    setTimeout(() => {
+                        navigate(returnUrl);
+                    }, 1500);
+                }
             }
+        } catch (error) {
+            console.error("Error saving profile:", error);
+            setToast({ message: 'Error al guardar. Intenta de nuevo.', type: 'error' });
         }
     };
 
