@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { MapPin, DollarSign, Briefcase, Calendar, Building } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const JobDetailsPage = () => {
     const { id } = useParams();
@@ -37,6 +38,10 @@ const JobDetailsPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <SEO
+                title={job.title}
+                description={`${job.title} en ${job.location}. ${job.description.substring(0, 150)}...`}
+            />
             <div className="bg-primary-50 p-8 border-b border-primary-100">
                 <div className="flex justify-between items-start">
                     <div className="flex items-start space-x-6">

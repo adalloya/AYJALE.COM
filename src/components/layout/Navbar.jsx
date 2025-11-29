@@ -29,13 +29,17 @@ const Navbar = () => {
                             Inicio
                         </Link>
 
+                        <Link to="/jobs" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                            Vacantes
+                        </Link>
+
                         {!user && (
                             <>
                                 <Link to="/company/login" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
                                     Soy Empresa
                                 </Link>
                                 <Link to="/login" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
-                                    Iniciar Sesión
+                                    Soy Candidato
                                 </Link>
                             </>
                         )}
@@ -108,9 +112,17 @@ const Navbar = () => {
                             </button>
                         )}
                         {!user && (
-                            <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50">
-                                Iniciar Sesión
-                            </Link>
+                            <>
+                                <Link to="/jobs" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">
+                                    Vacantes
+                                </Link>
+                                <Link to="/company/login" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">
+                                    Soy Empresa
+                                </Link>
+                                <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50">
+                                    Soy Candidato
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
 import { Search, MapPin, Briefcase, DollarSign, Building } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const JobsPage = () => {
     const { jobs, users } = useData();
@@ -46,6 +47,10 @@ const JobsPage = () => {
 
     return (
         <div className="space-y-8">
+            <SEO
+                title="Vacantes"
+                description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
+            />
             {/* Filters Section */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -3,6 +3,7 @@ import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
 import { Search, MapPin, Briefcase, Package, Truck, Shield, Sparkles, ShoppingBag, Hammer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CompanyCarousel from '../components/CompanyCarousel';
+import SEO from '../components/SEO';
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -31,6 +32,10 @@ const LandingPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50">
+            <SEO
+                title="Inicio"
+                description="Encuentra tu trabajo ideal en México. Conectamos a los mejores candidatos con las empresas líderes del país."
+            />
             {/* Hero Section */}
             <section className="text-center space-y-4 py-12">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
