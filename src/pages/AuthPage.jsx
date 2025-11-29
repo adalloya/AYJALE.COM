@@ -6,8 +6,6 @@ import { Mail, Lock, User, Briefcase, ArrowRight, CheckCircle, Building, Phone }
 import logo from '../assets/ayjale_logo_new.png';
 
 const AuthPage = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [userType, setUserType] = useState('candidate'); // 'candidate' or 'company'
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -17,7 +15,6 @@ const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(initialMode !== 'register');
     const [userType, setUserType] = useState(initialRole === 'company' ? 'company' : 'candidate');
 
-    const navigate = useNavigate();
     const { login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
     const returnUrl = searchParams.get('returnUrl') || '/dashboard';
 
