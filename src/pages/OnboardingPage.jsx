@@ -49,7 +49,12 @@ const OnboardingPage = () => {
             }
 
             await updateUser(updates);
-            navigate('/dashboard');
+
+            if (user.role === 'company') {
+                navigate('/post-job');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
             console.error("Onboarding error:", error);
             alert("Error al guardar tu perfil. Intenta de nuevo.");
