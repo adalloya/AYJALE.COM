@@ -31,6 +31,7 @@ const AuthPage = () => {
         try {
             if (isLogin) {
                 await login(formData.email, formData.password);
+                navigate(returnUrl);
             } else {
                 await register({
                     name: formData.name,
@@ -38,8 +39,8 @@ const AuthPage = () => {
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
+                navigate('/onboarding');
             }
-            navigate(returnUrl);
         } catch (error) {
             console.error("Auth error:", error);
             alert(error.message || 'Error en la autenticación. Intenta de nuevo.');

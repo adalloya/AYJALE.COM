@@ -89,18 +89,52 @@ export const DataProvider = ({ children }) => {
         setJobs(prev => prev.map(job => job.id === id ? { ...job, ...updatedData } : job));
     };
 
-    const toggleJobStatus = async (id, currentStatus) => {
-        const { error } = await supabase
-            .from('jobs')
-            .update({ active: !currentStatus })
-            .eq('id', id);
+    const toggleJobStatus = async (jobId, currentStatus) => {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .update({ active: !currentStatus })
+                .eq('id', jobId);
 
-        if (error) {
-            console.error('Error toggling job status:', error);
+            if (error) throw error;
+            fetchJobs(); // Refresh list
+        } catch (error) {
+            console.error("Error toggling job status:", error);
             throw error;
         }
+    };
 
-        setJobs(prev => prev.map(job => job.id === id ? { ...job, active: !currentStatus } : job));
+    const adminRepublishJob = async (jobId) => {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .update({
+                    created_at: new Date().toISOString(),
+                    active: true
+                })
+                .eq('id', jobId);
+
+            if (error) throw error;
+            fetchJobs();
+        } catch (error) {
+            console.error("Error republishing job:", error);
+            throw error;
+        }
+    };
+
+    const adminGetUsers = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            throw error;
+        }
     };
 
     const deleteJob = async (id) => {
@@ -166,9 +200,17 @@ export const DataProvider = ({ children }) => {
 
     return (
         <DataContext.Provider value={{
-            jobs, addJob, updateJob, deleteJob, toggleJobStatus,
-            applications, applyToJob, updateApplicationStatus,
-            users, updateUserProfile
+            jobs,
+            users,
+            applications,
+            loading,
+            fetchJobs,
+            applyToJob,
+            postJob,
+            fetchCompanyApplications,
+            toggleJobStatus,
+            adminRepublishJob,
+            adminGetUsers
         }}>
             {children}
         </DataContext.Provider>
