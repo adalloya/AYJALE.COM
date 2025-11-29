@@ -117,8 +117,8 @@ const JobsPage = () => {
                                 key={job.id}
                                 onClick={() => setSelectedJobId(job.id)}
                                 className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
-                                    ? 'border-secondary-500 ring-1 ring-secondary-500 shadow-md'
-                                    : 'border-slate-200 hover:border-secondary-300 hover:shadow-sm'
+                                        ? 'border-orange-400 bg-orange-50 shadow-md'
+                                        : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-2">
