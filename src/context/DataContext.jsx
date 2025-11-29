@@ -12,10 +12,16 @@ export const DataProvider = ({ children }) => {
     const [applications, setApplications] = useState([]);
     const [users, setUsers] = useState([]); // Kept for compatibility, but mainly fetched via Supabase now
 
+    const [loading, setLoading] = useState(true);
+
     // Fetch initial data
     useEffect(() => {
-        fetchJobs();
-        fetchApplications();
+        const loadData = async () => {
+            setLoading(true);
+            await Promise.all([fetchJobs(), fetchApplications()]);
+            setLoading(false);
+        };
+        loadData();
     }, [user]); // Re-fetch when user changes (e.g. login/logout)
 
     const fetchJobs = async () => {
@@ -206,8 +212,8 @@ export const DataProvider = ({ children }) => {
             loading,
             fetchJobs,
             applyToJob,
-            postJob,
-            fetchCompanyApplications,
+            postJob: addJob,
+            fetchCompanyApplications: fetchApplications,
             toggleJobStatus,
             adminRepublishJob,
             adminGetUsers
