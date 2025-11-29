@@ -74,6 +74,7 @@ const ProfilePage = () => {
             lastJob,
             lastPosition,
             lastDuration,
+            photo, // Exclude photo as it doesn't exist in DB schema
             ...rest
         } = formData;
 
@@ -146,6 +147,7 @@ const ProfilePage = () => {
                                 lastJob,
                                 lastPosition,
                                 lastDuration,
+                                photo, // Exclude photo as it doesn't exist in DB schema
                                 ...dataToSave
                             } = newFormData;
 
