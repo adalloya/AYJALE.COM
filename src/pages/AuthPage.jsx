@@ -17,7 +17,8 @@ const AuthPage = () => {
         name: '',
         email: '',
         password: '',
-        phone: ''
+        phone: '',
+        termsAccepted: false
     });
 
     const handleSubmit = async (e) => {
@@ -29,7 +30,8 @@ const AuthPage = () => {
                 await register({
                     name: formData.name,
                     email: formData.email,
-                    phone: formData.phone
+                    phone: formData.phone,
+                    termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
             }
             navigate(returnUrl);
@@ -161,6 +163,26 @@ const AuthPage = () => {
                                 </label>
                             </div>
                         )}
+                        {!isLogin && (
+                            <div className="flex items-start mt-4">
+                                <div className="flex items-center h-5">
+                                    <input
+                                        id="terms"
+                                        name="terms"
+                                        type="checkbox"
+                                        required
+                                        checked={formData.termsAccepted}
+                                        onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+                                        className="focus:ring-secondary-500 h-4 w-4 text-secondary-600 border-slate-300 rounded"
+                                    />
+                                </div>
+                                <div className="ml-3 text-sm">
+                                    <label htmlFor="terms" className="font-medium text-slate-700">
+                                        Acepto los <Link to="/terminos" target="_blank" className="text-secondary-600 hover:text-secondary-500">Términos y Condiciones</Link> y la <Link to="/privacidad" target="_blank" className="text-secondary-600 hover:text-secondary-500">Política de Privacidad</Link>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {isLogin && (
@@ -225,8 +247,8 @@ const AuthPage = () => {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

@@ -14,6 +14,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import PostJobPage from './pages/company/PostJobPage';
 import JobDetailsPage from './pages/JobDetailsPage';
 import ProfilePage from './pages/candidate/ProfilePage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -53,6 +55,8 @@ function App() {
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/company/login" element={<CompanyAuthPage />} />
               <Route path="/jobs" element={<JobsPage />} />
+              <Route path="/privacidad" element={<PrivacyPage />} />
+              <Route path="/terminos" element={<TermsPage />} />
 
               <Route path="/dashboard" element={
                 <ProtectedRoute allowedRoles={['candidate', 'company', 'admin']}>

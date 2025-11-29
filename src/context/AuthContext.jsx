@@ -111,7 +111,9 @@ export const AuthProvider = ({ children }) => {
                 options: {
                     data: {
                         role: role,
-                        name: userData.name
+                        name: userData.name,
+                        terms_accepted: userData.termsAccepted,
+                        terms_accepted_at: new Date().toISOString()
                     }
                 }
             });
