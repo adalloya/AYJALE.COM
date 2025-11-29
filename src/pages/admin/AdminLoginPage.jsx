@@ -26,45 +26,45 @@ const AdminLoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <img
-                    className="mx-auto h-12 w-auto object-contain bg-white rounded-full p-1"
+                    className="mx-auto h-12 w-auto object-contain"
                     src={logo}
                     alt="AyJale Admin"
                 />
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
                     Acceso Administrativo
                 </h2>
-                <p className="mt-2 text-center text-sm text-slate-400">
+                <p className="mt-2 text-center text-sm text-slate-600">
                     Solo personal autorizado
                 </p>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-slate-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-700">
+                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded flex items-center text-sm">
+                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded flex items-center text-sm">
                                 <AlertCircle className="w-4 h-4 mr-2" />
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
                                 Correo Electrónico
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-slate-500" />
+                                    <Mail className="h-5 w-5 text-slate-400" />
                                 </div>
                                 <input
                                     id="email"
                                     name="email"
                                     type="email"
                                     required
-                                    className="bg-slate-700 block w-full pl-10 sm:text-sm border-slate-600 rounded-md text-white placeholder-slate-400 focus:ring-orange-500 focus:border-orange-500"
+                                    className="appearance-none block w-full pl-10 px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                                     placeholder="admin@ayjale.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -73,19 +73,19 @@ const AdminLoginPage = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                                 Contraseña
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-slate-500" />
+                                    <Lock className="h-5 w-5 text-slate-400" />
                                 </div>
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
                                     required
-                                    className="bg-slate-700 block w-full pl-10 sm:text-sm border-slate-600 rounded-md text-white placeholder-slate-400 focus:ring-orange-500 focus:border-orange-500"
+                                    className="appearance-none block w-full pl-10 px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
