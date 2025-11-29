@@ -64,8 +64,12 @@ const ProfilePage = () => {
         e.preventDefault();
         const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s);
 
+        // Exclude address as it doesn't exist in DB schema
+        // eslint-disable-next-line no-unused-vars
+        const { address, ...rest } = formData;
+
         const updatedData = {
-            ...formData,
+            ...rest,
             skills: skillsArray
         };
 
@@ -122,9 +126,12 @@ const ProfilePage = () => {
                         onCapture={(photoData) => {
                             const newFormData = { ...formData, photo: photoData };
                             setFormData(newFormData);
-                            // Auto-save photo to persistence
-                            updateUser(newFormData);
-                            updateUserProfile(user.id, newFormData);
+
+                            // Auto-save photo to persistence (excluding address)
+                            // eslint-disable-next-line no-unused-vars
+                            const { address, ...dataToSave } = newFormData;
+                            updateUser(dataToSave);
+                            // Removed redundant updateUserProfile call
                             setToast({ message: 'Foto guardada correctamente', type: 'success' });
                         }}
                     />
@@ -152,13 +159,46 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Ubicación</label>
-                    <input
-                        type="text"
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                    <label className="block text-sm font-medium text-slate-700">Estado de Residencia</label>
+                    <select
+                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
                         value={formData.location}
                         onChange={e => setFormData({ ...formData, location: e.target.value })}
-                    />
+                    >
+                        <option value="">Selecciona un estado</option>
+                        <option value="Aguascalientes">Aguascalientes</option>
+                        <option value="Baja California">Baja California</option>
+                        <option value="Baja California Sur">Baja California Sur</option>
+                        <option value="Campeche">Campeche</option>
+                        <option value="Chiapas">Chiapas</option>
+                        <option value="Chihuahua">Chihuahua</option>
+                        <option value="Ciudad de México">Ciudad de México</option>
+                        <option value="Coahuila">Coahuila</option>
+                        <option value="Colima">Colima</option>
+                        <option value="Durango">Durango</option>
+                        <option value="Estado de México">Estado de México</option>
+                        <option value="Guanajuato">Guanajuato</option>
+                        <option value="Guerrero">Guerrero</option>
+                        <option value="Hidalgo">Hidalgo</option>
+                        <option value="Jalisco">Jalisco</option>
+                        <option value="Michoacán">Michoacán</option>
+                        <option value="Morelos">Morelos</option>
+                        <option value="Nayarit">Nayarit</option>
+                        <option value="Nuevo León">Nuevo León</option>
+                        <option value="Oaxaca">Oaxaca</option>
+                        <option value="Puebla">Puebla</option>
+                        <option value="Querétaro">Querétaro</option>
+                        <option value="Quintana Roo">Quintana Roo</option>
+                        <option value="San Luis Potosí">San Luis Potosí</option>
+                        <option value="Sinaloa">Sinaloa</option>
+                        <option value="Sonora">Sonora</option>
+                        <option value="Tabasco">Tabasco</option>
+                        <option value="Tamaulipas">Tamaulipas</option>
+                        <option value="Tlaxcala">Tlaxcala</option>
+                        <option value="Veracruz">Veracruz</option>
+                        <option value="Yucatán">Yucatán</option>
+                        <option value="Zacatecas">Zacatecas</option>
+                    </select>
                 </div>
 
                 <div>
