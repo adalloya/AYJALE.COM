@@ -1,26 +1,36 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
-import { Search, MapPin, Briefcase, DollarSign, Building } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import JobFilters from '../components/jobs/JobFilters';
+import JobDetailView from '../components/jobs/JobDetailView';
+import { Building, MapPin, DollarSign } from 'lucide-react';
 
 const JobsPage = () => {
-    const { jobs, users } = useData();
+    const { jobs, users, applications } = useData();
+    const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const [filters, setFilters] = useState({
         keyword: searchParams.get('keyword') || '',
         state: searchParams.get('state') || '',
-        category: searchParams.get('category') || ''
+        category: searchParams.get('category') || '',
+        type: searchParams.get('type') || '',
+        minSalary: searchParams.get('minSalary') || ''
     });
+
+    const [selectedJobId, setSelectedJobId] = useState(null);
 
     // Update filters when URL params change
     useEffect(() => {
         setFilters({
             keyword: searchParams.get('keyword') || '',
             state: searchParams.get('state') || '',
-            category: searchParams.get('category') || ''
+            category: searchParams.get('category') || '',
+            type: searchParams.get('type') || '',
+            minSalary: searchParams.get('minSalary') || ''
         });
     }, [searchParams]);
 
@@ -29,6 +39,8 @@ const JobsPage = () => {
         if (filters.keyword) params.keyword = filters.keyword;
         if (filters.state) params.state = filters.state;
         if (filters.category) params.category = filters.category;
+        if (filters.type) params.type = filters.type;
+        if (filters.minSalary) params.minSalary = filters.minSalary;
         setSearchParams(params);
     };
 
@@ -42,130 +54,135 @@ const JobsPage = () => {
 
         const matchesState = filters.state ? job.location.includes(filters.state) : true;
         const matchesCategory = filters.category ? job.category === filters.category : true;
-        return matchesKeyword && matchesState && matchesCategory && job.active;
+        const matchesType = filters.type ? job.type === filters.type : true;
+        const matchesSalary = filters.minSalary ? job.salary >= Number(filters.minSalary) : true;
+
+        return matchesKeyword && matchesState && matchesCategory && matchesType && matchesSalary && job.active;
     }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+    // Auto-select first job if none selected and jobs exist
+    useEffect(() => {
+        if (!selectedJobId && filteredJobs.length > 0) {
+            setSelectedJobId(filteredJobs[0].id);
+        }
+    }, [filteredJobs, selectedJobId]);
+
+    const selectedJob = jobs.find(j => j.id === selectedJobId);
+    const selectedCompany = selectedJob ? users.find(u => u.id === selectedJob.company_id) : null;
+    const hasApplied = user && selectedJob && applications.some(app => app.job_id === selectedJob.id && app.candidate_id === user.id);
+
+    const handleApply = () => {
+        if (!selectedJob) return;
+
+        if (!user) {
+            navigate(`/auth?returnUrl=/jobs/${selectedJob.id}`);
+            return;
+        }
+
+        if (user.role !== 'candidate') {
+            alert('Solo los candidatos pueden postularse.');
+            return;
+        }
+
+        if (selectedJob.is_external && selectedJob.external_url) {
+            window.open(selectedJob.external_url, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
+        navigate(`/profile?applyingTo=${selectedJob.id}`);
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-64px)] flex flex-col">
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
             />
-            {/* Filters Section */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Puesto, empresa o palabra clave"
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none"
-                            value={filters.keyword}
-                            onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                        />
-                    </div>
-                    <div className="relative">
-                        <MapPin className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                        <select
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white"
-                            value={filters.state}
-                            onChange={(e) => setFilters({ ...filters, state: e.target.value })}
-                        >
-                            <option value="">Todo México</option>
-                            {MEXICAN_STATES.map(state => (
-                                <option key={state} value={state}>{state}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="relative">
-                        <Briefcase className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                        <select
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white"
-                            value={filters.category}
-                            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                        >
-                            <option value="">Todas las Categorías</option>
-                            {JOB_CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-                <div className="mt-4 flex justify-end">
-                    <button
-                        onClick={handleSearch}
-                        className="bg-secondary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-secondary-700 transition-colors shadow-sm hover:shadow"
-                    >
-                        Actualizar Búsqueda
-                    </button>
-                </div>
-            </div>
 
-            {/* Results Section */}
-            <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-4">
-                    {filteredJobs.length} {filteredJobs.length === 1 ? 'Vacante Encontrada' : 'Vacantes Encontradas'}
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <JobFilters
+                filters={filters}
+                setFilters={setFilters}
+                onSearch={handleSearch}
+                resultCount={filteredJobs.length}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+                {/* Left Column: Job List */}
+                <div className="lg:col-span-5 overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
                     {filteredJobs.map(job => {
                         const company = users.find(u => u.id === job.company_id);
+                        const isSelected = job.id === selectedJobId;
                         return (
-                            <div key={job.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex-1 pr-4">
-                                        <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">{job.title}</h3>
-                                        <p className="text-slate-500 text-sm font-medium mt-1 line-clamp-1">
-                                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
-                                        </p>
-                                        <p className="text-primary-600 font-medium text-sm mt-1">{job.category}</p>
-                                    </div>
-                                    <div className="flex-shrink-0">
+                            <div
+                                key={job.id}
+                                onClick={() => setSelectedJobId(job.id)}
+                                className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
+                                        ? 'border-secondary-500 ring-1 ring-secondary-500 shadow-md'
+                                        : 'border-slate-200 hover:border-secondary-300 hover:shadow-sm'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
+                                        {job.title}
+                                    </h3>
+                                    {job.is_external && (
+                                        <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                            Ext
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center mb-3">
+                                    <div className="flex-shrink-0 mr-3">
                                         {!job.is_confidential && company?.logo ? (
                                             <img
                                                 src={company.logo}
                                                 alt={company.name}
-                                                className="w-12 h-12 object-contain rounded-lg border border-slate-100 p-1"
+                                                className="w-8 h-8 object-contain"
                                             />
                                         ) : (
-                                            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                                <Building className="w-6 h-6 text-orange-500 opacity-80" />
+                                            <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
+                                                <Building className="w-4 h-4 text-orange-500 opacity-80" />
                                             </div>
                                         )}
                                     </div>
+                                    <div className="text-sm text-slate-600 font-medium line-clamp-1">
+                                        {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                                    </div>
                                 </div>
 
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full whitespace-nowrap">{job.type}</span>
-                                    {job.is_external && (
-                                        <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full whitespace-nowrap">Externa</span>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2 mb-6">
-                                    <div className="flex items-center text-slate-500 text-sm">
-                                        <MapPin className="w-4 h-4 mr-2" />
+                                <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-3">
+                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                        <MapPin className="w-3 h-3 mr-1" />
                                         {job.location}
-                                    </div>
-                                    <div className="flex items-center text-slate-500 text-sm">
-                                        <DollarSign className="w-4 h-4 mr-2" />
-                                        ${job.salary.toLocaleString('es-MX')} {job.currency}
-                                    </div>
+                                    </span>
+                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                        <DollarSign className="w-3 h-3 mr-1" />
+                                        ${job.salary.toLocaleString('es-MX')}
+                                    </span>
                                 </div>
 
-                                <Link
-                                    to={`/jobs/${job.id}`}
-                                    className="block w-full text-center bg-white border border-secondary-600 text-secondary-600 hover:bg-secondary-50 font-medium py-2 rounded-lg transition-colors"
-                                >
-                                    Ver Detalles
-                                </Link>
+                                <div className="text-xs text-slate-400 text-right">
+                                    {new Date(job.created_at).toLocaleDateString()}
+                                </div>
                             </div>
                         );
                     })}
                     {filteredJobs.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
-                            No se encontraron vacantes con estos filtros. Intenta ampliar tu búsqueda.
+                        <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
+                            No se encontraron vacantes.
                         </div>
                     )}
+                </div>
+
+                {/* Right Column: Job Details (Desktop Only) */}
+                <div className="hidden lg:block lg:col-span-7 h-full overflow-hidden">
+                    <JobDetailView
+                        job={selectedJob}
+                        company={selectedCompany}
+                        onApply={handleApply}
+                        hasApplied={hasApplied}
+                    />
                 </div>
             </div>
         </div>

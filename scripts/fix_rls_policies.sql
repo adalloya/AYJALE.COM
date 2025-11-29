@@ -3,6 +3,12 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 
 -- PROFILES POLICIES
+-- Drop existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+
 -- Allow users to view their own profile
 CREATE POLICY "Users can view own profile" ON profiles
     FOR SELECT USING (auth.uid() = id);
@@ -22,6 +28,11 @@ CREATE POLICY "Public profiles are viewable by everyone" ON profiles
 
 
 -- APPLICATIONS POLICIES
+-- Drop existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Candidates can create applications" ON applications;
+DROP POLICY IF EXISTS "Candidates can view own applications" ON applications;
+DROP POLICY IF EXISTS "Companies can view applications for their jobs" ON applications;
+
 -- Allow candidates to insert applications
 CREATE POLICY "Candidates can create applications" ON applications
     FOR INSERT WITH CHECK (auth.uid() = candidate_id);
