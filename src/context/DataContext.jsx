@@ -12,6 +12,7 @@ export const DataProvider = ({ children }) => {
     const [applications, setApplications] = useState([]);
     const [users, setUsers] = useState([]); // Kept for compatibility, but mainly fetched via Supabase now
 
+    const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
 
     // Fetch initial data and set up polling
