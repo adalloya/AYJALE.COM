@@ -88,8 +88,7 @@ const LandingPage = () => {
             </div>
 
             {/* Interactive State Selector */}
-            <div className="bg-slate-50 border-y border-slate-200 border-2 border-red-500 min-h-[200px]">
-                {console.log("Rendering MexicoMap container")}
+            <div className="bg-slate-50 border-y border-slate-200">
                 <MexicoMap />
             </div>
 
