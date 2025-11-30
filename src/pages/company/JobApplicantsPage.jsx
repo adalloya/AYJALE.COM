@@ -67,35 +67,7 @@ const JobApplicantsPage = () => {
         );
     }
 
-    const jobApplications = applications.filter(a => a.job_id === Number(id));
 
-    // Enrich applications with user data
-    const allCandidates = jobApplications.map(app => {
-        // The profile is now fetched directly with the application
-        const candidateUser = app.profiles;
-        return {
-            ...app,
-            user: candidateUser
-        };
-    });
-
-    // Filter candidates
-    const candidates = allCandidates.filter(candidate => {
-        const term = searchTerm.toLowerCase();
-        const name = candidate.user?.name?.toLowerCase() || '';
-        const title = candidate.user?.title?.toLowerCase() || '';
-        const location = candidate.user?.location?.toLowerCase() || '';
-        const skills = candidate.user?.skills?.join(' ').toLowerCase() || '';
-
-        return name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
-    });
-
-    // Auto-select first candidate
-    useEffect(() => {
-        if (candidates.length > 0 && !selectedCandidate) {
-            setSelectedCandidate(candidates[0]);
-        }
-    }, [candidates, selectedCandidate]);
 
     return (
         <div className="space-y-6">
