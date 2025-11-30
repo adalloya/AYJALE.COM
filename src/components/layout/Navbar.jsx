@@ -29,9 +29,11 @@ const Navbar = () => {
                             Inicio
                         </Link>
 
-                        <Link to="/jobs" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                            Vacantes
-                        </Link>
+                        {(!user || user.role !== 'company') && (
+                            <Link to="/jobs" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                Vacantes
+                            </Link>
+                        )}
 
                         {!user && (
                             <>
