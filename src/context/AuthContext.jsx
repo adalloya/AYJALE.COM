@@ -183,14 +183,23 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateUser = async (updatedData) => {
+        console.log('updateUser called with:', updatedData);
+        if (!user) {
+            console.error('updateUser: No user logged in');
+            return;
+        }
         try {
             const { error } = await supabase
                 .from('profiles')
                 .update(updatedData)
                 .eq('id', user.id);
 
-            if (error) throw error;
+            if (error) {
+                console.error('updateUser Supabase error:', error);
+                throw error;
+            }
 
+            console.log('updateUser success, updating local state');
             // Update local state
             setUser(prev => ({ ...prev, ...updatedData }));
         } catch (error) {
