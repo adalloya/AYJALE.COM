@@ -28,17 +28,24 @@ const AuthPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('AuthPage: handleSubmit called');
+        console.log('AuthPage: isLogin:', isLogin);
+        console.log('AuthPage: userType:', userType);
+        console.log('AuthPage: formData:', formData);
+
         try {
             if (isLogin) {
                 await login(formData.email, formData.password);
                 navigate(returnUrl);
             } else {
+                console.log('AuthPage: Calling register with role:', userType);
                 await register({
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
+                console.log('AuthPage: Register completed, navigating to onboarding');
                 navigate('/onboarding');
             }
         } catch (error) {

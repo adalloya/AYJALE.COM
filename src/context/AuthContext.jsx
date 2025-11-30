@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                fetchProfile(session.user.id);
+                fetchProfile(session.user.id, session);
             } else {
                 setLoading(false);
             }
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                fetchProfile(session.user.id);
+                fetchProfile(session.user.id, session);
             } else {
                 setUser(null);
                 setLoading(false);
@@ -32,7 +32,8 @@ export const AuthProvider = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId) => {
+    const fetchProfile = async (userId, session = null) => {
+        console.log('fetchProfile called for:', userId);
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -40,8 +41,28 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
-            setUser(data);
+            if (error) {
+                console.error('fetchProfile DB error:', error);
+                throw error;
+            }
+
+            console.log('fetchProfile DB data:', data);
+
+            // ALWAYS prioritize session metadata for role if available
+            // This is critical for the registration flow where DB triggers might lag
+            let finalUser = data;
+            if (session?.user?.user_metadata?.role) {
+                console.log('fetchProfile using metadata role:', session.user.user_metadata.role);
+                finalUser = {
+                    ...data,
+                    role: session.user.user_metadata.role
+                };
+            } else {
+                console.log('fetchProfile: No metadata role found in session');
+            }
+
+            console.log('fetchProfile setting user:', finalUser);
+            setUser(finalUser);
         } catch (error) {
             console.error('Error fetching profile:', error);
         } finally {
@@ -102,6 +123,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (userData, password, role = 'candidate') => {
+        console.log('register called with role:', role);
         setLoading(true);
         try {
             // 1. Sign up with Supabase Auth
@@ -120,6 +142,8 @@ export const AuthProvider = ({ children }) => {
 
             if (authError) throw authError;
 
+            console.log('register successful, data:', data);
+
             // 2. If session exists (auto-confirm enabled), set user immediately to avoid ProtectedRoute redirect
             if (data?.session?.user) {
                 // Manually construct user object temporarily or fetch profile
@@ -133,6 +157,7 @@ export const AuthProvider = ({ children }) => {
                     name: userData.name,
                     // other fields will be null initially
                 };
+                console.log('register setting initial user:', userProfile);
                 setUser(userProfile);
             }
 
