@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Users, Upload } from 'lucide-react';
 
 const CompanyDashboard = () => {
-    const { user } = useAuth();
-    const { jobs, deleteJob, applications, updateUserProfile, toggleJobStatus } = useData();
+    const { user, updateUser } = useAuth();
+    const { jobs, deleteJob, applications, toggleJobStatus } = useData();
 
     const myJobs = jobs.filter(job => job.companyId === user.id);
 
@@ -15,7 +15,7 @@ const CompanyDashboard = () => {
 
     const handleSaveName = () => {
         if (tempName.trim()) {
-            updateUserProfile(user.id, { name: tempName });
+            updateUser({ name: tempName });
             setIsEditingName(false);
         }
     };
@@ -31,7 +31,7 @@ const CompanyDashboard = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 console.log("Image converted to Base64, updating user profile...");
-                updateUserProfile(user.id, { logo: reader.result });
+                updateUser({ logo: reader.result });
             };
             reader.readAsDataURL(file);
         }
