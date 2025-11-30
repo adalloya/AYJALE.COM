@@ -3,6 +3,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import JobDetailView from '../components/jobs/JobDetailView';
+import { ArrowLeft } from 'lucide-react';
 
 const JobDetailsPage = () => {
     const { id } = useParams();
@@ -44,6 +45,13 @@ const JobDetailsPage = () => {
                 title={job.title}
                 description={`${job.title} en ${job.location}. ${job.description.substring(0, 150)}...`}
             />
+            <button
+                onClick={() => navigate('/jobs')}
+                className="mb-4 flex items-center text-slate-600 hover:text-secondary-600 transition-colors font-medium"
+            >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Volver a vacantes
+            </button>
             <JobDetailView
                 job={job}
                 company={company}
