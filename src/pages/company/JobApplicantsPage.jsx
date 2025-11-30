@@ -11,6 +11,7 @@ const JobApplicantsPage = () => {
     const { jobs, applications, users, updateApplicationStatus, fetchMessages, sendMessage } = useData();
     const { user: currentUser } = useAuth();
     const [selectedCandidate, setSelectedCandidate] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleStatusChange = (newStatus) => {
         if (selectedCandidate) {
@@ -37,7 +38,7 @@ const JobApplicantsPage = () => {
     const jobApplications = applications.filter(a => a.job_id === Number(id));
 
     // Enrich applications with user data
-    const candidates = jobApplications.map(app => {
+    const allCandidates = jobApplications.map(app => {
         // The profile is now fetched directly with the application
         const candidateUser = app.profiles;
         return {
@@ -46,15 +47,44 @@ const JobApplicantsPage = () => {
         };
     });
 
+    // Filter candidates
+    const candidates = allCandidates.filter(candidate => {
+        const term = searchTerm.toLowerCase();
+        const name = candidate.user?.name?.toLowerCase() || '';
+        const title = candidate.user?.title?.toLowerCase() || '';
+        const location = candidate.user?.location?.toLowerCase() || '';
+        const skills = candidate.user?.skills?.join(' ').toLowerCase() || '';
+
+        return name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
+    });
+
+    // Auto-select first candidate
+    useEffect(() => {
+        if (candidates.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(candidates[0]);
+        }
+    }, [candidates, selectedCandidate]);
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center space-x-4">
-                <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full">
-                    <ArrowLeft className="w-6 h-6 text-slate-600" />
-                </button>
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Candidatos: {job.title}</h1>
-                    <p className="text-slate-500">{candidates.length} postulaciones recibidas</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center space-x-4">
+                    <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full">
+                        <ArrowLeft className="w-6 h-6 text-slate-600" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Candidatos: {job.title}</h1>
+                        <p className="text-slate-500">{candidates.length} postulaciones encontradas</p>
+                    </div>
+                </div>
+                <div className="w-full md:w-64">
+                    <input
+                        type="text"
+                        placeholder="Buscar candidato..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
                 </div>
             </div>
 
