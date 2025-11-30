@@ -16,7 +16,9 @@ const OnboardingPage = () => {
     });
 
     useEffect(() => {
+        console.log('OnboardingPage: user changed:', user);
         if (user) {
+            console.log('OnboardingPage: user role:', user.role);
             setFormData(prev => ({
                 ...prev,
                 location: user.location || '',
