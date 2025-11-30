@@ -87,14 +87,17 @@ const LandingPage = () => {
                 <CompanyCarousel />
             </div>
 
-            {/* Interactive State Selector */}
-            <div className="bg-slate-50 border-y border-slate-200">
-                <MexicoMap />
-            </div>
-
             {/* Featured Categories */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h2 className="text-2xl font-bold text-slate-900 mb-8">Categorías Destacadas</h2>
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
+                        <Briefcase className="w-8 h-8 text-secondary-600" />
+                        Categorías Destacadas
+                    </h2>
+                    <p className="text-slate-600 mt-3 text-lg max-w-2xl mx-auto">
+                        Explora las áreas con mayor demanda y encuentra tu lugar.
+                    </p>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     {categories.map((cat) => (
                         <button
@@ -111,6 +114,11 @@ const LandingPage = () => {
                         </button>
                     ))}
                 </div>
+            </div>
+
+            {/* Interactive State Selector */}
+            <div className="bg-slate-50 border-y border-slate-200">
+                <MexicoMap />
             </div>
         </div>
     );
