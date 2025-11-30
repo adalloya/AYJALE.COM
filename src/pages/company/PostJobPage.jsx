@@ -1,3 +1,8 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
+import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 import { generateJobDescription } from '../../utils/jobDescriptionGenerator';
 import { Sparkles } from 'lucide-react';
 
