@@ -76,6 +76,12 @@ const AdminDashboard = () => {
         a.jobs?.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-8">Panel de Administración</h1>
@@ -206,7 +212,7 @@ const AdminDashboard = () => {
                                 <tr key={user.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{user.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(user.created_at).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(user.created_at)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => handleResetPassword(user.email)}
@@ -236,7 +242,7 @@ const AdminDashboard = () => {
                                             {job.active ? 'Activa' : 'Inactiva'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(job.created_at).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(job.created_at)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end space-x-3">
                                             <button
@@ -269,7 +275,7 @@ const AdminDashboard = () => {
                                         {allUsers.find(u => u.id === app.jobs?.company_id)?.name || 'Desconocido'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {new Date(app.created_at).toLocaleDateString()}
+                                        {formatDate(app.created_at)}
                                     </td>
                                 </tr>
                             ))}
