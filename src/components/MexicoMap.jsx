@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Compass } from 'lucide-react';
 
 const MexicoMap = () => {
+    console.log("MexicoMap Component Mounting...");
     const navigate = useNavigate();
     const [activeRegion, setActiveRegion] = useState('Todos');
 
@@ -49,8 +50,8 @@ const MexicoMap = () => {
                 <button
                     onClick={() => setActiveRegion('Todos')}
                     className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeRegion === 'Todos'
-                            ? 'bg-slate-900 text-white shadow-lg scale-105'
-                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        ? 'bg-slate-900 text-white shadow-lg scale-105'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                         }`}
                 >
                     Todo México
@@ -60,8 +61,8 @@ const MexicoMap = () => {
                         key={region}
                         onClick={() => setActiveRegion(region)}
                         className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeRegion === region
-                                ? 'bg-secondary-600 text-white shadow-lg scale-105'
-                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                            ? 'bg-secondary-600 text-white shadow-lg scale-105'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                             }`}
                     >
                         {region}
