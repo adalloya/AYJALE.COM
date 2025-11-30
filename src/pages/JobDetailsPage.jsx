@@ -1,14 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import JobDetailView from '../components/jobs/JobDetailView';
 import { ArrowLeft } from 'lucide-react';
+import ApplicationModal from '../components/jobs/ApplicationModal';
 
 const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { jobs, users, applications } = useData();
+    const { jobs, users, applications, applyToJob } = useData();
     const { user } = useAuth();
 
     const job = jobs.find(j => j.id === Number(id));
@@ -20,7 +22,18 @@ const JobDetailsPage = () => {
 
     const hasApplied = user && applications.some(app => app.job_id === job.id && app.candidate_id === user.id);
 
-    const handleApply = () => {
+    const [showModal, setShowModal] = useState(false);
+    const [applying, setApplying] = useState(false);
+
+    const isProfileComplete = () => {
+        if (!user) return false;
+        const required = ['name', 'title', 'location', 'bio'];
+        const hasRequired = required.every(field => user[field] && user[field].trim() !== '');
+        const hasSkills = Array.isArray(user.skills) ? user.skills.length > 0 : (user.skills && user.skills.trim() !== '');
+        return hasRequired && hasSkills;
+    };
+
+    const handleApplyClick = () => {
         if (!user) {
             navigate(`/auth?returnUrl=/jobs/${id}`);
             return;
@@ -36,7 +49,34 @@ const JobDetailsPage = () => {
             return;
         }
 
-        navigate(`/profile?applyingTo=${job.id}`);
+        if (isProfileComplete()) {
+            setShowModal(true);
+        } else {
+            navigate(`/profile?applyingTo=${job.id}`);
+        }
+    };
+
+    const handleModalSubmit = async (comments) => {
+        setApplying(true);
+        try {
+            await applyToJob(job.id, user.id, {
+                name: user.name,
+                email: user.email,
+                title: user.title,
+                location: user.location,
+                bio: user.bio,
+                skills: user.skills, // Assuming it's already in correct format in user object
+                comments
+            });
+            setShowModal(false);
+            alert('¡Postulación enviada con éxito!');
+            // Optionally refresh data or update UI state
+        } catch (error) {
+            console.error('Error applying:', error);
+            alert('Error al enviar la postulación. Intenta de nuevo.');
+        } finally {
+            setApplying(false);
+        }
     };
 
     return (
@@ -55,8 +95,15 @@ const JobDetailsPage = () => {
             <JobDetailView
                 job={job}
                 company={company}
-                onApply={handleApply}
+                onApply={handleApplyClick}
                 hasApplied={hasApplied}
+            />
+            <ApplicationModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSubmit={handleModalSubmit}
+                jobTitle={job.title}
+                loading={applying}
             />
         </div>
     );

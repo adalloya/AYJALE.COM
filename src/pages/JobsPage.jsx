@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import JobFilters from '../components/jobs/JobFilters';
 import JobDetailView from '../components/jobs/JobDetailView';
+import ApplicationModal from '../components/jobs/ApplicationModal';
 import { Building, MapPin, DollarSign } from 'lucide-react';
 
 const JobsPage = () => {
@@ -71,11 +72,17 @@ const JobsPage = () => {
     const selectedCompany = selectedJob ? selectedJob.profiles : null;
     const hasApplied = user && selectedJob && applications.some(app => app.job_id === selectedJob.id && app.candidate_id === user.id);
 
-    const handleApply = () => {
-        if (!selectedJob) return;
+    const isProfileComplete = () => {
+        if (!user) return false;
+        const required = ['name', 'title', 'location', 'bio'];
+        const hasRequired = required.every(field => user[field] && user[field].trim() !== '');
+        const hasSkills = Array.isArray(user.skills) ? user.skills.length > 0 : (user.skills && user.skills.trim() !== '');
+        return hasRequired && hasSkills;
+    };
 
+    const handleApply = () => {
         if (!user) {
-            navigate(`/auth?returnUrl=/jobs/${selectedJob.id}`);
+            navigate(`/auth?returnUrl=/jobs`);
             return;
         }
 
@@ -84,12 +91,44 @@ const JobsPage = () => {
             return;
         }
 
-        if (selectedJob.is_external && selectedJob.external_url) {
-            window.open(selectedJob.external_url, '_blank', 'noopener,noreferrer');
+        const job = jobs.find(j => j.id === selectedJobId);
+        if (!job) return;
+
+        if (job.is_external && job.external_url) {
+            window.open(job.external_url, '_blank', 'noopener,noreferrer');
             return;
         }
 
-        navigate(`/profile?applyingTo=${selectedJob.id}`);
+        if (isProfileComplete()) {
+            setShowModal(true);
+        } else {
+            navigate(`/profile?applyingTo=${job.id}`);
+        }
+    };
+
+    const handleModalSubmit = async (comments) => {
+        const job = jobs.find(j => j.id === selectedJobId);
+        if (!job) return;
+
+        setApplying(true);
+        try {
+            await applyToJob(job.id, user.id, {
+                name: user.name,
+                email: user.email,
+                title: user.title,
+                location: user.location,
+                bio: user.bio,
+                skills: user.skills,
+                comments
+            });
+            setShowModal(false);
+            alert('¡Postulación enviada con éxito!');
+        } catch (error) {
+            console.error('Error applying:', error);
+            alert('Error al enviar la postulación. Intenta de nuevo.');
+        } finally {
+            setApplying(false);
+        }
     };
 
     return (
@@ -97,6 +136,14 @@ const JobsPage = () => {
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
+            />
+
+            <ApplicationModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSubmit={handleModalSubmit}
+                jobTitle={jobs.find(j => j.id === selectedJobId)?.title}
+                loading={applying}
             />
 
             <JobFilters
