@@ -186,6 +186,7 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">RFC</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contacto</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Industria/Ubicación</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
                                     </>
                                 )}
                                 {activeTab === 'jobs' && (
@@ -238,6 +239,14 @@ const AdminDashboard = () => {
                                         <div className="text-sm text-slate-900">{user.industry || '-'}</div>
                                         <div className="text-sm text-slate-500">{user.location || '-'}</div>
                                         <div className="text-xs text-slate-400">{user.address || ''}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button
+                                            onClick={() => handleResetPassword(user.email)}
+                                            className="text-blue-600 hover:text-blue-900 flex items-center justify-end ml-auto"
+                                        >
+                                            <Lock className="w-4 h-4 mr-1" /> Reset Password
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
