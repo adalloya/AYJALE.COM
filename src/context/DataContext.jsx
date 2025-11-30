@@ -80,7 +80,7 @@ export const DataProvider = ({ children }) => {
                     title: 'Actualización de Estatus',
                     message: `Tu postulación a ${app.jobs?.title} está: ${statusMap[app.status] || app.status}`,
                     link: '/dashboard',
-                    date: app.updated_at
+                    date: app.updated_at || app.created_at || new Date().toISOString()
                 });
             });
         }
