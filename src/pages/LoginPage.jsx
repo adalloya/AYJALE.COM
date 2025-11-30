@@ -7,9 +7,10 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     const handleLogin = (role) => {
-        const success = loginByRole(role);
-        if (success) {
-            navigate(role === 'candidate' ? '/' : '/dashboard');
+        if (role === 'candidate') {
+            navigate('/auth?mode=login&role=candidate');
+        } else {
+            navigate('/auth?mode=login&role=company');
         }
     };
 

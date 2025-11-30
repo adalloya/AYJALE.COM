@@ -4,26 +4,31 @@ import { useAuth } from '../../context/AuthContext';
 import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [allUsers, setAllUsers] = useState([]);
+    const [allApplications, setAllApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const loadUsers = async () => {
+        const loadData = async () => {
             try {
-                const data = await adminGetUsers();
-                setAllUsers(data || []);
+                const [usersData, appsData] = await Promise.all([
+                    adminGetUsers(),
+                    adminGetApplications()
+                ]);
+                setAllUsers(usersData || []);
+                setAllApplications(appsData || []);
             } catch (error) {
-                console.error("Failed to load users", error);
+                console.error("Failed to load admin data", error);
             } finally {
                 setLoading(false);
             }
         };
-        loadUsers();
-    }, [adminGetUsers]);
+        loadData();
+    }, [adminGetUsers, adminGetApplications]);
 
     const candidates = allUsers.filter(u => u.role === 'candidate');
     const companies = allUsers.filter(u => u.role === 'company');
@@ -63,18 +68,23 @@ const AdminDashboard = () => {
         j.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const filteredApplications = allApplications.filter(a =>
+        a.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.jobs?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-8">Panel de Administración</h1>
 
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
                     <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
                         <Users className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Candidatos Registrados</p>
+                        <p className="text-sm text-slate-500 font-medium">Candidatos</p>
                         <p className="text-2xl font-bold text-slate-900">{candidates.length}</p>
                     </div>
                 </div>
@@ -83,7 +93,7 @@ const AdminDashboard = () => {
                         <Building2 className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Empresas Registradas</p>
+                        <p className="text-sm text-slate-500 font-medium">Empresas</p>
                         <p className="text-2xl font-bold text-slate-900">{companies.length}</p>
                     </div>
                 </div>
@@ -92,8 +102,17 @@ const AdminDashboard = () => {
                         <Briefcase className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Vacantes Totales</p>
+                        <p className="text-sm text-slate-500 font-medium">Vacantes</p>
                         <p className="text-2xl font-bold text-slate-900">{jobs.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+                    <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                        <Eye className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Postulaciones</p>
+                        <p className="text-2xl font-bold text-slate-900">{allApplications.length}</p>
                     </div>
                 </div>
             </div>
@@ -101,24 +120,30 @@ const AdminDashboard = () => {
             {/* Tabs & Search */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 overflow-x-auto pb-2 sm:pb-0">
                         <button
                             onClick={() => setActiveTab('candidates')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'candidates' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'candidates' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
                             Candidatos
                         </button>
                         <button
                             onClick={() => setActiveTab('companies')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'companies' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'companies' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
                             Empresas
                         </button>
                         <button
                             onClick={() => setActiveTab('jobs')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'jobs' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'jobs' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
                             Vacantes
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('applications')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'applications' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                        >
+                            Postulaciones
                         </button>
                     </div>
                     <div className="relative w-full sm:w-64">
@@ -161,6 +186,14 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Estado</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Publicada</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
+                                    </>
+                                )}
+                                {activeTab === 'applications' && (
+                                    <>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Candidato</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Vacante</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Fecha</th>
                                     </>
                                 )}
                             </tr>
@@ -218,6 +251,22 @@ const AdminDashboard = () => {
                                                 <Power className="w-4 h-4" />
                                             </button>
                                         </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {activeTab === 'applications' && filteredApplications.map(app => (
+                                <tr key={app.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                        {app.profiles?.name || 'Usuario Eliminado'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {app.jobs?.title || 'Vacante Eliminada'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {allUsers.find(u => u.id === app.jobs?.company_id)?.name || 'Desconocido'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {new Date(app.created_at).toLocaleDateString()}
                                     </td>
                                 </tr>
                             ))}

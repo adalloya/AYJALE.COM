@@ -30,8 +30,11 @@ export const DataProvider = ({ children }) => {
             .select('*')
             .order('created_at', { ascending: false });
 
-        // If not a company viewing their own jobs, filter out inactive/expired
-        if (!user || user.role !== 'company') {
+        // If not a company viewing their own jobs AND not an admin, filter out inactive/expired
+        const isCompany = user?.role === 'company';
+        const isAdmin = user?.role === 'admin';
+
+        if (!user || (!isCompany && !isAdmin)) {
             query = query
                 .eq('active', true)
                 .gt('expires_at', new Date().toISOString());
@@ -143,6 +146,21 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const adminGetApplications = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('applications')
+                .select('*, jobs(title, company_id), profiles:candidate_id(name, email)')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("Error fetching admin applications:", error);
+            throw error;
+        }
+    };
+
     const deleteJob = async (id) => {
         const { error } = await supabase
             .from('jobs')
@@ -216,7 +234,8 @@ export const DataProvider = ({ children }) => {
             fetchCompanyApplications: fetchApplications,
             toggleJobStatus,
             adminRepublishJob,
-            adminGetUsers
+            adminGetUsers,
+            adminGetApplications
         }}>
             {children}
         </DataContext.Provider>

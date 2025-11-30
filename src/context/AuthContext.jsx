@@ -120,7 +120,22 @@ export const AuthProvider = ({ children }) => {
 
             if (authError) throw authError;
 
-            // 2. Profile is created automatically by database trigger (see schema)
+            // 2. If session exists (auto-confirm enabled), set user immediately to avoid ProtectedRoute redirect
+            if (data?.session?.user) {
+                // Manually construct user object temporarily or fetch profile
+                // Since trigger creates profile, we might need to wait a bit or just set basic info
+                // For now, let's rely on onAuthStateChange but keep loading true for a moment?
+                // Actually, setting user here is safer.
+                const userProfile = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    role: role,
+                    name: userData.name,
+                    // other fields will be null initially
+                };
+                setUser(userProfile);
+            }
+
             return true;
         } catch (error) {
             console.error("Error in register function:", error);

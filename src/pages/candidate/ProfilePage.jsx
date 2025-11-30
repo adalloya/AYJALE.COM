@@ -124,8 +124,15 @@ const ProfilePage = () => {
                             setFormData(newFormData);
 
                             // Auto-save photo to persistence
-                            updateUser(newFormData);
-                            // Removed redundant updateUserProfile call
+                            // Ensure skills is sent as array, not string
+                            const dataToSave = {
+                                ...newFormData,
+                                skills: newFormData.skills
+                                    ? newFormData.skills.split(',').map(s => s.trim()).filter(Boolean)
+                                    : []
+                            };
+                            updateUser(dataToSave);
+
                             setToast({ message: 'Foto guardada correctamente', type: 'success' });
                         }}
                     />

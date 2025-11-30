@@ -143,9 +143,10 @@ const AuthPage = () => {
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
                         </div>
+                        {/* Role selector hidden as per user request - defaults to candidate */}
                         {!isLogin && !initialRole && (
                             <div className="flex items-center justify-center space-x-4 mt-4">
-                                <label className="flex items-center">
+                                <label className="flex items-center cursor-pointer">
                                     <input
                                         type="radio"
                                         name="userType"
@@ -156,7 +157,7 @@ const AuthPage = () => {
                                     />
                                     <span className="text-sm text-slate-700">Candidato</span>
                                 </label>
-                                <label className="flex items-center">
+                                <label className="flex items-center cursor-pointer">
                                     <input
                                         type="radio"
                                         name="userType"

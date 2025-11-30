@@ -65,62 +65,39 @@ const OnboardingPage = () => {
                             ¡Bienvenido a Ayjale!
                         </h1>
                         <p className="text-secondary-100 text-lg max-w-2xl mx-auto">
-                            Gracias por confiar en nosotros. Estamos emocionados de ser tu aliado en la búsqueda del mejor talento.
+                            Gracias por confiar en nosotros.
                         </p>
                     </div>
 
-                    <div className="px-8 py-10">
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-bold text-slate-900 mb-6 text-center">¿Qué sigue?</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <div className="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                                        <FileText className="h-6 w-6 text-blue-600" />
-                                    </div>
-                                    <h3 className="font-bold text-slate-900 mb-2">1. Publica Vacantes</h3>
-                                    <p className="text-sm text-slate-600">Crea ofertas de trabajo detalladas para atraer a los candidatos ideales.</p>
-                                </div>
-                                <div className="text-center p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <div className="mx-auto h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                        <User className="h-6 w-6 text-green-600" />
-                                    </div>
-                                    <h3 className="font-bold text-slate-900 mb-2">2. Recibe Talentos</h3>
-                                    <p className="text-sm text-slate-600">Revisa perfiles, filtra candidatos y gestiona tus postulaciones.</p>
-                                </div>
-                                <div className="text-center p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <div className="mx-auto h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                                        <Rocket className="h-6 w-6 text-purple-600" />
-                                    </div>
-                                    <h3 className="font-bold text-slate-900 mb-2">3. Crece tu Equipo</h3>
-                                    <p className="text-sm text-slate-600">Contacta y contrata a los mejores profesionales de México.</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="px-8 py-12">
+                        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">Siguientes pasos</h2>
 
-                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-10 rounded-r-lg">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <Star className="h-5 w-5 text-yellow-400" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="flex flex-col items-center p-6 bg-slate-50 rounded-xl border-2 border-slate-200 hover:border-secondary-500 hover:bg-white transition-all group"
+                            >
+                                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
+                                    <Building2 className="h-6 w-6 text-blue-600 group-hover:text-white" />
                                 </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-yellow-700">
-                                        <span className="font-bold">Nota:</span> Estamos trabajando constantemente para agregar nuevas características y mejorar tu experiencia en la plataforma. ¡Mantente atento a las novedades!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Completar Perfil</h3>
+                                <p className="text-sm text-slate-500 text-center">
+                                    Configura la información de tu empresa
+                                </p>
+                            </button>
 
-                        <div className="text-center">
                             <button
                                 onClick={() => navigate('/post-job')}
-                                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-secondary-600 hover:bg-secondary-700 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                                className="flex flex-col items-center p-6 bg-slate-50 rounded-xl border-2 border-slate-200 hover:border-secondary-500 hover:bg-white transition-all group"
                             >
-                                Comenzar a Publicar
-                                <ArrowRight className="ml-2 h-5 w-5" />
+                                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-600 transition-colors">
+                                    <Briefcase className="h-6 w-6 text-green-600 group-hover:text-white" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Publicar Vacante</h3>
+                                <p className="text-sm text-slate-500 text-center">
+                                    Crea tu primera oferta de empleo
+                                </p>
                             </button>
-                            <p className="mt-4 text-sm text-slate-500">
-                                O <button onClick={() => navigate('/dashboard')} className="text-secondary-600 hover:underline font-medium">ir a mi panel</button>
-                            </p>
                         </div>
                     </div>
                 </div>
