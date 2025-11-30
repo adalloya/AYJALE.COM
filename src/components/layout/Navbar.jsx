@@ -1,13 +1,67 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, User, LogOut, Briefcase, LayoutDashboard, PlusCircle, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useData } from '../../context/DataContext';
+import { Menu, X, User, LogOut, Briefcase, LayoutDashboard, PlusCircle, Users, Bell } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import logo from '../../assets/ayjale_logo_new.png';
+
+const NotificationDropdown = ({ notifications, onClose }) => {
+    const navigate = useNavigate();
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [onClose]);
+
+    const handleClick = (link) => {
+        navigate(link);
+        onClose();
+    };
+
+    if (notifications.length === 0) {
+        return (
+            <div ref={dropdownRef} className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-slate-200">
+                <div className="px-4 py-3 text-sm text-slate-500 text-center">
+                    No tienes notificaciones nuevas
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div ref={dropdownRef} className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 border border-slate-200 max-h-96 overflow-y-auto">
+            <div className="px-4 py-2 border-b border-slate-100 bg-slate-50">
+                <h3 className="text-sm font-semibold text-slate-700">Notificaciones</h3>
+            </div>
+            {notifications.map((notif) => (
+                <div
+                    key={notif.id}
+                    onClick={() => handleClick(notif.link)}
+                    className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors"
+                >
+                    <p className="text-sm font-medium text-slate-900">{notif.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{notif.message}</p>
+                    <p className="text-xs text-slate-400 mt-1 text-right">
+                        {new Date(notif.date).toLocaleDateString()} {new Date(notif.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const Navbar = () => {
     const { user, logout } = useAuth();
+    const { notifications } = useData();
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isNotifOpen, setIsNotifOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -80,11 +134,32 @@ const Navbar = () => {
                         )}
 
                         {user && (
-                            <div className="flex items-center ml-4 border-l pl-4 border-slate-200">
-                                <span className="text-sm text-slate-500 mr-4">Hola, {user.name}</span>
-                                <button onClick={handleLogout} className="text-slate-400 hover:text-red-600">
-                                    <LogOut className="w-5 h-5" />
-                                </button>
+                            <div className="flex items-center ml-4 border-l pl-4 border-slate-200 space-x-4">
+                                {/* Notification Bell */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                                        className="text-slate-400 hover:text-slate-600 relative p-1"
+                                    >
+                                        <Bell className="w-5 h-5" />
+                                        {notifications.length > 0 && (
+                                            <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white transform translate-x-1/4 -translate-y-1/4"></span>
+                                        )}
+                                    </button>
+                                    {isNotifOpen && (
+                                        <NotificationDropdown
+                                            notifications={notifications}
+                                            onClose={() => setIsNotifOpen(false)}
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="flex items-center">
+                                    <span className="text-sm text-slate-500 mr-4">Hola, {user.name}</span>
+                                    <button onClick={handleLogout} className="text-slate-400 hover:text-red-600">
+                                        <LogOut className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
