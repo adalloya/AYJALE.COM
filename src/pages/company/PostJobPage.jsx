@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 
 const PostJobPage = () => {
-    const { addJob } = useData();
+    const { postJob } = useData();
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ const PostJobPage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        addJob({
+        postJob({
             ...formData,
             companyId: user.id,
             salary: Number(formData.salary),
