@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useData } from '../../context/DataContext';
-import { useAuth } from '../../context/AuthContext';
-import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
+import { generateJobDescription } from '../../utils/jobDescriptionGenerator';
+import { Sparkles } from 'lucide-react';
 
 const PostJobPage = () => {
     const [searchParams] = useSearchParams();
@@ -20,6 +17,8 @@ const PostJobPage = () => {
         location: '',
         isConfidential: false
     });
+
+    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         if (jobId && jobs.length > 0) {
@@ -42,6 +41,21 @@ const PostJobPage = () => {
             }
         }
     }, [jobId, jobs, user, navigate]);
+
+    const handleGenerateDescription = () => {
+        if (!formData.title) {
+            alert('Por favor escribe un título para el puesto primero.');
+            return;
+        }
+
+        setIsGenerating(true);
+        // Simulate a small delay to make it feel like "thinking"
+        setTimeout(() => {
+            const generatedDesc = generateJobDescription(formData.title);
+            setFormData(prev => ({ ...prev, description: generatedDesc }));
+            setIsGenerating(false);
+        }, 800);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,17 +91,34 @@ const PostJobPage = () => {
                         className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={formData.title}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        placeholder="Ej. Desarrollador React Senior"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Descripción</label>
+                    <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-slate-700">Descripción</label>
+                        <button
+                            type="button"
+                            onClick={handleGenerateDescription}
+                            disabled={isGenerating || !formData.title}
+                            className={`flex items-center text-xs font-medium px-3 py-1.5 rounded-full transition-colors
+                                ${!formData.title
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
+                                }`}
+                        >
+                            <Sparkles className={`w-3 h-3 mr-1.5 ${isGenerating ? 'animate-spin' : ''}`} />
+                            {isGenerating ? 'Generando...' : 'Generar con IA'}
+                        </button>
+                    </div>
                     <textarea
                         required
-                        rows={4}
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        rows={12}
+                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 font-sans"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Describe las responsabilidades, requisitos y beneficios del puesto..."
                     />
                 </div>
 
