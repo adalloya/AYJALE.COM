@@ -227,7 +227,7 @@ export const DataProvider = ({ children }) => {
             const { data, error } = await supabase
                 .from('applications')
                 .select('*, jobs(title, company_id), profiles:candidate_id(name, email)')
-                .order('created_at', { ascending: false });
+                .select('*, jobs(title, company_id), profiles:candidate_id(name, email)');
 
             if (error) throw error;
             return data;
