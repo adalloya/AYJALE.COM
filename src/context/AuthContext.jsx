@@ -137,7 +137,13 @@ export const AuthProvider = ({ children }) => {
                         role: role,
                         name: userData.name,
                         terms_accepted: userData.termsAccepted,
-                        terms_accepted_at: new Date().toISOString()
+                        terms_accepted_at: new Date().toISOString(),
+                        rfc: userData.rfc,
+                        industry: userData.industry,
+                        location: userData.location,
+                        address: userData.address,
+                        recruiter_name: userData.recruiter_name,
+                        phone_number: userData.phone_number
                     }
                 }
             });

@@ -24,7 +24,13 @@ const CompanyAuthPage = () => {
                 await register({
                     name: formData.name,
                     email: formData.email,
-                    termsAccepted: true // Implicit acceptance for now or add checkbox
+                    rfc: formData.rfc,
+                    industry: formData.industry,
+                    location: formData.location,
+                    address: formData.address,
+                    recruiter_name: formData.recruiter_name,
+                    phone_number: formData.phone_number,
+                    termsAccepted: true
                 }, formData.password, 'company');
                 navigate('/onboarding');
             }
@@ -101,19 +107,86 @@ const CompanyAuthPage = () => {
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
                         </div>
-                    </div>
+                        {!isLogin && (
+                            <>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                            placeholder="RFC"
+                                            value={formData.rfc || ''}
+                                            onChange={(e) => setFormData({ ...formData, rfc: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                            placeholder="Industria (ej. Tecnología)"
+                                            value={formData.industry || ''}
+                                            onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                        placeholder="Ubicación (Ciudad, Estado)"
+                                        value={formData.location || ''}
+                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                        placeholder="Dirección Completa"
+                                        value={formData.address || ''}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                            placeholder="Nombre del Reclutador"
+                                            value={formData.recruiter_name || ''}
+                                            onChange={(e) => setFormData({ ...formData, recruiter_name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="tel"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
+                                            placeholder="Teléfono de Contacto"
+                                            value={formData.phone_number || ''}
+                                            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
-                    <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
-                        >
-                            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />
-                            </span>
-                            {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
-                        </button>
-                    </div>
+                        <div>
+                            <button
+                                type="submit"
+                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
+                            >
+                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                    <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />
+                                </span>
+                                {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
+                            </button>
+                        </div>
                 </form>
             </div>
         </div>

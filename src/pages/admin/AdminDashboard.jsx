@@ -183,9 +183,9 @@ const AdminDashboard = () => {
                                 {activeTab === 'companies' && (
                                     <>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Industria</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ubicación</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">RFC</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contacto</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Industria/Ubicación</th>
                                     </>
                                 )}
                                 {activeTab === 'jobs' && (
@@ -225,10 +225,20 @@ const AdminDashboard = () => {
                             ))}
                             {activeTab === 'companies' && filteredCompanies.map(user => (
                                 <tr key={user.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{user.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.industry || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.location || '-'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                                        <div className="text-sm text-slate-500">{user.email}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.rfc || '-'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-slate-900">{user.recruiter_name || '-'}</div>
+                                        <div className="text-sm text-slate-500">{user.phone_number || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-slate-900">{user.industry || '-'}</div>
+                                        <div className="text-sm text-slate-500">{user.location || '-'}</div>
+                                        <div className="text-xs text-slate-400">{user.address || ''}</div>
+                                    </td>
                                 </tr>
                             ))}
                             {activeTab === 'jobs' && filteredJobs.map(job => (
