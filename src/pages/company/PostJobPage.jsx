@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 
 const PostJobPage = () => {
-    const { postJob } = useData();
+    const [searchParams] = useSearchParams();
+    const jobId = searchParams.get('id');
+    const { jobs, postJob, updateJob } = useData(); // Assuming updateJob exists in context
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -19,9 +21,31 @@ const PostJobPage = () => {
         isConfidential: false
     });
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        if (jobId && jobs.length > 0) {
+            const jobToEdit = jobs.find(j => j.id === Number(jobId));
+            if (jobToEdit) {
+                // Security check
+                if (jobToEdit.company_id !== user.id) {
+                    navigate('/dashboard');
+                    return;
+                }
+                setFormData({
+                    title: jobToEdit.title,
+                    description: jobToEdit.description,
+                    category: jobToEdit.category,
+                    salary: jobToEdit.salary,
+                    type: jobToEdit.type,
+                    location: jobToEdit.location,
+                    isConfidential: jobToEdit.is_confidential
+                });
+            }
+        }
+    }, [jobId, jobs, user, navigate]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        postJob({
+        const jobData = {
             title: formData.title,
             description: formData.description,
             category: formData.category,
@@ -30,13 +54,19 @@ const PostJobPage = () => {
             location: formData.location,
             is_confidential: formData.isConfidential,
             currency: 'MXN'
-        });
+        };
+
+        if (jobId) {
+            await updateJob(Number(jobId), jobData);
+        } else {
+            await postJob(jobData);
+        }
         navigate('/dashboard');
     };
 
     return (
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h1 className="text-2xl font-bold text-slate-900 mb-6">Publicar Nueva Vacante</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-6">{jobId ? 'Editar Vacante' : 'Publicar Nueva Vacante'}</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
@@ -142,7 +172,7 @@ const PostJobPage = () => {
                         type="submit"
                         className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700"
                     >
-                        Publicar Vacante
+                        {jobId ? 'Guardar Cambios' : 'Publicar Vacante'}
                     </button>
                 </div>
             </form>

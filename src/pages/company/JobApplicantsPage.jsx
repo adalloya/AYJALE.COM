@@ -85,7 +85,7 @@ const JobApplicantsPage = () => {
                                 </div>
                             </div>
                             <div className="mt-3 text-xs text-slate-400">
-                                Postulado: {selectedCandidate.created_at ? new Date(selectedCandidate.created_at).toLocaleDateString() : 'Fecha desconocida'}
+                                Postulado: {candidate.created_at ? new Date(candidate.created_at).toLocaleDateString() : 'Fecha desconocida'}
                             </div>
                         </div>
                     ))}

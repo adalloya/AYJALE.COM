@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Users, Upload } from 'lucide-react';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
     const { jobs, deleteJob, applications, toggleJobStatus } = useData();
+    const navigate = useNavigate();
 
     const myJobs = jobs.filter(job => job.company_id === user.id);
 
@@ -146,7 +147,11 @@ const CompanyDashboard = () => {
                                     >
                                         <div className={`w-3 h-3 rounded-full ${job.active ? 'bg-green-500' : 'bg-slate-300'}`}></div>
                                     </button>
-                                    <button className="p-2 text-slate-400 hover:text-primary-600 rounded-full hover:bg-slate-50">
+                                    <button
+                                        onClick={() => navigate(`/post-job?id=${job.id}`)}
+                                        className="p-2 text-slate-400 hover:text-primary-600 rounded-full hover:bg-slate-50"
+                                        title="Editar vacante"
+                                    >
                                         <Edit className="w-5 h-5" />
                                     </button>
                                     <button onClick={() => deleteJob(job.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-slate-50">
