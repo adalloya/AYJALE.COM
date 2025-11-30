@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Users, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Upload, Briefcase } from 'lucide-react';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
