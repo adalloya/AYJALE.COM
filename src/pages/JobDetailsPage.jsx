@@ -11,7 +11,7 @@ const JobDetailsPage = () => {
     const { user } = useAuth();
 
     const job = jobs.find(j => j.id === Number(id));
-    const company = users.find(u => u.id === job?.company_id);
+    const company = job?.profiles;
 
     if (!job) {
         return <div className="text-center py-12">Vacante no encontrada.</div>;

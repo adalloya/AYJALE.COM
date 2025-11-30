@@ -27,7 +27,7 @@ export const DataProvider = ({ children }) => {
     const fetchJobs = async () => {
         let query = supabase
             .from('jobs')
-            .select('*')
+            .select('*, profiles:company_id(name, logo)')
             .order('created_at', { ascending: false });
 
         // If not a company viewing their own jobs AND not an admin, filter out inactive/expired

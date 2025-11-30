@@ -8,7 +8,7 @@ const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
     const { jobs, deleteJob, applications, toggleJobStatus } = useData();
 
-    const myJobs = jobs.filter(job => job.companyId === user.id);
+    const myJobs = jobs.filter(job => job.company_id === user.id);
 
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(user.name);

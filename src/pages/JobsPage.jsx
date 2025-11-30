@@ -45,7 +45,7 @@ const JobsPage = () => {
     };
 
     const filteredJobs = jobs.filter(job => {
-        const company = users.find(u => u.id === job.company_id);
+        const company = job.profiles;
         const companyName = company ? company.name.toLowerCase() : '';
 
         const matchesKeyword = job.title.toLowerCase().includes(filters.keyword.toLowerCase()) ||
@@ -68,7 +68,7 @@ const JobsPage = () => {
     }, [filteredJobs, selectedJobId]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
-    const selectedCompany = selectedJob ? users.find(u => u.id === selectedJob.company_id) : null;
+    const selectedCompany = selectedJob ? selectedJob.profiles : null;
     const hasApplied = user && selectedJob && applications.some(app => app.job_id === selectedJob.id && app.candidate_id === user.id);
 
     const handleApply = () => {
@@ -110,7 +110,7 @@ const JobsPage = () => {
                 {/* Left Column: Job List */}
                 <div className="lg:col-span-5 overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
                     {filteredJobs.map(job => {
-                        const company = users.find(u => u.id === job.company_id);
+                        const company = job.profiles;
                         const isSelected = job.id === selectedJobId;
                         return (
                             <div
