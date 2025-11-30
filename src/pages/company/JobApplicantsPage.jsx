@@ -38,6 +38,8 @@ const JobApplicantsPage = () => {
         };
     });
 
+    const [statusFilter, setStatusFilter] = useState('all');
+
     // Filter candidates
     const candidates = allCandidates.filter(candidate => {
         const term = searchTerm.toLowerCase();
@@ -46,8 +48,27 @@ const JobApplicantsPage = () => {
         const location = candidate.user?.location?.toLowerCase() || '';
         const skills = candidate.user?.skills?.join(' ').toLowerCase() || '';
 
-        return name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
+        const matchesSearch = name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
+        const matchesStatus = statusFilter === 'all' || candidate.status === statusFilter;
+
+        return matchesSearch && matchesStatus;
     });
+
+    // Calculate status counts
+    const statusCounts = allCandidates.reduce((acc, curr) => {
+        acc[curr.status] = (acc[curr.status] || 0) + 1;
+        return acc;
+    }, {});
+
+    const statusOptions = [
+        { id: 'all', label: 'Todos', count: allCandidates.length, color: 'bg-slate-100 text-slate-800 border-slate-200' },
+        { id: 'applied', label: 'Nuevos', count: statusCounts['applied'] || 0, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+        { id: 'reviewing', label: 'En Revisión', count: statusCounts['reviewing'] || 0, color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+        { id: 'interviewing', label: 'Entrevista', count: statusCounts['interviewing'] || 0, color: 'bg-purple-50 text-purple-700 border-purple-200' },
+        { id: 'offer', label: 'Oferta', count: statusCounts['offer'] || 0, color: 'bg-green-50 text-green-700 border-green-200' },
+        { id: 'hired', label: 'Contratado', count: statusCounts['hired'] || 0, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+        { id: 'rejected', label: 'Descartado', count: statusCounts['rejected'] || 0, color: 'bg-red-50 text-red-700 border-red-200' },
+    ];
 
     // Auto-select first candidate
     useEffect(() => {
@@ -66,7 +87,6 @@ const JobApplicantsPage = () => {
             </div>
         );
     }
-
 
 
     return (

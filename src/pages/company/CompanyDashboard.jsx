@@ -101,7 +101,45 @@ const CompanyDashboard = () => {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <Briefcase className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <div className="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt className="text-sm font-medium text-slate-500 truncate">Vacantes Activas</dt>
+                                    <dd>
+                                        <div className="text-lg font-medium text-slate-900">{jobs.filter(j => j.active).length}</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <Users className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <div className="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt className="text-sm font-medium text-slate-500 truncate">Total Postulados</dt>
+                                    <dd>
+                                        <div className="text-lg font-medium text-slate-900">{applications.length}</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-slate-900">Mis Vacantes</h1>
                 <Link to="/post-job" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 flex items-center">
                     <Plus className="w-4 h-4 mr-2" /> Nueva Vacante
