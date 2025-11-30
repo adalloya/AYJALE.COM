@@ -109,7 +109,7 @@ const CompanyDashboard = () => {
 
             <div className="grid gap-6">
                 {myJobs.map(job => {
-                    const applicantCount = applications.filter(a => a.jobId === job.id).length;
+                    const applicantCount = applications.filter(a => a.job_id === job.id).length;
                     return (
                         <div key={job.id} className={`bg-white p-6 rounded-lg shadow-sm border ${!job.active ? 'border-slate-200 bg-slate-50' : 'border-slate-200'}`}>
                             <div className="flex justify-between items-start">

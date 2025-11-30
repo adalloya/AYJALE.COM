@@ -30,7 +30,7 @@ const CandidateDashboard = () => {
                                 <div className="mt-2 sm:flex sm:justify-between">
                                     <div className="sm:flex">
                                         <p className="flex items-center text-sm text-slate-500">
-                                            Aplicado el: {new Date(app.created_at).toLocaleDateString()}
+                                            Aplicado el: {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Fecha desconocida'}
                                         </p>
                                     </div>
                                 </div>
