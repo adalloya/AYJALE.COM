@@ -122,7 +122,7 @@ const JobsPage = () => {
             alert('¡Postulación enviada con éxito!');
         } catch (error) {
             console.error('Error applying:', error);
-            alert('Error al enviar la postulación. Intenta de nuevo.');
+            alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
         } finally {
             setApplying(false);
         }
