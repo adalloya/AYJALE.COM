@@ -265,6 +265,13 @@ const AdminDashboard = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end space-x-3">
                                             <button
+                                                onClick={() => window.location.href = `/post-job?id=${job.id}`}
+                                                className="text-indigo-600 hover:text-indigo-900"
+                                                title="Editar"
+                                            >
+                                                <Briefcase className="w-4 h-4" />
+                                            </button>
+                                            <button
                                                 onClick={() => handleRepublish(job.id)}
                                                 className="text-blue-600 hover:text-blue-900"
                                                 title="Republicar"

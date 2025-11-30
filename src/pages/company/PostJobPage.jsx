@@ -30,7 +30,7 @@ const PostJobPage = () => {
             const jobToEdit = jobs.find(j => j.id === Number(jobId));
             if (jobToEdit) {
                 // Security check
-                if (jobToEdit.company_id !== user.id) {
+                if (jobToEdit.company_id !== user.id && user.role !== 'admin') {
                     navigate('/dashboard');
                     return;
                 }
@@ -80,7 +80,11 @@ const PostJobPage = () => {
         } else {
             await postJob(jobData);
         }
-        navigate('/dashboard');
+        if (user.role === 'admin') {
+            navigate('/admin');
+        } else {
+            navigate('/dashboard');
+        }
     };
 
     return (
@@ -199,7 +203,7 @@ const PostJobPage = () => {
                 <div className="flex justify-end pt-4">
                     <button
                         type="button"
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
                         className="bg-white text-slate-700 px-4 py-2 rounded-md text-sm font-medium border border-slate-300 hover:bg-slate-50 mr-3"
                     >
                         Cancelar
