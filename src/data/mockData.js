@@ -14,7 +14,26 @@ export const MEXICAN_STATES = [
 ];
 
 export const JOB_CATEGORIES = [
-    "Almacén", "Chofer", "Seguridad", "Limpieza", "Ventas", "Producción", "Construcción", "Mantenimiento", "Administración", "Atención al Cliente"
+    "Logística y Transporte",
+    "Almacén e Inventarios",
+    "Producción y Manufactura",
+    "Mantenimiento y Reparaciones",
+    "Limpieza y Servicios Generales",
+    "Seguridad y Vigilancia",
+    "Atención al Cliente",
+    "Ventas y Comercio",
+    "Hostelería y Turismo",
+    "Construcción y Obra",
+    "Administrativo y Oficina",
+    "Recursos Humanos",
+    "Tecnología y Sistemas",
+    "Contabilidad y Finanzas",
+    "Salud y Medicina",
+    "Educación y Formación",
+    "Arte y Diseño",
+    "Marketing y Publicidad",
+    "Legal",
+    "Otros"
 ];
 
 export const USERS = [
