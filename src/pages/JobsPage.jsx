@@ -9,10 +9,13 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 import { Building, MapPin, DollarSign } from 'lucide-react';
 
 const JobsPage = () => {
-    const { jobs, users, applications } = useData();
+    const { jobs, users, applications, applyToJob } = useData();
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+
+    const [showModal, setShowModal] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     const [filters, setFilters] = useState({
         keyword: searchParams.get('keyword') || '',
