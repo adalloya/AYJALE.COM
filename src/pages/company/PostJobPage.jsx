@@ -22,9 +22,13 @@ const PostJobPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         postJob({
-            ...formData,
-            companyId: user.id,
+            title: formData.title,
+            description: formData.description,
+            category: formData.category,
             salary: Number(formData.salary),
+            type: formData.type,
+            location: formData.location,
+            is_confidential: formData.isConfidential,
             currency: 'MXN'
         });
         navigate('/dashboard');
