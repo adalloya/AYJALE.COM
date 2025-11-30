@@ -128,6 +128,11 @@ const CompanyDashboard = () => {
                                                     ? 'Expirada'
                                                     : 'Activa'}
                                         </span>
+                                        {job.is_confidential && (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                                Confidencial
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-sm text-slate-500">
                                         Publicado: {new Date(job.created_at).toLocaleDateString()} • Expira: {new Date(job.expires_at).toLocaleDateString()}
