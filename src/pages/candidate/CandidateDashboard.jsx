@@ -23,7 +23,16 @@ const CandidateDashboard = () => {
                       ${app.status === 'applied' ? 'bg-green-100 text-green-800' :
                                                 app.status === 'interviewing' ? 'bg-yellow-100 text-yellow-800' :
                                                     'bg-slate-100 text-slate-800'}`}>
-                                            {app.status}
+                                            {
+                                                {
+                                                    'applied': 'Postulado',
+                                                    'reviewing': 'En Revisión',
+                                                    'interviewing': 'Entrevista',
+                                                    'offer': 'Oferta',
+                                                    'hired': 'Contratado',
+                                                    'rejected': 'Rechazado'
+                                                }[app.status] || app.status
+                                            }
                                         </p>
                                     </div>
                                 </div>
