@@ -14,23 +14,23 @@ const CompanyAuthPage = () => {
         password: ''
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        let success = false;
-
-        if (isLogin) {
-            success = login(formData.email);
-        } else {
-            success = register({
-                name: formData.name,
-                email: formData.email
-            }, 'company');
-        }
-
-        if (success) {
-            navigate('/dashboard');
-        } else {
-            alert('Error en la autenticación. Intenta de nuevo.');
+        try {
+            if (isLogin) {
+                await login(formData.email, formData.password);
+                navigate('/dashboard');
+            } else {
+                await register({
+                    name: formData.name,
+                    email: formData.email,
+                    termsAccepted: true // Implicit acceptance for now or add checkbox
+                }, formData.password, 'company');
+                navigate('/onboarding');
+            }
+        } catch (error) {
+            console.error("Auth error:", error);
+            alert(error.message || 'Error en la autenticación. Intenta de nuevo.');
         }
     };
 
