@@ -49,7 +49,7 @@ export const DataProvider = ({ children }) => {
     const fetchApplications = async () => {
         if (!user) return;
 
-        let query = supabase.from('applications').select('*, jobs(*)');
+        let query = supabase.from('applications').select('*, jobs(*), profiles:candidate_id(*)');
 
         // If candidate, get own applications
         if (user.role === 'candidate') {

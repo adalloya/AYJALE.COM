@@ -38,7 +38,8 @@ const JobApplicantsPage = () => {
 
     // Enrich applications with user data
     const candidates = jobApplications.map(app => {
-        const candidateUser = users.find(u => u.id === app.candidate_id);
+        // The profile is now fetched directly with the application
+        const candidateUser = app.profiles;
         return {
             ...app,
             user: candidateUser
@@ -84,7 +85,7 @@ const JobApplicantsPage = () => {
                                 </div>
                             </div>
                             <div className="mt-3 text-xs text-slate-400">
-                                Postulado: {new Date(candidate.created_at).toLocaleDateString()}
+                                Postulado: {selectedCandidate.created_at ? new Date(selectedCandidate.created_at).toLocaleDateString() : 'Fecha desconocida'}
                             </div>
                         </div>
                     ))}
@@ -99,6 +100,9 @@ const JobApplicantsPage = () => {
                 <div className="lg:col-span-2">
                     {selectedCandidate ? (
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                            <div className="mb-4 text-xs text-slate-400">
+                                Postulado: {selectedCandidate.created_at ? new Date(selectedCandidate.created_at).toLocaleDateString() : 'Fecha desconocida'}
+                            </div>
                             <div className="flex items-start justify-between mb-6">
                                 <div className="flex items-start space-x-4">
                                     <div className="w-20 h-20 flex-shrink-0">
