@@ -187,6 +187,7 @@ const CompanyAuthPage = () => {
                                 {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
                             </button>
                         </div>
+                    </div>
                 </form>
             </div>
         </div>

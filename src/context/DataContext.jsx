@@ -347,8 +347,6 @@ export const DataProvider = ({ children }) => {
             toggleJobStatus,
             adminRepublishJob,
             adminGetUsers,
-            adminRepublishJob,
-            adminGetUsers,
             adminGetApplications,
             updateUserProfile,
             updateJob,
