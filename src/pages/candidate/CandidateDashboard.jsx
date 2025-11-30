@@ -37,9 +37,15 @@ const ApplicationItem = ({ app, job }) => {
                 <p className="text-sm font-medium text-primary-600 truncate">{job?.title}</p>
                 <div className="ml-2 flex-shrink-0 flex">
                     <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${app.status === 'applied' ? 'bg-green-100 text-green-800' :
-                            app.status === 'interviewing' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-slate-100 text-slate-800'}`}>
+                      ${{
+                            'applied': 'bg-blue-100 text-blue-800',
+                            'reviewing': 'bg-yellow-100 text-yellow-800',
+                            'interviewing': 'bg-purple-100 text-purple-800',
+                            'offer': 'bg-orange-100 text-orange-800',
+                            'hired': 'bg-green-100 text-green-800',
+                            'rejected': 'bg-red-100 text-red-800'
+                        }[app.status] || 'bg-slate-100 text-slate-800'
+                        }`}>
                         {
                             {
                                 'applied': 'Postulado',
