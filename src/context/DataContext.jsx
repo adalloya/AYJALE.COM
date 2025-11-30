@@ -235,7 +235,10 @@ export const DataProvider = ({ children }) => {
             toggleJobStatus,
             adminRepublishJob,
             adminGetUsers,
-            adminGetApplications
+            adminRepublishJob,
+            adminGetUsers,
+            adminGetApplications,
+            updateUserProfile
         }}>
             {children}
         </DataContext.Provider>
