@@ -137,7 +137,7 @@ const OnboardingPage = () => {
                                     name="location"
                                     id="location"
                                     required
-                                    className="focus:ring-secondary-500 focus:border-secondary-500 block w-full pl-10 sm:text-sm border-slate-300 rounded-md bg-white py-2"
+                                    className="focus:ring-secondary-500 focus:border-secondary-500 block w-full pl-12 sm:text-sm border-slate-300 rounded-md bg-white py-2"
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                 >
