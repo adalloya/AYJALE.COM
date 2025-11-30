@@ -212,7 +212,7 @@ const AdminDashboard = () => {
                                 <tr key={user.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{user.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(user.created_at)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(user.created_at || user.terms_accepted_at)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => handleResetPassword(user.email)}
