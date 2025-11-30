@@ -25,7 +25,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
             <div className="p-6 border-b border-slate-100">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
                     {/* Logo */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex flex-col items-center gap-3">
                         {!job.is_confidential && company?.logo ? (
                             <img
                                 src={company.logo}
@@ -36,6 +36,11 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                             <div className="w-20 h-20 bg-orange-50 rounded-xl border border-orange-100 flex items-center justify-center">
                                 <Building className="w-10 h-10 text-orange-400" />
                             </div>
+                        )}
+                        {job.is_external && (
+                            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-bold border border-blue-100 uppercase tracking-wide">
+                                Externa
+                            </span>
                         )}
                     </div>
 
@@ -61,13 +66,8 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
-                                ${job.salary.toLocaleString('es-MX')} {job.currency}
+                                {job.salary.toLocaleString('es-MX')} {job.currency}
                             </span>
-                            {job.is_external && (
-                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-medium border border-blue-100">
-                                    Externa
-                                </span>
-                            )}
                         </div>
                     </div>
 
