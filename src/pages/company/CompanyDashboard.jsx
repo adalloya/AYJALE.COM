@@ -112,7 +112,7 @@ const CompanyDashboard = () => {
                                 <dl>
                                     <dt className="text-sm font-medium text-slate-500 truncate">Vacantes Activas</dt>
                                     <dd>
-                                        <div className="text-lg font-medium text-slate-900">{jobs.filter(j => j.active).length}</div>
+                                        <div className="text-lg font-medium text-slate-900">{myJobs.filter(j => j.active).length}</div>
                                     </dd>
                                 </dl>
                             </div>
