@@ -179,7 +179,7 @@ const JobsPage = () => {
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
-                                        {job.title}
+                                        {job.title.charAt(0).toUpperCase() + job.title.slice(1).toLowerCase()}
                                     </h3>
                                     {job.is_external && (
                                         <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide">
