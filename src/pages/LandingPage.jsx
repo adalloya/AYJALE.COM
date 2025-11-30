@@ -3,6 +3,7 @@ import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
 import { Search, MapPin, Briefcase, Package, Truck, Shield, Sparkles, ShoppingBag, Hammer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CompanyCarousel from '../components/CompanyCarousel';
+import MexicoMap from '../components/MexicoMap';
 import SEO from '../components/SEO';
 
 const LandingPage = () => {
