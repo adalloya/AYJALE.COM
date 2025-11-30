@@ -164,7 +164,7 @@ const JobsPage = () => {
                                     </span>
                                     <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
                                         <DollarSign className="w-3 h-3 mr-1" />
-                                        ${job.salary.toLocaleString('es-MX')}
+                                        ${job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'}
                                     </span>
                                 </div>
 

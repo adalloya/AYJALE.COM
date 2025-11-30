@@ -66,7 +66,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
-                                {job.salary.toLocaleString('es-MX')} {job.currency}
+                                {job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'} {job.currency}
                             </span>
                         </div>
                     </div>
