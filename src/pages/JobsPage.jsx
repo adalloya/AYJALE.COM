@@ -116,12 +116,6 @@ const JobsPage = () => {
         setApplying(true);
         try {
             await applyToJob(job.id, user.id, {
-                name: user.name,
-                email: user.email,
-                title: user.title,
-                location: user.location,
-                bio: user.bio,
-                skills: user.skills,
                 comments
             });
             setShowModal(false);
