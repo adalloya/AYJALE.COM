@@ -27,13 +27,13 @@ export const DataProvider = ({ children }) => {
 
         loadData();
 
-        // Poll for updates every 10 seconds
+        // Poll for updates every 1 second
         const intervalId = setInterval(() => {
             if (user) {
                 fetchJobs();
                 fetchApplications();
             }
-        }, 10000);
+        }, 1000);
 
         return () => clearInterval(intervalId);
     }, [user]); // Re-fetch when user changes (e.g. login/logout)
