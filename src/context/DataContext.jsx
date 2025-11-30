@@ -209,6 +209,41 @@ export const DataProvider = ({ children }) => {
         setApplications(prev => prev.map(app => app.id === appId ? { ...app, status } : app));
     };
 
+    // Chat / Messages
+    const fetchMessages = async (applicationId) => {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*, sender:sender_id(name, photo)')
+            .eq('application_id', applicationId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching messages:', error);
+            return [];
+        }
+        return data;
+    };
+
+    const sendMessage = async (applicationId, content) => {
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from('messages')
+            .insert([{
+                application_id: applicationId,
+                sender_id: user.id,
+                content
+            }])
+            .select('*, sender:sender_id(name, photo)')
+            .single();
+
+        if (error) {
+            console.error('Error sending message:', error);
+            throw error;
+        }
+        return data;
+    };
+
     // User CRUD (Profile updates are handled in AuthContext mostly, but keeping for compatibility if needed)
     const updateUserProfile = async (userId, data) => {
         // This is now redundant with AuthContext's updateUser, but kept for compatibility with existing calls
@@ -240,7 +275,9 @@ export const DataProvider = ({ children }) => {
             adminGetApplications,
             updateUserProfile,
             updateJob,
-            updateApplicationStatus
+            updateApplicationStatus,
+            fetchMessages,
+            sendMessage
         }}>
             {children}
         </DataContext.Provider>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -8,7 +8,7 @@ import AvatarPlaceholder from '../../components/AvatarPlaceholder';
 const JobApplicantsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { jobs, applications, users, updateApplicationStatus } = useData();
+    const { jobs, applications, users, updateApplicationStatus, fetchMessages, sendMessage } = useData();
     const { user: currentUser } = useAuth();
     const [selectedCandidate, setSelectedCandidate] = useState(null);
 
@@ -205,6 +205,12 @@ const JobApplicantsPage = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Chat Section */}
+                                <div className="border-t border-slate-200 pt-6 mt-6">
+                                    <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Chat con el Candidato</h3>
+                                    <ChatBox applicationId={selectedCandidate.id} />
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -218,6 +224,82 @@ const JobApplicantsPage = () => {
                     )}
                 </div>
             </div>
+        </div>
+    );
+};
+
+const ChatBox = ({ applicationId }) => {
+    const { fetchMessages, sendMessage } = useData();
+    const { user } = useAuth();
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadMessages();
+        // Optional: Set up polling or subscription here
+        const interval = setInterval(loadMessages, 5000);
+        return () => clearInterval(interval);
+    }, [applicationId]);
+
+    const loadMessages = async () => {
+        const msgs = await fetchMessages(applicationId);
+        setMessages(msgs);
+        setLoading(false);
+    };
+
+    const handleSend = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
+
+        try {
+            await sendMessage(applicationId, newMessage);
+            setNewMessage('');
+            loadMessages();
+        } catch (error) {
+            console.error("Failed to send message", error);
+        }
+    };
+
+    return (
+        <div className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+            <div className="h-64 overflow-y-auto p-4 space-y-3">
+                {loading ? (
+                    <p className="text-center text-slate-400 text-sm">Cargando mensajes...</p>
+                ) : messages.length === 0 ? (
+                    <p className="text-center text-slate-400 text-sm">No hay mensajes aún. Inicia la conversación.</p>
+                ) : (
+                    messages.map(msg => {
+                        const isMe = msg.sender_id === user.id;
+                        return (
+                            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${isMe ? 'bg-primary-600 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                                    <p>{msg.content}</p>
+                                    <p className={`text-xs mt-1 ${isMe ? 'text-primary-200' : 'text-slate-400'}`}>
+                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+            <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-200 flex gap-2">
+                <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Escribe un mensaje..."
+                    className="flex-1 rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                />
+                <button
+                    type="submit"
+                    disabled={!newMessage.trim()}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                >
+                    Enviar
+                </button>
+            </form>
         </div>
     );
 };
