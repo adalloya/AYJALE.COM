@@ -24,7 +24,39 @@ const JobApplicantsPage = () => {
     const job = jobs.find(j => j.id === Number(id));
 
     // Security check: Ensure the job belongs to the current company
-    if (!job || (currentUser.role === 'company' && job.company_id !== currentUser.id)) {
+    const isAccessDenied = !job || (currentUser.role === 'company' && job.company_id !== currentUser.id);
+
+    const jobApplications = applications.filter(a => a.job_id === Number(id));
+
+    // Enrich applications with user data
+    const allCandidates = jobApplications.map(app => {
+        // The profile is now fetched directly with the application
+        const candidateUser = app.profiles;
+        return {
+            ...app,
+            user: candidateUser
+        };
+    });
+
+    // Filter candidates
+    const candidates = allCandidates.filter(candidate => {
+        const term = searchTerm.toLowerCase();
+        const name = candidate.user?.name?.toLowerCase() || '';
+        const title = candidate.user?.title?.toLowerCase() || '';
+        const location = candidate.user?.location?.toLowerCase() || '';
+        const skills = candidate.user?.skills?.join(' ').toLowerCase() || '';
+
+        return name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
+    });
+
+    // Auto-select first candidate
+    useEffect(() => {
+        if (candidates.length > 0 && !selectedCandidate) {
+            setSelectedCandidate(candidates[0]);
+        }
+    }, [candidates, selectedCandidate]);
+
+    if (isAccessDenied) {
         return (
             <div className="text-center py-12">
                 <h2 className="text-xl font-bold text-slate-900">Acceso Denegado</h2>
