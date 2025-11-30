@@ -23,6 +23,9 @@ const AdminDashboard = () => {
                 setAllApplications(appsData || []);
             } catch (error) {
                 console.error("Failed to load admin data", error);
+                setLoading(false);
+                // We can add a visible error state here if needed
+                alert("Error cargando datos: " + error.message);
             } finally {
                 setLoading(false);
             }
