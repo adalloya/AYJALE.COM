@@ -14,14 +14,28 @@ export const DataProvider = ({ children }) => {
 
     const [loading, setLoading] = useState(true);
 
-    // Fetch initial data
+    // Fetch initial data and set up polling
     useEffect(() => {
         const loadData = async () => {
-            setLoading(true);
+            // Only show loading spinner on initial load
+            if (jobs.length === 0 && applications.length === 0) {
+                setLoading(true);
+            }
             await Promise.all([fetchJobs(), fetchApplications()]);
             setLoading(false);
         };
+
         loadData();
+
+        // Poll for updates every 10 seconds
+        const intervalId = setInterval(() => {
+            if (user) {
+                fetchJobs();
+                fetchApplications();
+            }
+        }, 10000);
+
+        return () => clearInterval(intervalId);
     }, [user]); // Re-fetch when user changes (e.g. login/logout)
 
     const fetchJobs = async () => {
