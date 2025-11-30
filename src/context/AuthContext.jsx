@@ -48,17 +48,19 @@ export const AuthProvider = ({ children }) => {
 
             console.log('fetchProfile DB data:', data);
 
-            // ALWAYS prioritize session metadata for role if available
-            // This is critical for the registration flow where DB triggers might lag
+            // Prioritize DB profile role if available, otherwise use session metadata
+            // This handles both existing users (DB source of truth) and new users (metadata while trigger runs)
             let finalUser = data;
-            if (session?.user?.user_metadata?.role) {
-                console.log('fetchProfile using metadata role:', session.user.user_metadata.role);
+            if (data?.role) {
+                console.log('fetchProfile using DB role:', data.role);
+            } else if (session?.user?.user_metadata?.role) {
+                console.log('fetchProfile using metadata role (fallback):', session.user.user_metadata.role);
                 finalUser = {
                     ...data,
                     role: session.user.user_metadata.role
                 };
             } else {
-                console.log('fetchProfile: No metadata role found in session');
+                console.log('fetchProfile: No role found in DB or metadata');
             }
 
             console.log('fetchProfile setting user:', finalUser);
