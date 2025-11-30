@@ -115,8 +115,15 @@ const CompanyDashboard = () => {
                         <div key={job.id} className={`bg-white p-6 rounded-lg shadow-sm border ${!job.active ? 'border-slate-200 bg-slate-50' : 'border-slate-200'}`}>
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="text-lg font-semibold text-slate-900">{job.title}</h3>
+                                    <h3 className="text-lg font-medium text-slate-900">
+                                        {job.title.charAt(0).toUpperCase() + job.title.slice(1).toLowerCase()}
+                                    </h3>
+                                    <div className="mt-1 flex items-center text-sm text-slate-500">
+                                        <span className="truncate">{job.location}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>{job.type}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${!job.active
                                             ? 'bg-slate-100 text-slate-800'
                                             : new Date(job.expires_at) < new Date()
@@ -135,7 +142,7 @@ const CompanyDashboard = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-slate-500">
+                                    <p className="text-sm text-slate-500 mt-2">
                                         Publicado: {new Date(job.created_at).toLocaleDateString()} • Expira: {new Date(job.expires_at).toLocaleDateString()}
                                     </p>
                                 </div>
