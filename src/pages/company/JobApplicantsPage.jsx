@@ -23,7 +23,7 @@ const JobApplicantsPage = () => {
     const job = jobs.find(j => j.id === Number(id));
 
     // Security check: Ensure the job belongs to the current company
-    if (!job || (currentUser.role === 'company' && job.companyId !== currentUser.id)) {
+    if (!job || (currentUser.role === 'company' && job.company_id !== currentUser.id)) {
         return (
             <div className="text-center py-12">
                 <h2 className="text-xl font-bold text-slate-900">Acceso Denegado</h2>
@@ -34,11 +34,11 @@ const JobApplicantsPage = () => {
         );
     }
 
-    const jobApplications = applications.filter(a => a.jobId === Number(id));
+    const jobApplications = applications.filter(a => a.job_id === Number(id));
 
     // Enrich applications with user data
     const candidates = jobApplications.map(app => {
-        const candidateUser = users.find(u => u.id === app.userId);
+        const candidateUser = users.find(u => u.id === app.candidate_id);
         return {
             ...app,
             user: candidateUser
@@ -84,7 +84,7 @@ const JobApplicantsPage = () => {
                                 </div>
                             </div>
                             <div className="mt-3 text-xs text-slate-400">
-                                Postulado: {new Date(candidate.appliedAt).toLocaleDateString()}
+                                Postulado: {new Date(candidate.created_at).toLocaleDateString()}
                             </div>
                         </div>
                     ))}
