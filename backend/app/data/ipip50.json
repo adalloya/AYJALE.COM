@@ -1,0 +1,337 @@
+[
+    {
+        "id": "E1",
+        "text": "Me siento cómodo tomando el liderazgo en las reuniones.",
+        "trait": "Extroversion",
+        "keyed": "plus"
+    },
+    {
+        "id": "E2",
+        "text": "Usualmente soy quien inicia las conversaciones con clientes o colegas.",
+        "trait": "Extroversion",
+        "keyed": "plus"
+    },
+    {
+        "id": "E3",
+        "text": "Me siento a gusto siendo el centro de atención en presentaciones.",
+        "trait": "Extroversion",
+        "keyed": "plus"
+    },
+    {
+        "id": "E4",
+        "text": "Tengo facilidad para cautivar a la gente con mis ideas.",
+        "trait": "Extroversion",
+        "keyed": "plus"
+    },
+    {
+        "id": "E5",
+        "text": "Soy una persona llena de energía en el trabajo.",
+        "trait": "Extroversion",
+        "keyed": "plus"
+    },
+    {
+        "id": "E6",
+        "text": "Soy una persona reservada y callada en la oficina.",
+        "trait": "Extroversion",
+        "keyed": "minus"
+    },
+    {
+        "id": "E7",
+        "text": "Prefiero trabajar en segundo plano que exponer mis ideas.",
+        "trait": "Extroversion",
+        "keyed": "minus"
+    },
+    {
+        "id": "E8",
+        "text": "No me gusta llamar la atención sobre mí mismo.",
+        "trait": "Extroversion",
+        "keyed": "minus"
+    },
+    {
+        "id": "E9",
+        "text": "Hablo poco en situaciones sociales desconocidas.",
+        "trait": "Extroversion",
+        "keyed": "minus"
+    },
+    {
+        "id": "E10",
+        "text": "Encuentro agotador tener que socializar constantemente.",
+        "trait": "Extroversion",
+        "keyed": "minus"
+    },
+    {
+        "id": "A1",
+        "text": "Me intereso genuinamente por los problemas de mis compañeros.",
+        "trait": "Agreeableness",
+        "keyed": "plus"
+    },
+    {
+        "id": "A2",
+        "text": "Respeto las opiniones de los demás, aunque sean distintas a las mías.",
+        "trait": "Agreeableness",
+        "keyed": "plus"
+    },
+    {
+        "id": "A3",
+        "text": "Dedico tiempo a ayudar a otros aunque esté ocupado.",
+        "trait": "Agreeableness",
+        "keyed": "plus"
+    },
+    {
+        "id": "A4",
+        "text": "Tengo facilidad para empatizar con los sentimientos de otros.",
+        "trait": "Agreeableness",
+        "keyed": "plus"
+    },
+    {
+        "id": "A5",
+        "text": "Confío en que la gente tiene buenas intenciones al trabajar.",
+        "trait": "Agreeableness",
+        "keyed": "plus"
+    },
+    {
+        "id": "A6",
+        "text": "A veces puedo ser cortante o rudo con los demás si estoy presionado.",
+        "trait": "Agreeableness",
+        "keyed": "minus"
+    },
+    {
+        "id": "A7",
+        "text": "No me interesan los problemas personales de mis colegas.",
+        "trait": "Agreeableness",
+        "keyed": "minus"
+    },
+    {
+        "id": "A8",
+        "text": "Tiendo a buscar defectos en el trabajo de los demás.",
+        "trait": "Agreeableness",
+        "keyed": "minus"
+    },
+    {
+        "id": "A9",
+        "text": "Puedo llegar a insultar o menospreciar a la gente si se equivocan.",
+        "trait": "Agreeableness",
+        "keyed": "minus"
+    },
+    {
+        "id": "A10",
+        "text": "Siento poca preocupación por las necesidades ajenas.",
+        "trait": "Agreeableness",
+        "keyed": "minus"
+    },
+    {
+        "id": "C1",
+        "text": "Siempre estoy preparado y tengo mis tareas listas a tiempo.",
+        "trait": "Conscientiousness",
+        "keyed": "plus"
+    },
+    {
+        "id": "C2",
+        "text": "Presto atención a los detalles más pequeños en los reportes.",
+        "trait": "Conscientiousness",
+        "keyed": "plus"
+    },
+    {
+        "id": "C3",
+        "text": "Completo mis tareas asignadas de inmediato, sin posponerlas.",
+        "trait": "Conscientiousness",
+        "keyed": "plus"
+    },
+    {
+        "id": "C4",
+        "text": "Me gusta el orden y sigo un horario establecido.",
+        "trait": "Conscientiousness",
+        "keyed": "plus"
+    },
+    {
+        "id": "C5",
+        "text": "Soy exigente conmigo mismo en la calidad de mi trabajo.",
+        "trait": "Conscientiousness",
+        "keyed": "plus"
+    },
+    {
+        "id": "C6",
+        "text": "A menudo dejo mis cosas o archivos desordenados.",
+        "trait": "Conscientiousness",
+        "keyed": "minus"
+    },
+    {
+        "id": "C7",
+        "text": "A veces olvido volver a poner las cosas en su sitio.",
+        "trait": "Conscientiousness",
+        "keyed": "minus"
+    },
+    {
+        "id": "C8",
+        "text": "Evito las tareas que requieren demasiada atención al detalle.",
+        "trait": "Conscientiousness",
+        "keyed": "minus"
+    },
+    {
+        "id": "C9",
+        "text": "Suelo procrastinar o dejar las tareas difíciles para después.",
+        "trait": "Conscientiousness",
+        "keyed": "minus"
+    },
+    {
+        "id": "C10",
+        "text": "A veces descuido mis obligaciones si no me supervisan.",
+        "trait": "Conscientiousness",
+        "keyed": "minus"
+    },
+    {
+        "id": "N1",
+        "text": "Me estreso con facilidad ante cambios repentinos.",
+        "trait": "Neuroticism",
+        "keyed": "plus"
+    },
+    {
+        "id": "N2",
+        "text": "Me preocupo por las cosas mucho más de lo necesario.",
+        "trait": "Neuroticism",
+        "keyed": "plus"
+    },
+    {
+        "id": "N3",
+        "text": "Mi estado de ánimo cambia con frecuencia durante la jornada.",
+        "trait": "Neuroticism",
+        "keyed": "plus"
+    },
+    {
+        "id": "N4",
+        "text": "A menudo me siento triste o desanimado sin razón aparente.",
+        "trait": "Neuroticism",
+        "keyed": "plus"
+    },
+    {
+        "id": "N5",
+        "text": "Me siento abrumado fácilmente por las emociones.",
+        "trait": "Neuroticism",
+        "keyed": "plus"
+    },
+    {
+        "id": "N6",
+        "text": "Rara vez me siento triste o deprimido.",
+        "trait": "Neuroticism",
+        "keyed": "minus"
+    },
+    {
+        "id": "N7",
+        "text": "Mantengo la calma bajo presión.",
+        "trait": "Neuroticism",
+        "keyed": "minus"
+    },
+    {
+        "id": "N8",
+        "text": "Tengo el control sobre mis emociones en situaciones tensas.",
+        "trait": "Neuroticism",
+        "keyed": "minus"
+    },
+    {
+        "id": "N9",
+        "text": "No me ofendo con facilidad ante las críticas.",
+        "trait": "Neuroticism",
+        "keyed": "minus"
+    },
+    {
+        "id": "N10",
+        "text": "Me siento cómodo conmigo mismo y mi desempeño.",
+        "trait": "Neuroticism",
+        "keyed": "minus"
+    },
+    {
+        "id": "O1",
+        "text": "Tengo un vocabulario rico y entiendo conceptos complejos.",
+        "trait": "Openness",
+        "keyed": "plus"
+    },
+    {
+        "id": "O2",
+        "text": "Tengo una imaginación muy viva y propongo ideas nuevas.",
+        "trait": "Openness",
+        "keyed": "plus"
+    },
+    {
+        "id": "O3",
+        "text": "Disfruto analizando teorías y conceptos abstractos.",
+        "trait": "Openness",
+        "keyed": "plus"
+    },
+    {
+        "id": "O4",
+        "text": "Me interesa aprender sobre cosas fuera de mi área de trabajo.",
+        "trait": "Openness",
+        "keyed": "plus"
+    },
+    {
+        "id": "O5",
+        "text": "Paso tiempo reflexionando sobre cómo mejorar los procesos.",
+        "trait": "Openness",
+        "keyed": "plus"
+    },
+    {
+        "id": "O6",
+        "text": "Tengo dificultades para entender ideas abstractas.",
+        "trait": "Openness",
+        "keyed": "minus"
+    },
+    {
+        "id": "O7",
+        "text": "No me interesan las discusiones teóricas o filosóficas.",
+        "trait": "Openness",
+        "keyed": "minus"
+    },
+    {
+        "id": "O8",
+        "text": "Prefiero hacer las cosas como siempre se han hecho.",
+        "trait": "Openness",
+        "keyed": "minus"
+    },
+    {
+        "id": "O9",
+        "text": "Tengo poca imaginación para resolver problemas creativos.",
+        "trait": "Openness",
+        "keyed": "minus"
+    },
+    {
+        "id": "O10",
+        "text": "Me cuesta entender situaciones desde múltiples perspectivas.",
+        "trait": "Openness",
+        "keyed": "minus"
+    },
+    {
+        "id": "L1",
+        "text": "Nunca he dicho una mentira, ni siquiera para no herir a alguien.",
+        "trait": "Lie",
+        "keyed": "plus",
+        "is_validity": true
+    },
+    {
+        "id": "L2",
+        "text": "Siempre entiendo el 100% de todo lo que leo a la primera.",
+        "trait": "Lie",
+        "keyed": "plus",
+        "is_validity": true
+    },
+    {
+        "id": "L3",
+        "text": "Nunca he sentido envidia ni celos de nadie en mi vida.",
+        "trait": "Lie",
+        "keyed": "plus",
+        "is_validity": true
+    },
+    {
+        "id": "L4",
+        "text": "Jamás he pospuesto una tarea que debía hacer.",
+        "trait": "Lie",
+        "keyed": "plus",
+        "is_validity": true
+    },
+    {
+        "id": "AT1",
+        "text": "Para verificar que estás leyendo, selecciona 'En Desacuerdo' (2).",
+        "trait": "Attention",
+        "keyed": "plus",
+        "is_validity": true
+    }
+]

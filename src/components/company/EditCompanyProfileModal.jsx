@@ -146,9 +146,8 @@ const EditCompanyProfileModal = ({ user, onClose, onSave }) => {
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
                                 <select
-                                    className="pl-10 w-full border border-slate-300 rounded-lg py-2 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 bg-white"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm"
                                     value={formData.location}
                                     onChange={e => setFormData({ ...formData, location: e.target.value, city: '' })}
                                 >

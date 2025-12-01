@@ -59,7 +59,12 @@ export const DataProvider = ({ children }) => {
     const fetchApplications = async () => {
         if (!user) return;
 
-        let query = supabase.from('applications').select('*, jobs(*), profiles:candidate_id(*)');
+        let query = supabase.from('applications').select(`
+            *,
+            jobs(*),
+            profiles:candidate_id(*),
+            candidate_profiles:candidate_id(*)
+        `);
 
         // If candidate, get own applications
         if (user.role === 'candidate') {
@@ -69,7 +74,32 @@ export const DataProvider = ({ children }) => {
 
         const { data, error } = await query;
         if (error) console.error('Error fetching applications:', error);
-        else setApplications(data || []);
+        else {
+            // Transform data to include the latest profile if multiple exist (though usually 1:1 or 1:many ordered)
+            // candidate_profiles returns an array. We want the latest one.
+            const enrichedData = data.map(app => ({
+                ...app,
+                talentProfile: Array.isArray(app.candidate_profiles)
+                    ? app.candidate_profiles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+                    : app.candidate_profiles
+            }));
+            setApplications(enrichedData || []);
+        }
+    };
+
+    const fetchCandidateProfile = async (candidateId) => {
+        const { data, error } = await supabase
+            .from('candidate_profiles')
+            .select('*')
+            .eq('candidate_id', candidateId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // Ignore "Row not found"
+            console.error('Error fetching candidate profile:', error);
+        }
+        return data;
     };
 
     // Job CRUD
@@ -226,6 +256,7 @@ export const DataProvider = ({ children }) => {
 
     // Application CRUD
     const applyToJob = async (jobId, candidateId, applicationData = {}) => {
+        // Existing implementation
         const { data, error } = await supabase
             .from('applications')
             .insert([{
@@ -243,6 +274,28 @@ export const DataProvider = ({ children }) => {
 
         setApplications(prev => [...prev, data[0]]);
     };
+
+    // Increment job view count when a job is viewed
+    const incrementJobView = async (jobId) => {
+        try {
+            // Find current view count from state if available
+            const job = jobs.find(j => j.id === Number(jobId));
+            const currentCount = job?.view_count || 0;
+            const { error } = await supabase
+                .from('jobs')
+                .update({ view_count: currentCount + 1 })
+                .eq('id', jobId);
+            if (error) {
+                console.error('Error incrementing job view:', error);
+            } else {
+                // Optimistically update local state
+                setJobs(prev => prev.map(j => j.id === Number(jobId) ? { ...j, view_count: currentCount + 1 } : j));
+            }
+        } catch (e) {
+            console.error('Exception in incrementJobView:', e);
+        }
+    };
+
 
     const updateApplicationStatus = async (appId, status) => {
         const { error } = await supabase
@@ -444,7 +497,10 @@ export const DataProvider = ({ children }) => {
             adminGetUsers,
             adminGetApplications,
             adminRepublishJob,
-            unlockCandidateContact
+            incrementJobView,
+            incrementJobView,
+            unlockCandidateContact,
+            fetchCandidateProfile
         }}>
             {!loading && children}
         </DataContext.Provider>

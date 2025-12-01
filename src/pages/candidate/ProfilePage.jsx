@@ -200,6 +200,7 @@ const ProfilePage = () => {
                         <option value="Yucatán">Yucatán</option>
                         <option value="Zacatecas">Zacatecas</option>
                     </select>
+
                 </div>
 
                 <div>
@@ -310,18 +311,20 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
-                {jobToApply && (
-                    <div className="border-t pt-6 mt-6">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">¿Por qué te interesa este puesto?</label>
-                        <textarea
-                            rows={3}
-                            className="w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                            value={comments}
-                            onChange={e => setComments(e.target.value)}
-                            placeholder="Cuéntanos brevemente..."
-                        />
-                    </div>
-                )}
+                {
+                    jobToApply && (
+                        <div className="border-t pt-6 mt-6">
+                            <label className="block text-sm font-medium text-slate-700 mb-2">¿Por qué te interesa este puesto?</label>
+                            <textarea
+                                rows={3}
+                                className="w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                value={comments}
+                                onChange={e => setComments(e.target.value)}
+                                placeholder="Cuéntanos brevemente..."
+                            />
+                        </div>
+                    )
+                }
 
                 <div className="flex justify-end pt-4">
                     <button
@@ -338,8 +341,8 @@ const ProfilePage = () => {
                         {jobToApply ? 'Enviar Solicitud' : 'Guardar Cambios'}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 };
 

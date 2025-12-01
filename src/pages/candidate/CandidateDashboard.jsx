@@ -2,11 +2,33 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Briefcase, User } from 'lucide-react';
+import { Briefcase, User, ClipboardCheck } from 'lucide-react';
+import TalentProfileCard from '../../components/assessment/TalentProfileCard';
+
+const TalentProfileSection = ({ profile }) => {
+    if (!profile) return null;
+
+    return (
+        <div className="mb-8">
+            <TalentProfileCard profile={profile} />
+        </div>
+    );
+};
 
 const CandidateDashboard = () => {
     const { user } = useAuth();
-    const { applications, jobs, fetchMessages, sendMessage } = useData();
+    const { applications, jobs, fetchMessages, sendMessage, fetchCandidateProfile } = useData();
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (user?.id) {
+                const data = await fetchCandidateProfile(user.id);
+                setProfile(data);
+            }
+        };
+        loadProfile();
+    }, [user, fetchCandidateProfile]);
 
     const myApplications = applications.filter(app => app.candidate_id === user.id);
 
@@ -26,8 +48,33 @@ const CandidateDashboard = () => {
                         <User className="w-6 h-6 text-slate-600 mr-3 group-hover:scale-110 transition-transform" />
                         <span className="font-semibold text-slate-700">Editar Mi Perfil</span>
                     </Link>
+
+                    <Link to="/evaluation-center" className={`flex items-center justify-center p-4 border rounded-xl transition-colors group sm:col-span-2 ${profile
+                        ? 'bg-green-50 border-green-200 hover:bg-green-100'
+                        : 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
+                        }`}>
+                        {profile ? (
+                            <div className="flex items-center">
+                                <div className="bg-green-100 p-1 rounded-full mr-3">
+                                    <ClipboardCheck className="w-6 h-6 text-green-600" />
+                                </div>
+                                <div className="text-left">
+                                    <span className="block font-bold text-green-800">Evaluación Completada</span>
+                                    <span className="text-sm text-green-700">Resultados vigentes • Actualizar evaluación</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center">
+                                <ClipboardCheck className="w-6 h-6 text-indigo-600 mr-3 group-hover:scale-110 transition-transform" />
+                                <span className="font-semibold text-indigo-700">Centro de Evaluaciones (Pendiente)</span>
+                            </div>
+                        )}
+                    </Link>
                 </div>
             </div>
+
+            {/* Talent Profile Section */}
+            <TalentProfileSection profile={profile} />
 
             <h2 className="text-xl font-bold text-slate-900">Mis Postulaciones</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-md">

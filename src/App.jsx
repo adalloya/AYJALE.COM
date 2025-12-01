@@ -20,6 +20,9 @@ import TermsPage from './pages/TermsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import CandidateSearchPage from './pages/company/CandidateSearchPage';
+import EvaluationCenterPage from './pages/candidate/EvaluationCenterPage';
+import TestExecutionPage from './pages/candidate/TestExecutionPage';
+import TestRunner from './pages/assessment/TestRunner';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -105,6 +108,24 @@ function App() {
               <Route path="/onboarding" element={
                 <ProtectedRoute allowedRoles={['candidate', 'company']}>
                   <OnboardingPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/evaluation-center" element={
+                <ProtectedRoute allowedRoles={['candidate']}>
+                  <EvaluationCenterPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/evaluation-center/test/:testId" element={
+                <ProtectedRoute allowedRoles={['candidate']}>
+                  <TestExecutionPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/assessment/test" element={
+                <ProtectedRoute allowedRoles={['candidate']}>
+                  <TestRunner />
                 </ProtectedRoute>
               } />
 

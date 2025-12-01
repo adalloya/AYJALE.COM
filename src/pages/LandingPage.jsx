@@ -61,9 +61,8 @@ const LandingPage = () => {
                         />
                     </div>
                     <div className="relative w-full md:flex-1">
-                        <MapPin className="absolute left-4 top-3.5 text-slate-400 w-5 h-5" />
                         <select
-                            className="w-full pl-12 pr-4 py-3 rounded-xl md:rounded-r-full focus:outline-none focus:bg-slate-50 transition-colors appearance-none bg-transparent cursor-pointer"
+                            className="w-full px-4 py-3 rounded-xl md:rounded-r-full focus:outline-none focus:bg-slate-50 transition-colors appearance-none bg-transparent cursor-pointer"
                             value={filters.state}
                             onChange={(e) => setFilters({ ...filters, state: e.target.value })}
                         >

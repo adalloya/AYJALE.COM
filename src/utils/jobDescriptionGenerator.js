@@ -1,193 +1,268 @@
 
-export const generateJobDescription = (title) => {
-    const lowerTitle = title.toLowerCase();
-    let template = defaultTemplate;
+export const generateJobDescription = (title, companyName = 'nuestra empresa', location = 'nuestra ubicación') => {
+    const templates = [
+        professionalTemplate,
+        dynamicTemplate,
+        corporateTemplate,
+        minimalistTemplate,
+        engagingTemplate,
+        detailOrientedTemplate,
+        growthFocusedTemplate,
+        innovationTemplate,
+        customerCentricTemplate,
+        collaborativeTemplate
+    ];
 
-    if (lowerTitle.includes('desarrollador') || lowerTitle.includes('developer') || lowerTitle.includes('programador') || lowerTitle.includes('ingeniero de software')) {
-        template = developerTemplate;
-    } else if (lowerTitle.includes('ventas') || lowerTitle.includes('sales') || lowerTitle.includes('vendedor') || lowerTitle.includes('ejecutivo')) {
-        template = salesTemplate;
-    } else if (lowerTitle.includes('diseñador') || lowerTitle.includes('designer') || lowerTitle.includes('creativo')) {
-        template = designerTemplate;
-    } else if (lowerTitle.includes('marketing') || lowerTitle.includes('mercadotecnia') || lowerTitle.includes('redes sociales')) {
-        template = marketingTemplate;
-    } else if (lowerTitle.includes('gerente') || lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('líder')) {
-        template = managerTemplate;
-    } else if (lowerTitle.includes('asistente') || lowerTitle.includes('administrativo') || lowerTitle.includes('recepcionista')) {
-        template = adminTemplate;
-    }
+    // Select a random template
+    const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
 
-    return template.replace(/\[TITULO\]/g, title);
+    let description = randomTemplate
+        .replace(/\[TITULO\]/g, title)
+        .replace(/\[EMPRESA\]/g, companyName)
+        .replace(/\[UBICACION\]/g, location);
+
+    return description;
 };
 
-const defaultTemplate = `
-**[TITULO]**
+const professionalTemplate = `
+[TITULO]
 
-**Sobre Nosotros:**
-Somos una empresa líder en nuestro sector, comprometida con la innovación y el crecimiento de nuestro talento. Buscamos un [TITULO] apasionado y proactivo para unirse a nuestro equipo dinámico.
+Sobre [EMPRESA]:
+En [EMPRESA], ubicada en [UBICACION], nos dedicamos a la excelencia. Buscamos un [TITULO] altamente calificado para unirse a nuestro equipo profesional.
 
-**Responsabilidades Principales:**
-*   Ejecutar tareas clave relacionadas con el rol de [TITULO].
-*   Colaborar con el equipo para alcanzar los objetivos del departamento.
-*   Identificar oportunidades de mejora y proponer soluciones eficientes.
-*   Mantener altos estándares de calidad en todas las actividades asignadas.
+Responsabilidades:
+- Desempeñar funciones clave inherentes al puesto de [TITULO].
+- Garantizar el cumplimiento de los objetivos establecidos por la dirección.
+- Colaborar con otros departamentos para optimizar procesos.
+- Mantener un alto nivel de calidad en todas las entregas.
 
-**Requisitos:**
-*   Experiencia previa relevante en puestos similares.
-*   Excelentes habilidades de comunicación y trabajo en equipo.
-*   Capacidad para resolver problemas y trabajar bajo objetivos.
-*   Actitud positiva y ganas de aprender.
+Requisitos:
+- Experiencia comprobable en un rol similar.
+- Fuertes habilidades de comunicación verbal y escrita.
+- Capacidad de organización y gestión del tiempo.
+- Compromiso con los valores de la empresa.
 
-**Ofrecemos:**
-*   Sueldo competitivo y prestaciones de ley.
-*   Oportunidades de crecimiento y desarrollo profesional.
-*   Excelente ambiente laboral.
-
-¡Si cumples con el perfil, postúlate hoy mismo y forma parte de nuestro éxito!
+Ofrecemos:
+- Salario competitivo.
+- Prestaciones de ley y superiores.
+- Oportunidades de desarrollo continuo.
+- Un entorno de trabajo respetuoso y profesional.
 `;
 
-const developerTemplate = `
-**[TITULO]**
+const dynamicTemplate = `
+¡Buscamos un [TITULO]!
 
-**¿Eres un apasionado de la tecnología?**
-Estamos buscando un [TITULO] talentoso para unirse a nuestro equipo de desarrollo. Si te encanta escribir código limpio, resolver problemas complejos y trabajar con tecnologías modernas, ¡te queremos conocer!
+¿Te apasionan los retos?
+[EMPRESA] está creciendo en [UBICACION] y necesitamos a alguien como tú. Si eres proactivo y te gusta moverte rápido, este es tu lugar.
 
-**Lo que harás:**
-*   Diseñar, desarrollar y mantener aplicaciones de software de alta calidad.
-*   Colaborar con diseñadores y product managers para definir nuevas funcionalidades.
-*   Optimizar el rendimiento y la escalabilidad de nuestras soluciones.
-*   Participar en revisiones de código y asegurar las mejores prácticas de ingeniería.
+Tu misión:
+- Tomar la iniciativa en proyectos de [TITULO].
+- Aportar ideas frescas y soluciones creativas.
+- Trabajar codo a codo con un equipo lleno de energía.
+- Superar las expectativas y dejar tu huella.
 
-**Lo que buscamos:**
-*   Experiencia sólida en desarrollo de software.
-*   Conocimiento de lenguajes y frameworks modernos (ej. JavaScript, React, Python, etc.).
-*   Familiaridad con bases de datos y control de versiones (Git).
-*   Capacidad para trabajar en un entorno ágil y colaborativo.
+Lo que necesitas:
+- Pasión por lo que haces.
+- Experiencia relevante (o muchas ganas de aprender rápido).
+- Actitud de "sí se puede".
+- Habilidad para adaptarte a cambios.
 
-**Beneficios:**
-*   Salario competitivo acorde a experiencia.
-*   Horario flexible y/o modalidad remota/híbrida.
-*   Equipo de última generación.
-*   Capacitación continua y oportunidades de carrera.
+Lo que te llevas:
+- Un ambiente de trabajo increíble.
+- Aprendizaje constante.
+- Sueldo atractivo.
+- La oportunidad de crecer con nosotros.
 `;
 
-const salesTemplate = `
-**[TITULO]**
+const corporateTemplate = `
+Posición: [TITULO]
+Empresa: [EMPRESA]
+Ubicación: [UBICACION]
 
-**¡Únete a nuestro equipo comercial de alto rendimiento!**
-Buscamos un [TITULO] con gran habilidad para la negociación y pasión por las ventas. Si eres orientado a resultados y te gusta superar metas, esta es tu oportunidad.
+Descripción del Puesto:
+[EMPRESA] solicita un [TITULO] para integrar a su estructura organizacional. El candidato ideal deberá demostrar competencia técnica y alineación con nuestra visión corporativa.
 
-**Tus funciones:**
-*   Prospectar y cerrar nuevas oportunidades de negocio.
-*   Gestionar y fidelizar la cartera de clientes existente.
-*   Presentar nuestros productos/servicios de manera efectiva.
-*   Alcanzar y superar los objetivos de ventas mensuales y trimestrales.
+Funciones Principales:
+- Ejecutar las actividades operativas y estratégicas del área.
+- Reportar avances y métricas de desempeño.
+- Asegurar el cumplimiento de normativas y políticas internas.
+- Contribuir al logro de las metas anuales de la compañía.
 
-**Perfil ideal:**
-*   Experiencia comprobable en ventas o atención al cliente.
-*   Excelentes habilidades de comunicación y persuasión.
-*   Ambición, proactividad y enfoque en resultados.
-*   Disponibilidad para viajar (si aplica).
+Perfil del Candidato:
+- Título profesional o experiencia equivalente.
+- Historial de desempeño sólido en puestos anteriores.
+- Habilidades analíticas y de resolución de problemas.
+- Ética profesional intachable.
 
-**Te ofrecemos:**
-*   Sueldo base + atractivo esquema de comisiones sin tope.
-*   Bonos por desempeño y concursos de ventas.
-*   Capacitación constante y herramientas de trabajo.
-*   Estabilidad laboral y crecimiento dentro de la empresa.
+Beneficios:
+- Compensación acorde al mercado.
+- Estabilidad laboral.
+- Plan de carrera estructurado.
+- Beneficios corporativos adicionales.
 `;
 
-const designerTemplate = `
-**[TITULO]**
+const minimalistTemplate = `
+[TITULO] en [EMPRESA] ([UBICACION])
 
-**¡Buscamos tu creatividad!**
-Estamos en la búsqueda de un [TITULO] con un ojo excepcional para el detalle y pasión por el diseño visual. Ayúdanos a crear experiencias visuales impactantes que conecten con nuestra audiencia.
+Buscamos:
+Un [TITULO] eficiente y enfocado.
 
-**Responsabilidades:**
-*   Crear conceptos visuales atractivos para diversos medios (digital, impreso, web).
-*   Colaborar con el equipo de marketing para desarrollar campañas creativas.
-*   Asegurar la consistencia de la identidad de marca en todos los diseños.
-*   Mantenerse actualizado con las últimas tendencias de diseño y herramientas.
+Tus tareas:
+- Gestión de actividades de [TITULO].
+- Apoyo al equipo en tareas diarias.
+- Resolución de incidencias.
+- Mejora de procesos actuales.
 
-**Requisitos:**
-*   Portafolio demostrable con trabajos de diseño de alta calidad.
-*   Dominio de herramientas como Adobe Creative Suite (Photoshop, Illustrator, etc.) o Figma.
-*   Creatividad, originalidad y atención al detalle.
-*   Capacidad para recibir feedback y trabajar en equipo.
+Requisitos:
+- Experiencia en el área.
+- Responsabilidad y puntualidad.
+- Trabajo en equipo.
 
-**Ofrecemos:**
-*   Ambiente de trabajo creativo y dinámico.
-*   Oportunidad de trabajar en proyectos retadores y variados.
-*   Sueldo competitivo y beneficios.
+Ofrecemos:
+- Buen sueldo.
+- Buen ambiente.
+- Crecimiento.
+
+¡Aplica ahora!
 `;
 
-const marketingTemplate = `
-**[TITULO]**
+const engagingTemplate = `
+¿Eres el [TITULO] que estamos buscando?
 
-**¡Impulsa nuestra marca al siguiente nivel!**
-Estamos buscando un [TITULO] estratégico y creativo para liderar nuestras iniciativas de marketing. Si entiendes el mercado y sabes cómo conectar con los clientes, ¡te estamos buscando!
+En [EMPRESA] ([UBICACION]), creemos que el trabajo debe ser algo que disfrutes. Estamos buscando a alguien especial para ocupar el puesto de [TITULO].
 
-**Responsabilidades:**
-*   Desarrollar e implementar estrategias de marketing efectivas.
-*   Gestionar campañas en redes sociales y medios digitales.
-*   Analizar métricas y resultados para optimizar el ROI.
-*   Crear contenido atractivo y relevante para nuestra audiencia.
+¿Qué harás?
+Serás la pieza clave para [TITULO]. Tu día a día incluirá resolver desafíos, colaborar con gente talentosa y hacer que las cosas sucedan.
 
-**Requisitos:**
-*   Experiencia en marketing digital, gestión de redes sociales o roles similares.
-*   Conocimiento de herramientas de análisis y publicidad digital.
-*   Excelentes habilidades de redacción y comunicación.
-*   Creatividad y pensamiento analítico.
+¿A quién buscamos?
+A alguien con chispa, que sepa de lo que habla y que quiera formar parte de una gran historia. La experiencia es importante, pero la actitud lo es todo.
 
-**Ofrecemos:**
-*   Sueldo competitivo y prestaciones superiores.
-*   Oportunidad de liderar proyectos de alto impacto.
-*   Ambiente de trabajo colaborativo y flexible.
+¿Por qué nosotros?
+Porque en [EMPRESA] cuidamos a nuestra gente. Ofrecemos un paquete de compensación genial y un lugar donde realmente te escucharán.
 `;
 
-const managerTemplate = `
-**[TITULO]**
+const detailOrientedTemplate = `
+Vacante: [TITULO]
 
-**Liderazgo y Estrategia**
-Buscamos un [TITULO] experimentado para guiar a nuestro equipo hacia el éxito. Si tienes habilidades de liderazgo probadas y visión estratégica, queremos que formes parte de nuestra dirección.
+Atención al Detalle y Precisión
+[EMPRESA] en [UBICACION] requiere un [TITULO] meticuloso y ordenado. Si te gusta que todo salga perfecto, te estamos buscando.
 
-**Tus retos:**
-*   Liderar, motivar y desarrollar al equipo a tu cargo.
-*   Definir estrategias y planes de acción para alcanzar los objetivos del área.
-*   Supervisar la operación diaria y asegurar la eficiencia de los procesos.
-*   Reportar resultados a la dirección y proponer mejoras continuas.
+Responsabilidades Específicas:
+- Supervisar y ejecutar tareas de [TITULO] con precisión.
+- Revisar y validar la calidad del trabajo realizado.
+- Documentar procesos y mantener registros actualizados.
+- Identificar y corregir errores proactivamente.
 
-**Perfil:**
-*   Experiencia previa en gestión de equipos y liderazgo.
-*   Fuertes habilidades de toma de decisiones y resolución de problemas.
-*   Visión estratégica y orientación a resultados.
-*   Excelentes habilidades interpersonales y de comunicación.
+Requisitos Indispensables:
+- Alta capacidad de concentración.
+- Experiencia previa demostrable.
+- Excelencia en la ejecución.
+- Dominio de herramientas relacionadas al puesto.
 
-**Ofrecemos:**
-*   Paquete de compensación ejecutivo.
-*   Oportunidades de desarrollo de carrera a nivel directivo.
-*   Participación en la toma de decisiones estratégicas de la empresa.
+Propuesta Laboral:
+- Sueldo base atractivo.
+- Estabilidad y contrato directo.
+- Ambiente tranquilo y enfocado.
 `;
 
-const adminTemplate = `
-**[TITULO]**
+const growthFocusedTemplate = `
+[TITULO] - Oportunidad de Crecimiento
 
-**Organización y Eficiencia**
-Estamos buscando un [TITULO] organizado y detallista para asegurar el buen funcionamiento de nuestras operaciones administrativas. Tu apoyo será fundamental para nuestro equipo.
+Únete a [EMPRESA] en [UBICACION]
+¿Buscas una carrera, no solo un trabajo? Como [TITULO], tendrás la oportunidad de desarrollarte profesionalmente con nosotros.
 
-**Funciones:**
-*   Gestionar tareas administrativas y de oficina diarias.
-*   Atender llamadas, correos y recibir visitantes de manera profesional.
-*   Mantener archivos y registros organizados y actualizados.
-*   Apoyar en la coordinación de reuniones y eventos internos.
+Tu Rol:
+- Aprender y dominar las funciones de [TITULO].
+- Asumir responsabilidades progresivas.
+- Participar en programas de capacitación.
+- Contribuir al éxito a largo plazo de la empresa.
 
-**Requisitos:**
-*   Experiencia en roles administrativos o de asistencia.
-*   Manejo de paquetería Office y herramientas de oficina.
-*   Excelente organización, puntualidad y atención al detalle.
-*   Actitud de servicio y proactividad.
+Buscamos:
+- Ambición y deseo de superación.
+- Experiencia básica o intermedia en el campo.
+- Compromiso a largo plazo.
+- Habilidades de liderazgo potencial.
 
-**Ofrecemos:**
-*   Estabilidad laboral y contrato directo.
-*   Sueldo competitivo y prestaciones de ley.
-*   Horario estable y buen ambiente de trabajo.
+Te Ofrecemos:
+- Plan de carrera claro.
+- Mentoría y capacitación constante.
+- Sueldo con revisiones periódicas.
+- Prestaciones superiores a la ley.
+`;
+
+const innovationTemplate = `
+Innovación en [EMPRESA]: Buscamos [TITULO]
+
+Ubicación: [UBICACION]
+En [EMPRESA], estamos redefiniendo el futuro. Necesitamos un [TITULO] que piense fuera de la caja y nos ayude a innovar.
+
+Desafíos:
+- Implementar nuevas metodologías en el rol de [TITULO].
+- Proponer ideas disruptivas para mejorar resultados.
+- Utilizar tecnología de vanguardia.
+- Colaborar en proyectos de transformación.
+
+Perfil Innovador:
+- Mentalidad abierta y creativa.
+- Experiencia con herramientas modernas.
+- Capacidad para trabajar en entornos cambiantes.
+- Pasión por la tecnología y la mejora continua.
+
+Recompensas:
+- Ambiente de trabajo estimulante.
+- Libertad para crear y proponer.
+- Remuneración competitiva.
+- Participación en proyectos emocionantes.
+`;
+
+const customerCentricTemplate = `
+[TITULO] - Enfoque al Cliente
+
+[EMPRESA] - [UBICACION]
+Nuestros clientes son lo primero. Buscamos un [TITULO] que comparta nuestra pasión por el servicio y la satisfacción del cliente.
+
+Lo que harás:
+- Asegurar una experiencia excepcional desde tu rol de [TITULO].
+- Atender y resolver necesidades de manera eficiente.
+- Construir relaciones de confianza.
+- Representar los valores de [EMPRESA] en cada interacción.
+
+Lo que necesitas:
+- Vocación de servicio innegable.
+- Excelentes habilidades interpersonales.
+- Empatía y paciencia.
+- Experiencia en roles de cara al cliente o soporte.
+
+Beneficios:
+- Capacitación en servicio al cliente.
+- Bonos por satisfacción/desempeño.
+- Excelente clima laboral.
+- Oportunidades de ascenso.
+`;
+
+const collaborativeTemplate = `
+Se busca: [TITULO] para Trabajo en Equipo
+
+Empresa: [EMPRESA]
+Lugar: [UBICACION]
+
+En [EMPRESA], el éxito es compartido. Buscamos un [TITULO] que sea un excelente jugador de equipo y quiera sumar esfuerzos.
+
+Tus Funciones:
+- Apoyar al departamento en las tareas de [TITULO].
+- Comunicarte fluidamente con tus compañeros.
+- Participar activamente en reuniones y lluvias de ideas.
+- Ayudar a crear un ambiente de trabajo positivo.
+
+Requisitos:
+- Gran capacidad para trabajar con otros.
+- Comunicación asertiva.
+- Solidaridad y compañerismo.
+- Experiencia previa en el puesto.
+
+Ofrecemos:
+- Un equipo que te respalda.
+- Actividades de integración.
+- Sueldo justo y prestaciones.
+- Un lugar donde tu voz cuenta.
 `;

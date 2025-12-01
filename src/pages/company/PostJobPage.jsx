@@ -10,7 +10,7 @@ import { Sparkles } from 'lucide-react';
 const PostJobPage = () => {
     const [searchParams] = useSearchParams();
     const jobId = searchParams.get('id');
-    const { jobs, postJob, updateJob } = useData(); // Assuming updateJob exists in context
+    const { jobs, addJob, updateJob } = useData(); // Assuming updateJob exists in context
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -91,9 +91,17 @@ const PostJobPage = () => {
         }
 
         setIsGenerating(true);
+
+        // Construct full location for context
+        const fullLocation = formData.city
+            ? `${formData.city}, ${formData.location}`
+            : formData.location || 'México';
+
+        const companyName = user.name || 'Nuestra Empresa';
+
         // Simulate a small delay to make it feel like "thinking"
         setTimeout(() => {
-            const generatedDesc = generateJobDescription(formData.title);
+            const generatedDesc = generateJobDescription(formData.title, companyName, fullLocation);
             setFormData(prev => ({ ...prev, description: generatedDesc }));
             setIsGenerating(false);
         }, 800);
@@ -122,7 +130,7 @@ const PostJobPage = () => {
             await updateJob(Number(jobId), jobData);
             alert('¡Vacante actualizada con éxito!');
         } else {
-            await postJob(jobData);
+            await addJob(jobData);
             alert('¡Tu vacante se ha publicado con mucho éxito!');
         }
 

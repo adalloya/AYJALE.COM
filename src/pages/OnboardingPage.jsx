@@ -130,14 +130,12 @@ const OnboardingPage = () => {
                                 Estado de Residencia
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <MapPin className="h-5 w-5 text-slate-400" />
-                                </div>
+
                                 <select
                                     name="location"
                                     id="location"
                                     required
-                                    className="focus:ring-secondary-500 focus:border-secondary-500 block w-full pl-12 sm:text-sm border-slate-300 rounded-md bg-white py-2"
+                                    className="focus:ring-secondary-500 focus:border-secondary-500 block w-full sm:text-sm border-slate-300 rounded-md bg-white py-2 px-3"
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                 >

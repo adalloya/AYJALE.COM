@@ -4,6 +4,7 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { ArrowLeft, MapPin, Briefcase, User, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import AvatarPlaceholder from '../../components/AvatarPlaceholder';
+import TalentProfileCard from '../../components/assessment/TalentProfileCard';
 
 const JobApplicantsPage = () => {
     const { id } = useParams();
@@ -257,6 +258,12 @@ const JobApplicantsPage = () => {
                                         <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-slate-700 italic">
                                             "{selectedCandidate.comments}"
                                         </div>
+                                    </div>
+                                )}
+
+                                {selectedCandidate.talentProfile && (
+                                    <div className="mb-6">
+                                        <TalentProfileCard profile={selectedCandidate.talentProfile} />
                                     </div>
                                 )}
 

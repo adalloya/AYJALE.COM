@@ -24,9 +24,8 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
 
                 {/* Location */}
                 <div className="flex-1 relative">
-                    <MapPin className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
                     <select
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm"
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm"
                         value={filters.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                     >
