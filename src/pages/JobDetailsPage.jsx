@@ -92,20 +92,23 @@ const JobDetailsPage = () => {
 
     const location = useLocation();
     const jobIds = location.state?.jobIds;
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => setIsMobile(window.innerWidth < 1280);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     // If on mobile, always show the deck (either with list or single job)
     if (isMobile) {
+        console.log('JobDetailsPage: Detected Mobile View');
         // Filter jobs from context to match the IDs passed, or use current job if no IDs
         const deckJobs = (jobIds && jobIds.length > 0)
             ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
             : [job];
+
+        console.log('JobDetailsPage: Deck Jobs:', deckJobs.length);
 
         if (deckJobs.length > 0) {
             return (

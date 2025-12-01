@@ -19,6 +19,8 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
     };
 
+    console.log('JobDetailView: Rendering. isMobileDeck:', isMobileDeck);
+
     // Mobile Deck Layout
     if (isMobileDeck) {
         return (
