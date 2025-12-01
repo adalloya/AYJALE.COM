@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [allUsers, setAllUsers] = useState([]);
@@ -43,6 +43,21 @@ const AdminDashboard = () => {
                 alert('Correo enviado exitosamente.');
             } catch (error) {
                 alert('Error al enviar correo: ' + error.message);
+            }
+        }
+    };
+
+    const handleMigrateRole = async (userId, email) => {
+        if (window.confirm(`¿Estás seguro de que deseas cambiar el rol de ${email} de Candidato a Empresa? Esto es irreversible.`)) {
+            try {
+                await updateUserProfile(userId, { role: 'company' });
+                alert('Rol actualizado correctamente.');
+                // Refresh data
+                const usersData = await adminGetUsers();
+                setAllUsers(usersData || []);
+            } catch (error) {
+                console.error("Error migrating role:", error);
+                alert('Error al migrar rol: ' + error.message);
             }
         }
     };
@@ -215,12 +230,22 @@ const AdminDashboard = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(user.created_at || user.terms_accepted_at)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => handleResetPassword(user.email)}
-                                            className="text-blue-600 hover:text-blue-900 flex items-center justify-end ml-auto"
-                                        >
-                                            <Lock className="w-4 h-4 mr-1" /> Reset Password
-                                        </button>
+                                        <div className="flex justify-end space-x-3">
+                                            <button
+                                                onClick={() => handleMigrateRole(user.id, user.email)}
+                                                className="text-purple-600 hover:text-purple-900 flex items-center"
+                                                title="Migrar a Empresa"
+                                            >
+                                                <Building2 className="w-4 h-4 mr-1" /> Migrar
+                                            </button>
+                                            <button
+                                                onClick={() => handleResetPassword(user.email)}
+                                                className="text-blue-600 hover:text-blue-900 flex items-center"
+                                                title="Reset Password"
+                                            >
+                                                <Lock className="w-4 h-4 mr-1" /> Reset
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
