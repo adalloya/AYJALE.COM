@@ -19,7 +19,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
     };
 
-    console.log('JobDetailView: Rendering. isMobileDeck:', isMobileDeck);
+    console.log('JobDetailView: Company Data:', company);
 
     // Mobile Deck Layout
     if (isMobileDeck) {
@@ -29,18 +29,35 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                 <div className="relative p-6 pt-12 pb-8 flex-shrink-0">
                     {/* Background Logo Banner */}
                     <div className="absolute inset-0 overflow-hidden z-0">
-                        <div className="absolute inset-0 bg-gradient-to-b from-white/90 to-white z-10" />
-                        {!job.is_confidential && company?.logo && (
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white z-10" />
+                        {!job.is_confidential && company?.logo ? (
                             <img
                                 src={company.logo}
                                 alt=""
-                                className="w-full h-full object-cover opacity-10 blur-sm scale-110"
+                                className="w-full h-full object-cover opacity-50 blur-sm scale-110"
                             />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 opacity-50" />
                         )}
                     </div>
 
                     {/* Content Overlay */}
                     <div className="relative z-20 flex flex-col items-center text-center">
+                        {/* Company Logo (Floating) */}
+                        <div className="mb-4 shadow-lg rounded-2xl bg-white p-2">
+                            {!job.is_confidential && company?.logo ? (
+                                <img
+                                    src={company.logo}
+                                    alt={company.name}
+                                    className="w-16 h-16 object-contain rounded-xl"
+                                />
+                            ) : (
+                                <div className="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center">
+                                    <Building className="w-8 h-8 text-slate-300" />
+                                </div>
+                            )}
+                        </div>
+
                         <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{job.title}</h1>
                         <p className="text-slate-600 font-medium mb-4">
                             {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}

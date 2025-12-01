@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes swipe-hint {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-20px) rotate(-10deg); }
+    75% { transform: translateX(20px) rotate(10deg); }
+}
+
+.animate-swipe-hint {
+    animation: swipe-hint 1.5s ease-in-out infinite;
+}

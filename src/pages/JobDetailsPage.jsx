@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MobileJobDeck from '../components/jobs/MobileJobDeck';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
@@ -11,14 +11,24 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { jobs, users, applications, applyToJob, loading } = useData();
     const { user } = useAuth();
+
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1280);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const job = jobs.find(j => j.id === Number(id));
     const company = job?.profiles;
+    const jobIds = location.state?.jobIds;
 
     if (loading) {
         return (
@@ -89,16 +99,6 @@ const JobDetailsPage = () => {
             setApplying(false);
         }
     };
-
-    const location = useLocation();
-    const jobIds = location.state?.jobIds;
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1280);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     // If on mobile, always show the deck (either with list or single job)
     if (isMobile) {

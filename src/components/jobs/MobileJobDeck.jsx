@@ -5,6 +5,7 @@ import JobDetailView from './JobDetailView';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
+import SwipeTutorial from './SwipeTutorial';
 
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
@@ -14,6 +15,8 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
+
+    const [boundaryFeedback, setBoundaryFeedback] = useState({ active: false, type: null, fading: false });
 
     const [isSwipingOut, setIsSwipingOut] = useState(false);
 
@@ -29,6 +32,11 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [applying, setApplying] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    // Tutorial State
+    const [showTutorial, setShowTutorial] = useState(false);
+    const lastInteractionRef = useRef(Date.now());
+    const tutorialTimersRef = useRef([]);
+
     // Initialize index based on initialJobId
     useEffect(() => {
         const index = jobs.findIndex(j => j.id === Number(initialJobId));
@@ -37,24 +45,67 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         }
     }, [initialJobId, jobs]);
 
+    // Tutorial Logic
+    useEffect(() => {
+        // Clear existing timers
+        tutorialTimersRef.current.forEach(clearTimeout);
+        tutorialTimersRef.current = [];
+
+        const scheduleTutorial = (delay) => {
+            const timer = setTimeout(() => {
+                const timeSinceLastInteraction = Date.now() - lastInteractionRef.current;
+                // If user has been inactive for roughly the delay time (allow small buffer)
+                if (timeSinceLastInteraction >= delay - 100) {
+                    setShowTutorial(true);
+                    // Hide after 4 seconds
+                    setTimeout(() => setShowTutorial(false), 4000);
+                }
+            }, delay);
+            tutorialTimersRef.current.push(timer);
+        };
+
+        // Schedule triggers: Immediate (Mount), 10s, 30s, 60s
+        // Immediate show on mount (small delay for transition)
+        setTimeout(() => {
+            setShowTutorial(true);
+            setTimeout(() => setShowTutorial(false), 3000);
+        }, 500);
+
+        scheduleTutorial(10000); // 10s
+        scheduleTutorial(30000); // 30s
+        scheduleTutorial(60000); // 60s
+
+        return () => {
+            tutorialTimersRef.current.forEach(clearTimeout);
+        };
+    }, []); // Run once on mount
+
+    const resetInactivity = () => {
+        lastInteractionRef.current = Date.now();
+        if (showTutorial) setShowTutorial(false);
+    };
+
     const onTouchStart = (e) => {
+        resetInactivity();
         if (exitDirection) return;
         setIsDragging(true);
-        setTouchStart(e.targetTouches[0].clientX);
-        setTouchStartY(e.targetTouches[0].clientY);
+        setTouchStart(e.targetTouches ? e.targetTouches[0].clientX : e.clientX);
+        setTouchStartY(e.targetTouches ? e.targetTouches[0].clientY : e.clientY);
         setDragX(0);
     };
 
     const onTouchMove = (e) => {
+        resetInactivity();
         if (!isDragging || !touchStart) return;
 
-        const currentX = e.targetTouches[0].clientX;
-        const currentY = e.targetTouches[0].clientY;
-        const diffX = currentX - touchStart;
-        const diffY = currentY - touchStartY;
+        const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        const clientY = e.targetTouches ? e.targetTouches[0].clientY : e.clientY;
 
-        // Lock vertical scroll if dragging horizontally
-        if (Math.abs(diffX) > Math.abs(diffY)) {
+        const diffX = clientX - touchStart;
+        const diffY = clientY - touchStartY;
+
+        // Lock vertical scroll if dragging horizontally (only for touch)
+        if (e.targetTouches && Math.abs(diffX) > Math.abs(diffY)) {
             if (e.cancelable) e.preventDefault(); // Prevent scrolling
         }
 
@@ -62,8 +113,28 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     };
 
     const onTouchEnd = () => {
+        resetInactivity();
         if (!isDragging) return;
         setIsDragging(false);
+
+        // Check for boundary hit to trigger feedback animation
+        const isStartBoundary = currentIndex === 0 && dragX > 50; // Threshold to trigger message
+        const isEndBoundary = currentIndex === jobs.length - 1 && dragX < -50;
+
+        if (isStartBoundary || isEndBoundary) {
+            const type = isStartBoundary ? 'start' : 'end';
+            // Trigger lingering feedback
+            setBoundaryFeedback({ active: true, type, fading: false });
+
+            // Start fade out after delay (linger)
+            setTimeout(() => {
+                setBoundaryFeedback(prev => ({ ...prev, fading: true }));
+                // Remove completely after fade duration
+                setTimeout(() => {
+                    setBoundaryFeedback({ active: false, type: null, fading: false });
+                }, 500); // 500ms fade duration matches CSS transition
+            }, 1000); // 1s linger duration
+        }
 
         if (Math.abs(dragX) > threshold) {
             // Swiped far enough
@@ -161,16 +232,17 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         }
     };
 
-    // ...
-
     const currentJob = jobs[currentIndex];
     const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
     const prevJob = currentIndex > 0 ? jobs[currentIndex - 1] : null;
 
     // Determine which card is "behind" based on drag direction
-    // If dragging left (negative dragX), show next job. If dragging right, show prev job.
-    // Default to next job if no drag.
-    const backgroundJob = (dragX > 0 && prevJob) ? prevJob : nextJob;
+    let backgroundJob = null;
+    if (dragX > 0) {
+        backgroundJob = prevJob; // Swiping Right -> Show Previous
+    } else if (dragX < 0) {
+        backgroundJob = nextJob; // Swiping Left -> Show Next
+    }
 
     const company = currentJob?.profiles;
     const backgroundCompany = backgroundJob?.profiles;
@@ -178,7 +250,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
 
     // Dynamic Styles for Background Card
-    // If swiping out, force full scale/opacity/color to match the incoming foreground state
     const bgScale = isSwipingOut ? 1 : 0.95 + (Math.abs(dragX) / windowWidth) * 0.05;
     const bgOpacity = isSwipingOut ? 1 : 0.5 + (Math.abs(dragX) / windowWidth) * 0.5;
     const bgGrayscale = isSwipingOut ? 0 : 1; // 1 = grayscale, 0 = color
@@ -195,6 +266,10 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
         zIndex: 10
     };
+
+    // Helper to determine if overlay should be shown
+    const showBoundaryOverlay = (currentIndex === 0 && dragX > 0) || (currentIndex === jobs.length - 1 && dragX < 0) || boundaryFeedback.active;
+    const overlayType = boundaryFeedback.active ? boundaryFeedback.type : (dragX > 0 ? 'start' : 'end');
 
     return (
         <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col overflow-hidden">
@@ -215,7 +290,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             {/* Deck Area */}
             <div className="flex-1 relative w-full h-full overflow-hidden p-4">
 
-                {/* Background Card */}
+                {/* Background Card (Job) */}
                 {backgroundJob && (
                     <div
                         className="absolute inset-4 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
@@ -241,6 +316,43 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                     </div>
                 )}
 
+                {/* Boundary Overlay (Static, Centered) */}
+                {showBoundaryOverlay && (
+                    <div
+                        className="absolute inset-0 z-[60] flex items-center justify-center pointer-events-none"
+                        style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                            opacity: boundaryFeedback.active
+                                ? (boundaryFeedback.fading ? 0 : 1)
+                                : Math.min(1, Math.abs(dragX) / (windowWidth * 0.25)),
+                            transition: boundaryFeedback.active ? 'opacity 0.5s ease-out' : 'none'
+                        }}
+                    >
+                        <div className="transform scale-110 text-center p-6 rounded-2xl border-4 border-slate-200 bg-white shadow-2xl">
+                            {overlayType === 'start' ? (
+                                <>
+                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <ChevronLeft className="w-8 h-8 text-blue-500" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 mb-1">¡Estás al día!</h3>
+                                    <p className="text-sm text-slate-500 font-medium">Es la más reciente</p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <ChevronRight className="w-8 h-8 text-orange-500" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 mb-1">¡Has visto todo!</h3>
+                                    <p className="text-sm text-slate-500 font-medium">No hay más por ahora, pero vuelve mañana</p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Tutorial Overlay */}
+                <SwipeTutorial visible={showTutorial} />
+
                 {/* Current Card */}
                 {currentJob && (
                     <div
@@ -251,6 +363,10 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                         onTouchStart={onTouchStart}
                         onTouchMove={onTouchMove}
                         onTouchEnd={onTouchEnd}
+                        onMouseDown={onTouchStart}
+                        onMouseMove={onTouchMove}
+                        onMouseUp={onTouchEnd}
+                        onMouseLeave={onTouchEnd}
                     >
                         <div className="h-full overflow-y-auto custom-scrollbar pb-20">
                             <JobDetailView
@@ -263,7 +379,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                         </div>
                     </div>
                 )}
-                {/* ... */}
 
                 {/* Empty State */}
                 {!currentJob && (
@@ -282,7 +397,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 loading={applying}
                 success={isSuccess}
             />
-
 
         </div>
     );
