@@ -252,7 +252,6 @@ export const DataProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*')
                 .select('*');
 
             if (error) throw error;
@@ -267,7 +266,6 @@ export const DataProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('applications')
-                .select('*, jobs(title, company_id), profiles:candidate_id(name, email)')
                 .select('*, jobs(title, company_id), profiles:candidate_id(name, email)');
 
             if (error) throw error;
