@@ -4,7 +4,7 @@ import { MapPin, Compass } from 'lucide-react';
 
 const MexicoMap = () => {
     const navigate = useNavigate();
-    const [activeRegion, setActiveRegion] = useState('Todos');
+    const [activeRegion, setActiveRegion] = useState(null);
 
     const regions = {
         'Norte': [
@@ -28,9 +28,11 @@ const MexicoMap = () => {
         navigate(`/jobs?state=${encodeURIComponent(stateName)}`);
     };
 
-    const displayedStates = activeRegion === 'Todos'
-        ? allStates
-        : regions[activeRegion];
+    const displayedStates = !activeRegion
+        ? []
+        : activeRegion === 'Todos'
+            ? allStates
+            : regions[activeRegion];
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-12">
@@ -49,8 +51,8 @@ const MexicoMap = () => {
                 <button
                     onClick={() => setActiveRegion('Todos')}
                     className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeRegion === 'Todos'
-                            ? 'bg-slate-900 text-white shadow-lg scale-105'
-                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        ? 'bg-slate-900 text-white shadow-lg scale-105'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                         }`}
                 >
                     Todo México
@@ -60,8 +62,8 @@ const MexicoMap = () => {
                         key={region}
                         onClick={() => setActiveRegion(region)}
                         className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeRegion === region
-                                ? 'bg-secondary-600 text-white shadow-lg scale-105'
-                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                            ? 'bg-secondary-600 text-white shadow-lg scale-105'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                             }`}
                     >
                         {region}
@@ -70,30 +72,32 @@ const MexicoMap = () => {
             </div>
 
             {/* States Grid */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {displayedStates.map(state => (
-                        <button
-                            key={state}
-                            onClick={() => handleStateClick(state)}
-                            className="group flex items-center p-3 rounded-xl hover:bg-slate-50 transition-colors text-left border border-transparent hover:border-slate-200"
-                        >
-                            <div className="p-2 rounded-full bg-slate-100 text-slate-500 mr-3 group-hover:bg-secondary-100 group-hover:text-secondary-600 transition-colors">
-                                <MapPin className="w-4 h-4" />
-                            </div>
-                            <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                                {state}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-
-                {displayedStates.length === 0 && (
-                    <div className="text-center py-12 text-slate-400">
-                        No se encontraron estados en esta región.
+            {activeRegion && (
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 animate-fadeIn">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {displayedStates.map(state => (
+                            <button
+                                key={state}
+                                onClick={() => handleStateClick(state)}
+                                className="group flex items-center p-3 rounded-xl hover:bg-slate-50 transition-colors text-left border border-transparent hover:border-slate-200"
+                            >
+                                <div className="p-2 rounded-full bg-slate-100 text-slate-500 mr-3 group-hover:bg-secondary-100 group-hover:text-secondary-600 transition-colors">
+                                    <MapPin className="w-4 h-4" />
+                                </div>
+                                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                                    {state}
+                                </span>
+                            </button>
+                        ))}
                     </div>
-                )}
-            </div>
+
+                    {displayedStates.length === 0 && (
+                        <div className="text-center py-12 text-slate-400">
+                            No se encontraron estados en esta región.
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
