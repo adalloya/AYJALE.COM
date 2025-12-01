@@ -27,9 +27,12 @@ const PostJobPage = () => {
 
     const [isGenerating, setIsGenerating] = useState(false);
 
+    const duplicateId = searchParams.get('duplicate');
+
     useEffect(() => {
-        if (jobId && jobs.length > 0) {
-            const jobToEdit = jobs.find(j => j.id === Number(jobId));
+        const targetId = jobId || duplicateId;
+        if (targetId && jobs.length > 0) {
+            const jobToEdit = jobs.find(j => j.id === Number(targetId));
             if (jobToEdit) {
                 // Security check
                 if (jobToEdit.company_id !== user.id && user.role !== 'admin') {
@@ -56,7 +59,7 @@ const PostJobPage = () => {
                 }
 
                 setFormData({
-                    title: jobToEdit.title,
+                    title: jobToEdit.title + (duplicateId ? ' (Copia)' : ''), // Append (Copia) if duplicating
                     description: jobToEdit.description,
                     category: jobToEdit.category,
                     salary: jobToEdit.salary,
@@ -67,7 +70,7 @@ const PostJobPage = () => {
                 });
             }
         }
-    }, [jobId, jobs, user, navigate]);
+    }, [jobId, duplicateId, jobs, user, navigate]);
 
     const handleGenerateDescription = () => {
         if (!formData.title) {
@@ -117,7 +120,7 @@ const PostJobPage = () => {
 
     return (
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h1 className="text-2xl font-bold text-slate-900 mb-6">{jobId ? 'Editar Vacante' : 'Publicar Nueva Vacante'}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-6">{jobId ? 'Editar Vacante' : (duplicateId ? 'Duplicar Vacante' : 'Publicar Nueva Vacante')}</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>

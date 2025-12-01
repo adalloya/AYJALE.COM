@@ -225,6 +225,29 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const republishJob = async (jobId) => {
+        try {
+            // Set created_at to now (bumps to top) and expires_at to +30 days
+            const newExpiresAt = new Date();
+            newExpiresAt.setDate(newExpiresAt.getDate() + 30);
+
+            const { error } = await supabase
+                .from('jobs')
+                .update({
+                    active: true,
+                    created_at: new Date().toISOString(),
+                    expires_at: newExpiresAt.toISOString()
+                })
+                .eq('id', jobId);
+
+            if (error) throw error;
+            fetchJobs();
+        } catch (error) {
+            console.error("Error republishing job:", error);
+            throw error;
+        }
+    };
+
     const adminGetUsers = async () => {
         try {
             const { data, error } = await supabase
@@ -365,6 +388,7 @@ export const DataProvider = ({ children }) => {
             toggleJobStatus,
             adminRepublishJob,
             closeJob,
+            republishJob,
             adminGetUsers,
             adminGetApplications,
             updateUserProfile,

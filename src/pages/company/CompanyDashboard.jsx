@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle, Eye, EyeOff, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle, Eye, EyeOff, XCircle, Copy, RefreshCw } from 'lucide-react';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
-    const { jobs, deleteJob, applications, toggleJobStatus, closeJob } = useData();
+    const { jobs, deleteJob, applications, toggleJobStatus, closeJob, republishJob } = useData();
     const navigate = useNavigate();
 
     const myJobs = jobs.filter(job => job.company_id === user.id);
@@ -214,17 +214,42 @@ const CompanyDashboard = () => {
                                     >
                                         {job.active ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                                     </button>
+
+                                    {/* Close / Reactivate Logic */}
+                                    {new Date(job.expires_at) > new Date() ? (
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm('¿Estás seguro de que quieres CERRAR esta vacante? Esto la marcará como expirada y dejará de recibir postulaciones.')) {
+                                                    closeJob(job.id);
+                                                }
+                                            }}
+                                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                                            title="Cerrar vacante (Finalizar)"
+                                        >
+                                            <XCircle className="w-5 h-5" />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm('¿Quieres REACTIVAR esta vacante? Se publicará nuevamente por 30 días.')) {
+                                                    republishJob(job.id);
+                                                }
+                                            }}
+                                            className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+                                            title="Reactivar vacante"
+                                        >
+                                            <RefreshCw className="w-5 h-5" />
+                                        </button>
+                                    )}
+
                                     <button
-                                        onClick={() => {
-                                            if (window.confirm('¿Estás seguro de que quieres CERRAR esta vacante? Esto la marcará como expirada y dejará de recibir postulaciones.')) {
-                                                closeJob(job.id);
-                                            }
-                                        }}
-                                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
-                                        title="Cerrar vacante (Finalizar)"
+                                        onClick={() => navigate(`/post-job?duplicate=${job.id}`)}
+                                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                        title="Duplicar vacante"
                                     >
-                                        <XCircle className="w-5 h-5" />
+                                        <Copy className="w-5 h-5" />
                                     </button>
+
                                     <button
                                         onClick={() => navigate(`/post-job?id=${job.id}`)}
                                         className="p-2 text-slate-400 hover:text-primary-600 rounded-full hover:bg-slate-50"
