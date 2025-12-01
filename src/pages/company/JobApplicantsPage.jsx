@@ -44,12 +44,21 @@ const JobApplicantsPage = () => {
     const [statusFilter, setStatusFilter] = useState('all');
 
     // Filter candidates
+    // Filter candidates
     const candidates = allCandidates.filter(candidate => {
         const term = searchTerm.toLowerCase();
-        const name = candidate.user?.name?.toLowerCase() || '';
-        const title = candidate.user?.title?.toLowerCase() || '';
-        const location = candidate.user?.location?.toLowerCase() || '';
-        const skills = candidate.user?.skills?.join(' ').toLowerCase() || '';
+
+        const user = candidate.user || {};
+        const name = (user.name || '').toLowerCase();
+        const title = (user.title || '').toLowerCase();
+        const location = (user.location || '').toLowerCase();
+
+        let skills = '';
+        if (Array.isArray(user.skills)) {
+            skills = user.skills.join(' ').toLowerCase();
+        } else if (typeof user.skills === 'string') {
+            skills = user.skills.toLowerCase();
+        }
 
         const matchesSearch = name.includes(term) || title.includes(term) || location.includes(term) || skills.includes(term);
         const matchesStatus = statusFilter === 'all' || candidate.status === statusFilter;
