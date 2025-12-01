@@ -80,27 +80,27 @@ const AdminDashboard = () => {
     };
 
     const filteredCandidates = candidates.filter(c =>
-        c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredCompanies = companies.filter(c =>
-        c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredJobs = jobs.filter(j =>
-        j.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        (j.title || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredApplications = allApplications.filter(a =>
-        a.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.jobs?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        (a.profiles?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (a.jobs?.title || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredUnlocks = allUnlocks.filter(u =>
-        u.company?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.candidate?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        (u.company?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.candidate?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const formatDate = (dateString) => {

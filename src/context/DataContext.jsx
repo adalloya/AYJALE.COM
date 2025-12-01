@@ -292,18 +292,17 @@ export const DataProvider = ({ children }) => {
     // Increment job view count when a job is viewed
     const incrementJobView = async (jobId) => {
         try {
-            // Find current view count from state if available
+            // Optimistically update local state first
             const job = jobs.find(j => j.id === Number(jobId));
             const currentCount = job?.view_count || 0;
-            const { error } = await supabase
-                .from('jobs')
-                .update({ view_count: currentCount + 1 })
-                .eq('id', jobId);
+            setJobs(prev => prev.map(j => j.id === Number(jobId) ? { ...j, view_count: currentCount + 1 } : j));
+
+            // Call the secure RPC function to increment in DB (bypasses RLS)
+            const { error } = await supabase.rpc('increment_job_view', { job_id: Number(jobId) });
+
             if (error) {
-                console.error('Error incrementing job view:', error);
-            } else {
-                // Optimistically update local state
-                setJobs(prev => prev.map(j => j.id === Number(jobId) ? { ...j, view_count: currentCount + 1 } : j));
+                console.error('Error incrementing job view via RPC:', error);
+                // Revert optimistic update if needed, but usually fine to leave it for UX
             }
         } catch (e) {
             console.error('Exception in incrementJobView:', e);
