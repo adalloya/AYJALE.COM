@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Users, Upload, Briefcase } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle } from 'lucide-react';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
@@ -185,6 +185,28 @@ const CompanyDashboard = () => {
                                     </p>
                                 </div>
                                 <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => {
+                                            const url = `${window.location.origin}/jobs/${job.id}`;
+                                            const text = `¡Hola! Estamos buscando ${job.title} en ${user.name}. Postúlate aquí: ${url}`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                        }}
+                                        className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+                                        title="Compartir en WhatsApp"
+                                    >
+                                        <MessageCircle className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const url = `${window.location.origin}/jobs/${job.id}`;
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                                        }}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                                        title="Compartir en Facebook"
+                                    >
+                                        <Facebook className="w-5 h-5" />
+                                    </button>
+                                    <div className="w-px h-6 bg-slate-200 mx-1 self-center"></div>
                                     <button
                                         onClick={() => toggleJobStatus(job.id, job.active)}
                                         className={`p-2 rounded-full hover:bg-slate-100 ${job.active ? 'text-green-600' : 'text-slate-400'}`}
