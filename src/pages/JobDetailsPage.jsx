@@ -130,7 +130,7 @@ const JobDetailsPage = () => {
                 <MobileJobDeck
                     jobs={deckJobs}
                     initialJobId={id}
-                    onBack={() => navigate('/jobs')}
+                    onBack={() => navigate('/jobs', { state: { showList: true } })}
                 />
             );
         }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
@@ -15,6 +15,7 @@ const JobsPage = () => {
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
@@ -77,7 +78,7 @@ const JobsPage = () => {
         }
     }, [filteredJobs, selectedJobId]);
 
-    // Handle resize to switch between views
+    // Handle resize and initial mobile load
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 1024 && selectedJobId) {
@@ -91,9 +92,23 @@ const JobsPage = () => {
             }
         };
 
+        // Initial Mobile Redirect: If on mobile and we have jobs, go straight to deck
+        // BUT only if we didn't explicitly ask for the list view (e.g. coming back from deck)
+        if (window.innerWidth < 1024 && filteredJobs.length > 0 && !location.state?.showList) {
+            // Use the first job or the selected one
+            const targetJobId = selectedJobId || filteredJobs[0].id;
+            navigate(`/jobs/${targetJobId}`, {
+                replace: true, // Replace history to avoid back button loop
+                state: {
+                    jobIds: filteredJobs.map(j => j.id),
+                    fromJobsPage: true
+                }
+            });
+        }
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [selectedJobId, filteredJobs, navigate]);
+    }, [selectedJobId, filteredJobs, navigate, location.state]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     const selectedCompany = selectedJob ? selectedJob.profiles : null;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Briefcase, User, ClipboardCheck } from 'lucide-react';
@@ -97,10 +97,46 @@ const CandidateDashboard = () => {
 const ApplicationItem = ({ app, job }) => {
     const [showChat, setShowChat] = useState(false);
 
+    const navigate = useNavigate();
+
+    // Handle case where job is deleted or inactive
+    if (!job || !job.active) {
+        return (
+            <li className="px-4 py-4 sm:px-6 bg-slate-50 opacity-75">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-slate-500 line-through">
+                            {job?.title || 'Vacante no disponible'}
+                        </p>
+                        <p className="text-xs text-red-500 font-semibold mt-1">
+                            Vacante Cerrada
+                        </p>
+                    </div>
+                    <div className="ml-2 flex-shrink-0 flex">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-500">
+                            Cerrada
+                        </span>
+                    </div>
+                </div>
+                <div className="mt-2">
+                    <p className="text-sm text-slate-500 mb-2">
+                        Esta vacante ya no está disponible. Te invitamos a buscar nuevas oportunidades.
+                    </p>
+                    <button
+                        onClick={() => navigate('/jobs')}
+                        className="text-secondary-600 hover:text-secondary-700 text-sm font-medium flex items-center"
+                    >
+                        Ver otras vacantes &rarr;
+                    </button>
+                </div>
+            </li>
+        );
+    }
+
     return (
         <li className="px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-primary-600 truncate">{job?.title}</p>
+                <p className="text-sm font-medium text-primary-600 truncate">{job.title}</p>
                 <div className="ml-2 flex-shrink-0 flex">
                     <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                       ${{

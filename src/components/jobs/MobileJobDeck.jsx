@@ -387,7 +387,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                         onMouseUp={onTouchEnd}
                         onMouseLeave={onTouchEnd}
                     >
-                        <div className="h-full overflow-y-auto custom-scrollbar pb-20">
+                        <div className="h-full overflow-y-auto custom-scrollbar">
                             <JobDetailView
                                 job={currentJob}
                                 company={company}
@@ -427,9 +427,9 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
             {/* Search Overlay */}
             {showSearch && (
-                <div className="absolute inset-0 z-[90] bg-black/20 backdrop-blur-sm flex items-center justify-center px-6 animate-fade-in-slow" onClick={() => setShowSearch(false)}>
+                <div className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center px-6 animate-fade-in" onClick={() => setShowSearch(false)}>
                     <div
-                        className="w-full max-w-md transform animate-fly-in origin-bottom relative rounded-full"
+                        className="w-full max-w-md transform transition-all scale-100 relative"
                         onClick={e => e.stopPropagation()}
                     >
                         <form
@@ -439,13 +439,13 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                     handleSearch(searchKeyword);
                                 }
                             }}
-                            className="relative flex items-center bg-white rounded-full overflow-hidden p-1 border border-transparent animate-breathe"
+                            className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden p-1"
                         >
                             <input
                                 type="text"
                                 autoFocus
                                 placeholder="Buscar puesto o empresa..."
-                                className="flex-1 pl-6 pr-3 py-3 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 text-base"
+                                className="flex-1 pl-4 pr-3 py-4 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-lg outline-none"
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
                             />
@@ -453,16 +453,16 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 <button
                                     type="button"
                                     onClick={() => setSearchKeyword('')}
-                                    className="p-2 text-slate-300 hover:text-slate-500 transition-colors"
+                                    className="p-3 text-slate-300 hover:text-slate-500 transition-colors"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-6 h-6" />
                                 </button>
                             )}
                             <button
                                 type="submit"
-                                className="bg-secondary-600 text-white p-3 rounded-full hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1"
+                                className="bg-secondary-600 text-white p-3.5 rounded-xl hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1"
                             >
-                                <Search className="w-5 h-5" />
+                                <Search className="w-6 h-6" />
                             </button>
                         </form>
                     </div>
