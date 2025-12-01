@@ -256,8 +256,21 @@ const AdminDashboard = () => {
                             {activeTab === 'companies' && filteredCompanies.map(user => (
                                 <tr key={user.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-slate-900">{user.name}</div>
-                                        <div className="text-sm text-slate-500">{user.email}</div>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-10 w-10 mr-4">
+                                                {user.logo ? (
+                                                    <img className="h-10 w-10 rounded-full object-cover border border-slate-200" src={user.logo} alt="" />
+                                                ) : (
+                                                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                                        <Building2 className="w-5 h-5" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                                                <div className="text-sm text-slate-500">{user.email}</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.rfc || '-'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
