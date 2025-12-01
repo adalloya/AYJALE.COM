@@ -92,11 +92,20 @@ const JobDetailsPage = () => {
 
     const location = useLocation();
     const jobIds = location.state?.jobIds;
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-    // If we have a list of jobs (from mobile navigation), show the deck
-    if (jobIds && jobIds.length > 0) {
-        // Filter jobs from context to match the IDs passed
-        const deckJobs = jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // If on mobile, always show the deck (either with list or single job)
+    if (isMobile) {
+        // Filter jobs from context to match the IDs passed, or use current job if no IDs
+        const deckJobs = (jobIds && jobIds.length > 0)
+            ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
+            : [job];
 
         if (deckJobs.length > 0) {
             return (
