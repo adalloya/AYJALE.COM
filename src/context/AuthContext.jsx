@@ -89,6 +89,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGoogle = async () => {
+        alert('El inicio de sesión con Google está temporalmente deshabilitado. Por favor usa tu correo y contraseña.');
+        return;
+        /*
         setLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
@@ -104,9 +107,13 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
+        */
     };
 
     const loginWithApple = async () => {
+        alert('El inicio de sesión con Apple está temporalmente deshabilitado. Por favor usa tu correo y contraseña.');
+        return;
+        /*
         setLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
@@ -122,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
+        */
     };
 
     const register = async (userData, password, role = 'candidate') => {
