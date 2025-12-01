@@ -12,6 +12,8 @@ const JobDetailsPage = () => {
     const navigate = useNavigate();
     const { jobs, users, applications, applyToJob, loading } = useData();
     const { user } = useAuth();
+    const [showModal, setShowModal] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     const job = jobs.find(j => j.id === Number(id));
     const company = job?.profiles;
@@ -29,9 +31,6 @@ const JobDetailsPage = () => {
     }
 
     const hasApplied = user && applications.some(app => app.job_id === job.id && app.candidate_id === user.id);
-
-    const [showModal, setShowModal] = useState(false);
-    const [applying, setApplying] = useState(false);
 
     const isProfileComplete = () => {
         if (!user) return false;
