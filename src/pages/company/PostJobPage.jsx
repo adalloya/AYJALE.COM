@@ -120,9 +120,12 @@ const PostJobPage = () => {
 
         if (jobId) {
             await updateJob(Number(jobId), jobData);
+            alert('¡Vacante actualizada con éxito!');
         } else {
             await postJob(jobData);
+            alert('¡Tu vacante se ha publicado con mucho éxito!');
         }
+
         if (user.role === 'admin') {
             navigate('/admin');
         } else {
