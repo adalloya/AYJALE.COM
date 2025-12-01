@@ -14,6 +14,7 @@ const JobDetailsPage = () => {
     const { user } = useAuth();
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const job = jobs.find(j => j.id === Number(id));
     const company = job?.profiles;
@@ -75,12 +76,14 @@ const JobDetailsPage = () => {
                 skills: user.skills, // Assuming it's already in correct format in user object
                 comments
             });
-            setShowModal(false);
-            alert('¡Postulación enviada con éxito!');
-            // Optionally refresh data or update UI state
+            setIsSuccess(true);
+            setTimeout(() => {
+                setShowModal(false);
+                setIsSuccess(false);
+            }, 3000);
         } catch (error) {
             console.error('Error applying:', error);
-            alert('Error al enviar la postulación. Intenta de nuevo.');
+            alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
         } finally {
             setApplying(false);
         }
@@ -111,6 +114,7 @@ const JobDetailsPage = () => {
                 onSubmit={handleModalSubmit}
                 jobTitle={job.title}
                 loading={applying}
+                success={isSuccess}
             />
         </div>
     );
