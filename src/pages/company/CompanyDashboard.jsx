@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle, Eye, EyeOff, XCircle, Copy, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle, Eye, EyeOff, XCircle, Copy, RefreshCw, FileText, MapPin, Phone } from 'lucide-react';
+import EditCompanyProfileModal from '../../components/company/EditCompanyProfileModal';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
@@ -11,13 +12,16 @@ const CompanyDashboard = () => {
 
     const myJobs = jobs.filter(job => job.company_id === user.id);
 
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [tempName, setTempName] = useState(user.name);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-    const handleSaveName = () => {
-        if (tempName.trim()) {
-            updateUser({ name: tempName });
-            setIsEditingName(false);
+    const handleSaveProfile = async (updatedData) => {
+        try {
+            await updateUser(updatedData);
+            setIsEditingProfile(false);
+            alert('Perfil actualizado correctamente');
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            alert('Error al actualizar perfil');
         }
     };
 
@@ -41,10 +45,21 @@ const CompanyDashboard = () => {
     return (
         <div className="space-y-8">
             {/* Company Profile Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <h2 className="text-xl font-bold text-slate-900 mb-4">Perfil de Empresa</h2>
-                <div className="flex items-center space-x-6">
-                    <div className="relative group">
+            {/* Company Profile Section */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 relative">
+                <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl font-bold text-slate-900">Perfil de Empresa</h2>
+                    <button
+                        onClick={() => setIsEditingProfile(true)}
+                        className="text-secondary-600 hover:text-secondary-700 text-sm font-medium flex items-center bg-secondary-50 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar Información
+                    </button>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="relative group flex-shrink-0">
                         <div className="w-24 h-24 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50">
                             {user.logo ? (
                                 <img src={user.logo} alt="Logo" className="w-full h-full object-contain" />
@@ -63,42 +78,49 @@ const CompanyDashboard = () => {
                             title="Cambiar logo"
                         />
                     </div>
-                    <div>
-                        {isEditingName ? (
-                            <div className="flex items-center space-x-2 mb-1">
-                                <input
-                                    type="text"
-                                    value={tempName}
-                                    onChange={(e) => setTempName(e.target.value)}
-                                    className="border border-slate-300 rounded px-2 py-1 text-lg font-semibold text-slate-900 focus:ring-2 focus:ring-secondary-500 outline-none"
-                                />
-                                <button onClick={handleSaveName} className="text-green-600 hover:text-green-700 font-medium text-sm">Guardar</button>
-                                <button onClick={() => { setIsEditingName(false); setTempName(user.name); }} className="text-slate-400 hover:text-slate-600 text-sm">Cancelar</button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center space-x-2">
-                                <h3 className="text-lg font-semibold text-slate-900">{user.name}</h3>
-                                <button onClick={() => setIsEditingName(true)} className="text-slate-400 hover:text-secondary-600">
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
-                        <p className="text-slate-500">{user.email}</p>
-                        <div className="mt-2">
-                            <label className="cursor-pointer bg-white border border-slate-300 text-slate-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-slate-50 inline-flex items-center">
-                                <Upload className="w-4 h-4 mr-2" />
-                                Cambiar Logo
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleLogoUpload}
-                                    className="hidden"
-                                />
-                            </label>
-                            <p className="text-xs text-slate-400 mt-1">Máximo 2MB.</p>
+
+                    <div className="flex-1 min-w-0 space-y-2">
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-900 leading-tight">{user.name}</h3>
+                            <p className="text-slate-500 text-sm">{user.email}</p>
                         </div>
+
+                        <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+                            {user.rfc && (
+                                <div className="flex items-center">
+                                    <FileText className="w-4 h-4 mr-1.5 text-slate-400" />
+                                    <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-xs">{user.rfc}</span>
+                                </div>
+                            )}
+                            {user.phone_number && (
+                                <div className="flex items-center">
+                                    <Phone className="w-4 h-4 mr-1.5 text-slate-400" />
+                                    {user.phone_number}
+                                </div>
+                            )}
+                            {user.location && (
+                                <div className="flex items-center">
+                                    <MapPin className="w-4 h-4 mr-1.5 text-slate-400" />
+                                    {user.location}
+                                </div>
+                            )}
+                        </div>
+
+                        {user.address && (
+                            <p className="text-xs text-slate-400 mt-1 max-w-xl truncate">
+                                {user.address}
+                            </p>
+                        )}
                     </div>
                 </div>
+
+                {isEditingProfile && (
+                    <EditCompanyProfileModal
+                        user={user}
+                        onClose={() => setIsEditingProfile(false)}
+                        onSave={handleSaveProfile}
+                    />
+                )}
             </div>
 
             <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
