@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import MobileJobDeck from '../components/jobs/MobileJobDeck';
 import { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -88,6 +89,25 @@ const JobDetailsPage = () => {
             setApplying(false);
         }
     };
+
+    const location = useLocation();
+    const jobIds = location.state?.jobIds;
+
+    // If we have a list of jobs (from mobile navigation), show the deck
+    if (jobIds && jobIds.length > 0) {
+        // Filter jobs from context to match the IDs passed
+        const deckJobs = jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean);
+
+        if (deckJobs.length > 0) {
+            return (
+                <MobileJobDeck
+                    jobs={deckJobs}
+                    initialJobId={id}
+                    onBack={() => navigate('/jobs')}
+                />
+            );
+        }
+    }
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">

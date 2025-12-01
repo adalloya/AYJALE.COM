@@ -166,7 +166,12 @@ const JobsPage = () => {
                                 key={job.id}
                                 onClick={() => {
                                     if (window.innerWidth < 1024) {
-                                        navigate(`/jobs/${job.id}`);
+                                        navigate(`/jobs/${job.id}`, {
+                                            state: {
+                                                jobIds: filteredJobs.map(j => j.id),
+                                                fromJobsPage: true
+                                            }
+                                        });
                                     } else {
                                         setSelectedJobId(job.id);
                                     }
