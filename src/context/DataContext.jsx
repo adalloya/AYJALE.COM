@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
 
@@ -14,91 +14,25 @@ export const DataProvider = ({ children }) => {
 
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
+    const [contactUnlocks, setContactUnlocks] = useState([]);
 
-    // Fetch initial data and set up polling
-    useEffect(() => {
-        const loadData = async () => {
-            // Only show loading spinner on initial load
-            if (jobs.length === 0 && applications.length === 0) {
-                setLoading(true);
-            }
-            await Promise.all([fetchJobs(), fetchApplications()]);
-            setLoading(false);
-        };
+    const fetchContactUnlocks = useCallback(async () => {
+        if (!user) return;
 
-        loadData();
-
-        // Poll for updates every 1 second
-        const intervalId = setInterval(() => {
-            if (user) {
-                fetchJobs();
-                fetchApplications();
-            }
-        }, 1000);
-
-        return () => clearInterval(intervalId);
-    }, [user]); // Re-fetch when user changes (e.g. login/logout)
-
-    // Calculate notifications whenever applications or user changes
-    useEffect(() => {
-        if (!user || !applications.length) {
-            setNotifications([]);
-            return;
-        }
-
-        const newNotifications = [];
+        // If company, get only their unlocks (who they unlocked)
+        // If candidate, get who unlocked them
+        let query = supabase.from('contact_unlocks').select('*, company:company_id(name, logo), candidate:candidate_id(name)');
 
         if (user.role === 'company') {
-            // 1. New Applicants (status 'applied')
-            const newApplicants = applications.filter(app => app.status === 'applied');
-            newApplicants.forEach(app => {
-                newNotifications.push({
-                    id: `app-${app.id}`,
-                    type: 'new_applicant',
-                    title: 'Nuevo Postulado',
-                    message: `${app.profiles?.name || 'Candidato'} se postuló a ${app.jobs?.title}`,
-                    link: `/job/${app.job_id}/applicants`,
-                    date: app.created_at
-                });
-            });
+            query = query.eq('company_id', user.id);
         } else if (user.role === 'candidate') {
-            // 1. Status Updates (anything not 'applied' or 'pending')
-            // Ideally we'd track "last viewed", but for now show recent non-pending updates
-            const updates = applications.filter(app => app.status !== 'applied' && app.status !== 'pending');
-            updates.forEach(app => {
-                // Map status to readable text
-                const statusMap = {
-                    'reviewed': 'En Revisión',
-                    'interviewing': 'Entrevista',
-                    'offer': 'Oferta',
-                    'hired': 'Contratado',
-                    'rejected': 'Descartado'
-                };
-                newNotifications.push({
-                    id: `status-${app.id}`,
-                    type: 'status_update',
-                    title: 'Actualización de Estatus',
-                    message: `Tu postulación a ${app.jobs?.title} está: ${statusMap[app.status] || app.status}`,
-                    link: '/dashboard',
-                    date: app.updated_at || app.created_at || new Date().toISOString()
-                });
-            });
+            query = query.eq('candidate_id', user.id);
         }
 
-        // 2. Unread Messages (Mock logic for now as we don't fetch all messages globally yet)
-        // In a real app, we'd have a separate 'unread_messages' count from DB.
-        // For this demo, we'll assume the 'fetchApplications' query might eventually include message counts.
-        // Since we can't easily fetch ALL messages for ALL apps every second without a heavy query,
-        // we will skip message notifications in this specific polling loop to avoid performance issues,
-        // OR we can implement a lightweight "unread_count" RPC in Supabase later.
-        // For now, let's focus on the critical "New Applicant" and "Status Update" notifications which are derived from existing data.
-
-        // Sort by date desc
-        newNotifications.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        setNotifications(newNotifications);
-
-    }, [applications, user]);
+        const { data, error } = await query;
+        if (error) console.error('Error fetching contact unlocks:', error);
+        else setContactUnlocks(data || []);
+    }, [user]);
 
     const fetchJobs = async () => {
         let query = supabase
@@ -248,7 +182,7 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const adminGetUsers = async () => {
+    const adminGetUsers = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -260,9 +194,9 @@ export const DataProvider = ({ children }) => {
             console.error("Error fetching users:", error);
             throw error;
         }
-    };
+    }, []);
 
-    const adminGetApplications = async () => {
+    const adminGetApplications = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('applications')
@@ -274,7 +208,7 @@ export const DataProvider = ({ children }) => {
             console.error("Error fetching admin applications:", error);
             throw error;
         }
-    };
+    }, []);
 
     const deleteJob = async (id) => {
         const { error } = await supabase
@@ -370,32 +304,149 @@ export const DataProvider = ({ children }) => {
         if (error) throw error;
     }
 
-    // Register user is now handled in AuthContext directly via supabase.auth.signUp
+    const unlockCandidateContact = async (candidateId) => {
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from('contact_unlocks')
+            .insert([{
+                company_id: user.id,
+                candidate_id: candidateId
+            }])
+            .select('*, company:company_id(name, logo), candidate:candidate_id(name)')
+            .single();
+
+        if (error) {
+            console.error('Error unlocking contact:', error);
+            throw error;
+        }
+
+        setContactUnlocks(prev => [...prev, data]);
+        return data;
+    };
+
+    // Fetch initial data and set up polling
+    useEffect(() => {
+        const loadData = async () => {
+            // Only show loading spinner on initial load
+            if (jobs.length === 0 && applications.length === 0) {
+                setLoading(true);
+            }
+            await Promise.all([fetchJobs(), fetchApplications()]);
+            setLoading(false);
+        };
+
+        loadData();
+
+        // Poll for updates every 1 second
+        const intervalId = setInterval(() => {
+            if (user) {
+                fetchJobs();
+                fetchApplications();
+            }
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [user]); // Re-fetch when user changes (e.g. login/logout)
+
+    // Fetch unlocks on load/user change
+    useEffect(() => {
+        if (user) {
+            fetchContactUnlocks();
+        }
+    }, [user, fetchContactUnlocks]);
+
+    // Calculate notifications whenever applications, user, or contactUnlocks changes
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
+        const newNotifications = [];
+
+        if (user.role === 'company') {
+            // 1. New Applicants (status 'applied')
+            const newApplicants = applications.filter(app => app.status === 'applied');
+            newApplicants.forEach(app => {
+                newNotifications.push({
+                    id: `app-${app.id}`,
+                    type: 'new_applicant',
+                    title: 'Nuevo Postulado',
+                    message: `${app.profiles?.name || 'Candidato'} se postuló a ${app.jobs?.title}`,
+                    link: `/job/${app.job_id}/applicants`,
+                    date: app.created_at
+                });
+            });
+        } else if (user.role === 'candidate') {
+            // 1. Status Updates (anything not 'applied' or 'pending')
+            const updates = applications.filter(app => app.status !== 'applied' && app.status !== 'pending');
+            updates.forEach(app => {
+                const statusMap = {
+                    'reviewed': 'En Revisión',
+                    'interviewing': 'Entrevista',
+                    'offer': 'Oferta',
+                    'hired': 'Contratado',
+                    'rejected': 'Descartado'
+                };
+                newNotifications.push({
+                    id: `status-${app.id}`,
+                    type: 'status_update',
+                    title: 'Actualización de Estatus',
+                    message: `Tu postulación a ${app.jobs?.title} está: ${statusMap[app.status] || app.status}`,
+                    link: '/dashboard',
+                    date: app.updated_at || app.created_at || new Date().toISOString()
+                });
+            });
+
+            // 2. Contact Unlocks
+            contactUnlocks.forEach(unlock => {
+                // Ensure we have company info (fetched via select query)
+                const companyName = unlock.company?.name || 'Una empresa';
+                newNotifications.push({
+                    id: `unlock-${unlock.id}`,
+                    type: 'contact_unlock',
+                    title: 'Perfil Visto',
+                    message: `${companyName} ha desbloqueado tus datos de contacto.`,
+                    link: '/dashboard', // Or maybe to a "Profile Views" section if we had one
+                    date: unlock.created_at
+                });
+            });
+        }
+
+        // Sort by date desc
+        newNotifications.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        setNotifications(newNotifications);
+
+    }, [applications, user, contactUnlocks]); // Added contactUnlocks dependency
+
 
     return (
         <DataContext.Provider value={{
             jobs,
-            users,
             applications,
+            users,
             loading,
             notifications,
-            fetchJobs,
-            applyToJob,
-            postJob: addJob,
-            fetchCompanyApplications: fetchApplications,
+            contactUnlocks,
+            addJob,
+            updateJob,
+            deleteJob,
             toggleJobStatus,
-            adminRepublishJob,
             closeJob,
             republishJob,
-            adminGetUsers,
-            adminGetApplications,
-            updateUserProfile,
-            updateJob,
+            applyToJob,
             updateApplicationStatus,
             fetchMessages,
-            sendMessage
+            sendMessage,
+            updateUserProfile,
+            adminGetUsers,
+            adminGetApplications,
+            adminRepublishJob,
+            unlockCandidateContact
         }}>
-            {children}
+            {!loading && children}
         </DataContext.Provider>
     );
 };

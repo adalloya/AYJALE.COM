@@ -12,19 +12,34 @@ const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { jobs, users, applications, applyToJob, loading } = useData();
+    const { jobs, users, applications, applyToJob, loading, incrementJobView } = useData();
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (id) {
+            incrementJobView(id);
+        }
+    }, [id, incrementJobView]);
 
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1280);
+        const handleResize = () => {
+            const mobile = window.innerWidth < 1024;
+            setIsMobile(mobile);
+
+            // If resizing to desktop, redirect to main jobs page with selected job
+            if (!mobile && id) {
+                navigate(`/jobs?jobId=${id}`);
+            }
+        };
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [id, navigate]);
 
     const job = jobs.find(j => j.id === Number(id));
     const company = job?.profiles;

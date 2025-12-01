@@ -6,7 +6,9 @@ import SEO from '../components/SEO';
 import JobFilters from '../components/jobs/JobFilters';
 import JobDetailView from '../components/jobs/JobDetailView';
 import ApplicationModal from '../components/jobs/ApplicationModal';
-import { Building, MapPin, DollarSign } from 'lucide-react';
+import { Building, MapPin, DollarSign, Tag, Briefcase } from 'lucide-react';
+
+import { formatFriendlyDate } from '../utils/dateUtils';
 
 const JobsPage = () => {
     const { jobs, users, applications, applyToJob } = useData();
@@ -26,7 +28,10 @@ const JobsPage = () => {
         minSalary: searchParams.get('minSalary') || ''
     });
 
-    const [selectedJobId, setSelectedJobId] = useState(null);
+    const [selectedJobId, setSelectedJobId] = useState(() => {
+        const jobIdParam = searchParams.get('jobId');
+        return jobIdParam ? Number(jobIdParam) : null;
+    });
 
     // Update filters when URL params change
     useEffect(() => {
@@ -65,12 +70,30 @@ const JobsPage = () => {
         return matchesKeyword && matchesState && matchesCategory && matchesType && matchesSalary && job.active;
     }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    // Auto-select first job if none selected and jobs exist
+    // Auto-select first job if none selected and jobs exist (Desktop only)
     useEffect(() => {
-        if (!selectedJobId && filteredJobs.length > 0) {
+        if (!selectedJobId && filteredJobs.length > 0 && window.innerWidth >= 1024) {
             setSelectedJobId(filteredJobs[0].id);
         }
     }, [filteredJobs, selectedJobId]);
+
+    // Handle resize to switch between views
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1024 && selectedJobId) {
+                // If resizing to mobile and a job is selected, go to deck view
+                navigate(`/jobs/${selectedJobId}`, {
+                    state: {
+                        jobIds: filteredJobs.map(j => j.id),
+                        fromJobsPage: true
+                    }
+                });
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [selectedJobId, filteredJobs, navigate]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     const selectedCompany = selectedJob ? selectedJob.profiles : null;
@@ -133,7 +156,7 @@ const JobsPage = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:h-[calc(100vh-64px)] flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 h-full flex flex-col">
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
@@ -213,6 +236,14 @@ const JobsPage = () => {
 
                                 <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-3">
                                     <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                        <Briefcase className="w-3 h-3 mr-1" />
+                                        {job.type}
+                                    </span>
+                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                        <Tag className="w-3 h-3 mr-1" />
+                                        {job.category}
+                                    </span>
+                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
                                         <MapPin className="w-3 h-3 mr-1" />
                                         {job.location}
                                     </span>
@@ -223,7 +254,7 @@ const JobsPage = () => {
                                 </div>
 
                                 <div className="text-xs text-slate-400 text-right">
-                                    {new Date(job.created_at).toLocaleDateString()}
+                                    {formatFriendlyDate(job.created_at)}
                                 </div>
                             </div>
                         );

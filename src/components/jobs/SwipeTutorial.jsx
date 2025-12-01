@@ -25,11 +25,7 @@ const SwipeTutorial = ({ visible, onDismiss }) => {
                 <div className="relative w-16 h-16 mb-4">
                     {/* Icon Animation */}
                     <div className="absolute inset-0 flex items-center justify-center animate-swipe-hint">
-                        {isMobile ? (
-                            <Pointer className="w-12 h-12 text-white" />
-                        ) : (
-                            <Hand className="w-12 h-12 text-white" />
-                        )}
+                        <Hand className="w-12 h-12 text-white" />
                     </div>
                 </div>
                 <h3 className="text-lg font-bold mb-1 text-center">Desliza para navegar</h3>

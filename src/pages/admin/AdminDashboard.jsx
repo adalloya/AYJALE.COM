@@ -4,23 +4,26 @@ import { useAuth } from '../../context/AuthContext';
 import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [allUsers, setAllUsers] = useState([]);
     const [allApplications, setAllApplications] = useState([]);
+    const [allUnlocks, setAllUnlocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [usersData, appsData] = await Promise.all([
+                const [usersData, appsData, unlocksData] = await Promise.all([
                     adminGetUsers(),
-                    adminGetApplications()
+                    adminGetApplications(),
+                    adminGetContactUnlocks()
                 ]);
                 setAllUsers(usersData || []);
                 setAllApplications(appsData || []);
+                setAllUnlocks(unlocksData || []);
             } catch (error) {
                 console.error("Failed to load admin data", error);
                 setLoading(false);
@@ -31,7 +34,7 @@ const AdminDashboard = () => {
             }
         };
         loadData();
-    }, [adminGetUsers, adminGetApplications]);
+    }, [adminGetUsers, adminGetApplications, adminGetContactUnlocks]);
 
     const candidates = allUsers.filter(u => u.role === 'candidate');
     const companies = allUsers.filter(u => u.role === 'company');
@@ -95,6 +98,11 @@ const AdminDashboard = () => {
         a.jobs?.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const filteredUnlocks = allUnlocks.filter(u =>
+        u.company?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.candidate?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
@@ -106,7 +114,7 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-slate-900 mb-8">Panel de Administración</h1>
 
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
                     <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
                         <Users className="w-8 h-8" />
@@ -135,12 +143,32 @@ const AdminDashboard = () => {
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+                    <div className="p-3 rounded-full bg-teal-100 text-teal-600 mr-4">
+                        <Eye className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Vistas Totales</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                            {jobs.reduce((acc, job) => acc + (job.views || 0), 0)}
+                        </p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
                     <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
                         <Eye className="w-8 h-8" />
                     </div>
                     <div>
                         <p className="text-sm text-slate-500 font-medium">Postulaciones</p>
                         <p className="text-2xl font-bold text-slate-900">{allApplications.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center">
+                    <div className="p-3 rounded-full bg-indigo-100 text-indigo-600 mr-4">
+                        <Lock className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Contactos</p>
+                        <p className="text-2xl font-bold text-slate-900">{allUnlocks.length}</p>
                     </div>
                 </div>
             </div>
@@ -172,6 +200,12 @@ const AdminDashboard = () => {
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'applications' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
                             Postulaciones
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('unlocks')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'unlocks' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                        >
+                            Desbloqueos
                         </button>
                     </div>
                     <div className="relative w-full sm:w-64">
@@ -222,6 +256,13 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Candidato</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Vacante</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Fecha</th>
+                                    </>
+                                )}
+                                {activeTab === 'unlocks' && (
+                                    <>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Candidato Desbloqueado</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Fecha</th>
                                     </>
                                 )}
@@ -344,6 +385,19 @@ const AdminDashboard = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                         {formatDate(app.created_at)}
+                                    </td>
+                                </tr>
+                            ))}
+                            {activeTab === 'unlocks' && filteredUnlocks.map(unlock => (
+                                <tr key={unlock.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                        {unlock.company?.name || 'Empresa Eliminada'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {unlock.candidate?.name || 'Candidato Eliminado'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {formatDate(unlock.created_at)}
                                     </td>
                                 </tr>
                             ))}

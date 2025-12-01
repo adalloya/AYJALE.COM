@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
@@ -8,6 +8,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const loadedUserId = useRef(null); // Ref to track loaded user ID to avoid stale closures
 
     useEffect(() => {
         // Check active session
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
                 fetchProfile(session.user.id, session);
             } else {
                 setUser(null);
+                loadedUserId.current = null; // Reset ref on logout
                 setLoading(false);
             }
         });
@@ -36,7 +38,14 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const fetchProfile = async (userId, session = null) => {
-        console.log('fetchProfile called for:', userId);
+        // Check ref instead of state to avoid stale closure issues
+        if (loadedUserId.current === userId) {
+            setLoading(false);
+            return;
+        }
+
+        loadedUserId.current = userId; // Mark as processing/loaded
+
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -46,30 +55,28 @@ export const AuthProvider = ({ children }) => {
 
             if (error) {
                 console.error('fetchProfile DB error:', error);
+                // If error, maybe reset ref so we can try again? 
+                // But for now, let's keep it to prevent loop on error too.
                 throw error;
             }
 
-            console.log('fetchProfile DB data:', data);
+
 
             // Prioritize DB profile role if available, otherwise use session metadata
-            // This handles both existing users (DB source of truth) and new users (metadata while trigger runs)
             let finalUser = data;
             if (data?.role) {
-                console.log('fetchProfile using DB role:', data.role);
+                // Role found in DB
             } else if (session?.user?.user_metadata?.role) {
-                console.log('fetchProfile using metadata role (fallback):', session.user.user_metadata.role);
                 finalUser = {
                     ...data,
                     role: session.user.user_metadata.role
                 };
-            } else {
-                console.log('fetchProfile: No role found in DB or metadata');
             }
 
-            console.log('fetchProfile setting user:', finalUser);
             setUser(finalUser);
         } catch (error) {
             console.error('Error fetching profile:', error);
+            loadedUserId.current = null; // Reset on error to allow retry
         } finally {
             setLoading(false);
         }

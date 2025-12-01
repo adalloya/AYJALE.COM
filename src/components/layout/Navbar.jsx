@@ -62,6 +62,25 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotifOpen, setIsNotifOpen] = useState(false);
+    const menuRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                isMenuOpen &&
+                menuRef.current &&
+                !menuRef.current.contains(event.target) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(event.target)
+            ) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMenuOpen]);
 
     const handleLogout = () => {
         logout();
@@ -116,6 +135,9 @@ const Navbar = () => {
                                 <Link to="/dashboard" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                                     <LayoutDashboard className="w-4 h-4 mr-1" /> Panel Empresa
                                 </Link>
+                                <Link to="/company/candidates" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                                    <Users className="w-4 h-4 mr-1" /> Buscar Candidatos
+                                </Link>
                                 <Link to="/post-job" className="bg-secondary-100 text-secondary-700 hover:bg-secondary-200 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                                     <PlusCircle className="w-4 h-4 mr-1" /> Publicar Vacante
                                 </Link>
@@ -165,7 +187,27 @@ const Navbar = () => {
                     </div>
 
                     <div className="-mr-2 flex items-center sm:hidden">
+                        {user && (
+                            <div className="relative mr-2">
+                                <button
+                                    onClick={() => setIsNotifOpen(!isNotifOpen)}
+                                    className="text-slate-400 hover:text-slate-600 relative p-2"
+                                >
+                                    <Bell className="w-6 h-6" />
+                                    {notifications.length > 0 && (
+                                        <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                                    )}
+                                </button>
+                                {isNotifOpen && (
+                                    <NotificationDropdown
+                                        notifications={notifications}
+                                        onClose={() => setIsNotifOpen(false)}
+                                    />
+                                )}
+                            </div>
+                        )}
                         <button
+                            ref={buttonRef}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none"
                         >
@@ -177,7 +219,7 @@ const Navbar = () => {
 
             {/* Mobile menu */}
             {isMenuOpen && (
-                <div className="sm:hidden">
+                <div ref={menuRef} className="sm:hidden">
                     <div className="pt-2 pb-3 space-y-1">
                         <Link
                             to="/"
@@ -221,6 +263,13 @@ const Navbar = () => {
                                     className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
                                 >
                                     Panel Empresa
+                                </Link>
+                                <Link
+                                    to="/company/candidates"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Buscar Candidatos
                                 </Link>
                                 <Link
                                     to="/post-job"

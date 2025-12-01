@@ -19,6 +19,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import CandidateSearchPage from './pages/company/CandidateSearchPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -84,6 +85,12 @@ function App() {
               <Route path="/job/:id/applicants" element={
                 <ProtectedRoute allowedRoles={['company']}>
                   <JobApplicantsPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/company/candidates" element={
+                <ProtectedRoute allowedRoles={['company']}>
+                  <CandidateSearchPage />
                 </ProtectedRoute>
               } />
 

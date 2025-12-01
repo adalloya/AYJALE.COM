@@ -1,7 +1,8 @@
-import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag } from 'lucide-react';
+import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { formatFriendlyDate } from '../../utils/dateUtils';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
@@ -20,6 +21,11 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     };
 
     console.log('JobDetailView: Company Data:', company);
+
+    const formatTitle = (title) => {
+        if (!title) return '';
+        return title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
+    };
 
     // Mobile Deck Layout
     if (isMobileDeck) {
@@ -58,7 +64,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             )}
                         </div>
 
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{job.title}</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
                         <p className="text-slate-600 font-medium mb-4">
                             {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
                         </p>
@@ -67,6 +73,10 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <Briefcase className="w-3 h-3 mr-1.5" />
                                 {job.type}
+                            </span>
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                                <Tag className="w-3 h-3 mr-1.5" />
+                                {job.category}
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
@@ -156,7 +166,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
                     {/* Main Info */}
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{job.title}</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
 
                         <div className="flex flex-wrap items-center text-sm text-slate-600 mb-4 gap-y-2">
                             <span className="font-semibold text-slate-900 mr-2">
@@ -173,6 +183,10 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <Briefcase className="w-3 h-3 mr-1.5" />
                                 {job.type}
+                            </span>
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
+                                <Tag className="w-3 h-3 mr-1.5" />
+                                {job.category}
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
@@ -210,38 +224,6 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
             {/* Content */}
             <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div className="space-y-8">
-                    <section>
-                        <h2 className="text-lg font-bold text-slate-900 mb-4">Información del empleo</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <h3 className="text-sm font-semibold text-slate-900 mb-1 flex items-center">
-                                    <Briefcase className="w-4 h-4 mr-2 text-slate-500" />
-                                    Tipo de empleo
-                                </h3>
-                                <p className="text-sm text-slate-600 pl-6 bg-slate-50 inline-block px-3 py-1 rounded-full">
-                                    {job.type}
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold text-slate-900 mb-1 flex items-center">
-                                    <Calendar className="w-4 h-4 mr-2 text-slate-500" />
-                                    Publicado
-                                </h3>
-                                <p className="text-sm text-slate-600 pl-6">
-                                    {new Date(job.created_at).toLocaleDateString()}
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h2 className="text-lg font-bold text-slate-900 mb-4">Ubicación</h2>
-                        <div className="flex items-start text-slate-600 text-sm">
-                            <MapPin className="w-5 h-5 mr-2 text-slate-400 mt-0.5" />
-                            {job.location}
-                        </div>
-                    </section>
-
                     <section>
                         <h2 className="text-lg font-bold text-slate-900 mb-4">Descripción completa del empleo</h2>
                         <div className="text-slate-600 whitespace-pre-line leading-relaxed text-sm">

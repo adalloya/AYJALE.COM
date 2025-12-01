@@ -4,6 +4,7 @@ import { useData } from '../../context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Users, Upload, Briefcase, Share2, Facebook, MessageCircle, Eye, EyeOff, XCircle, Copy, RefreshCw, FileText, MapPin, Phone } from 'lucide-react';
 import EditCompanyProfileModal from '../../components/company/EditCompanyProfileModal';
+import Toast from '../../components/Toast';
 
 const CompanyDashboard = () => {
     const { user, updateUser } = useAuth();
@@ -13,15 +14,16 @@ const CompanyDashboard = () => {
     const myJobs = jobs.filter(job => job.company_id === user.id);
 
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [toast, setToast] = useState(null);
 
     const handleSaveProfile = async (updatedData) => {
         try {
             await updateUser(updatedData);
             setIsEditingProfile(false);
-            alert('Perfil actualizado correctamente');
+            setToast({ message: 'Perfil actualizado correctamente', type: 'success' });
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert('Error al actualizar perfil');
+            setToast({ message: 'Error al actualizar perfil', type: 'error' });
         }
     };
 
@@ -29,7 +31,7 @@ const CompanyDashboard = () => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                alert("La imagen es muy pesada. Por favor sube una imagen menor a 2MB.");
+                setToast({ message: "La imagen es muy pesada. Por favor sube una imagen menor a 2MB.", type: 'error' });
                 return;
             }
 
@@ -37,6 +39,7 @@ const CompanyDashboard = () => {
             reader.onloadend = () => {
                 console.log("Image converted to Base64, updating user profile...");
                 updateUser({ logo: reader.result });
+                setToast({ message: 'Logo actualizado correctamente', type: 'success' });
             };
             reader.readAsDataURL(file);
         }
@@ -44,6 +47,13 @@ const CompanyDashboard = () => {
 
     return (
         <div className="space-y-8">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
             {/* Company Profile Section */}
             {/* Company Profile Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 relative">
@@ -132,9 +142,29 @@ const CompanyDashboard = () => {
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="text-sm font-medium text-slate-500 truncate">Vacantes Activas</dt>
+                                    <dt className="text-sm font-medium text-slate-500">Vacantes Activas</dt>
                                     <dd>
                                         <div className="text-lg font-medium text-slate-900">{myJobs.filter(j => j.active).length}</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <Eye className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <div className="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt className="text-sm font-medium text-slate-500">Total Vacantes Vistas</dt>
+                                    <dd>
+                                        <div className="text-lg font-medium text-slate-900">
+                                            {myJobs.reduce((acc, job) => acc + (job.views || 0), 0)}
+                                        </div>
                                     </dd>
                                 </dl>
                             </div>
@@ -150,7 +180,7 @@ const CompanyDashboard = () => {
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="text-sm font-medium text-slate-500 truncate">Total Postulados</dt>
+                                    <dt className="text-sm font-medium text-slate-500">Total Postulados</dt>
                                     <dd>
                                         <div className="text-lg font-medium text-slate-900">{applications.length}</div>
                                     </dd>
@@ -161,11 +191,16 @@ const CompanyDashboard = () => {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h1 className="text-2xl font-bold text-slate-900">Mis Vacantes</h1>
-                <Link to="/post-job" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 flex items-center">
-                    <Plus className="w-4 h-4 mr-2" /> Nueva Vacante
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <Link to="/post-job" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 flex items-center justify-center">
+                        <Plus className="w-4 h-4 mr-2" /> Nueva Vacante
+                    </Link>
+                    <Link to="/company/candidates" className="bg-white text-slate-600 border border-slate-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-50 flex items-center justify-center">
+                        <Users className="w-4 h-4 mr-2" /> Buscar Candidatos
+                    </Link>
+                </div>
             </div>
 
             <div className="grid gap-6">
