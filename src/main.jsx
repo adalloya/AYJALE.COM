@@ -7,11 +7,11 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <HelmetProvider>
-      <ErrorBoundary>
+  <ErrorBoundary>
+    <StrictMode>
+      <HelmetProvider>
         <App />
-      </ErrorBoundary>
-    </HelmetProvider>
-  </StrictMode>,
+      </HelmetProvider>
+    </StrictMode>
+  </ErrorBoundary>,
 )
