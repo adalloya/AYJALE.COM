@@ -18,6 +18,7 @@ import ProfilePage from './pages/candidate/ProfilePage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import OnboardingPage from './pages/OnboardingPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -60,6 +61,7 @@ function App() {
               <Route path="/jobs" element={<JobsPage />} />
               <Route path="/privacidad" element={<PrivacyPage />} />
               <Route path="/terminos" element={<TermsPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
 
               <Route path="/dashboard" element={
                 <ProtectedRoute allowedRoles={['candidate', 'company', 'admin']}>
