@@ -179,24 +179,92 @@ const Navbar = () => {
             {isMenuOpen && (
                 <div className="sm:hidden">
                     <div className="pt-2 pb-3 space-y-1">
-                        <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50">
+                        <Link
+                            to="/"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                        >
                             Inicio
                         </Link>
-                        {/* Add mobile links here similarly if needed, keeping it simple for now */}
+
+                        {user && user.role === 'candidate' && (
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Mis Postulaciones
+                                </Link>
+                                <Link
+                                    to="/profile"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Mi Perfil
+                                </Link>
+                                <Link
+                                    to="/jobs"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Buscar Vacantes
+                                </Link>
+                            </>
+                        )}
+
+                        {user && user.role === 'company' && (
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Panel Empresa
+                                </Link>
+                                <Link
+                                    to="/post-job"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
+                                    Publicar Vacante
+                                </Link>
+                            </>
+                        )}
+
                         {user && (
-                            <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-slate-50">
+                            <button
+                                onClick={() => {
+                                    handleLogout();
+                                    setIsMenuOpen(false);
+                                }}
+                                className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-slate-50"
+                            >
                                 Cerrar Sesión
                             </button>
                         )}
+
                         {!user && (
                             <>
-                                <Link to="/jobs" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">
+                                <Link
+                                    to="/jobs"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
                                     Vacantes
                                 </Link>
-                                <Link to="/company/login" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">
+                                <Link
+                                    to="/company/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
+                                >
                                     Soy Empresa
                                 </Link>
-                                <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50">
+                                <Link
+                                    to="/auth?mode=register&role=candidate"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50"
+                                >
                                     Soy Candidato
                                 </Link>
                             </>

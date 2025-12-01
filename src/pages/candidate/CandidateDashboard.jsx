@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { Briefcase, User } from 'lucide-react';
 
 const CandidateDashboard = () => {
     const { user } = useAuth();
@@ -9,8 +11,25 @@ const CandidateDashboard = () => {
     const myApplications = applications.filter(app => app.candidate_id === user.id);
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-slate-900">Mis Postulaciones</h1>
+        <div className="space-y-8">
+            {/* Welcome Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h1 className="text-2xl font-bold text-slate-900 mb-2">Hola, {user.name}</h1>
+                <p className="text-slate-600 mb-6">¿Qué te gustaría hacer hoy?</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Link to="/jobs" className="flex items-center justify-center p-4 bg-secondary-50 border border-secondary-100 rounded-xl hover:bg-secondary-100 transition-colors group">
+                        <Briefcase className="w-6 h-6 text-secondary-600 mr-3 group-hover:scale-110 transition-transform" />
+                        <span className="font-semibold text-secondary-700">Buscar Vacantes</span>
+                    </Link>
+                    <Link to="/profile" className="flex items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors group">
+                        <User className="w-6 h-6 text-slate-600 mr-3 group-hover:scale-110 transition-transform" />
+                        <span className="font-semibold text-slate-700">Editar Mi Perfil</span>
+                    </Link>
+                </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-slate-900">Mis Postulaciones</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul className="divide-y divide-slate-200">
                     {myApplications.map(app => {
