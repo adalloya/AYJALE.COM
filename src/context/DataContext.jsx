@@ -207,6 +207,24 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const closeJob = async (jobId) => {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .update({
+                    active: false,
+                    expires_at: new Date().toISOString()
+                })
+                .eq('id', jobId);
+
+            if (error) throw error;
+            fetchJobs();
+        } catch (error) {
+            console.error("Error closing job:", error);
+            throw error;
+        }
+    };
+
     const adminGetUsers = async () => {
         try {
             const { data, error } = await supabase
@@ -346,6 +364,7 @@ export const DataProvider = ({ children }) => {
             fetchCompanyApplications: fetchApplications,
             toggleJobStatus,
             adminRepublishJob,
+            closeJob,
             adminGetUsers,
             adminGetApplications,
             updateUserProfile,
