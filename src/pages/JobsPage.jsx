@@ -16,6 +16,7 @@ const JobsPage = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const [filters, setFilters] = useState({
         keyword: searchParams.get('keyword') || '',
@@ -118,8 +119,11 @@ const JobsPage = () => {
             await applyToJob(job.id, user.id, {
                 comments
             });
-            setShowModal(false);
-            alert('¡Postulación enviada con éxito!');
+            setIsSuccess(true);
+            setTimeout(() => {
+                setShowModal(false);
+                setIsSuccess(false);
+            }, 3000);
         } catch (error) {
             console.error('Error applying:', error);
             alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
