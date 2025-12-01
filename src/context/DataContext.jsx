@@ -240,6 +240,20 @@ export const DataProvider = ({ children }) => {
         }
     }, []);
 
+    const adminGetContactUnlocks = useCallback(async () => {
+        try {
+            const { data, error } = await supabase
+                .from('contact_unlocks')
+                .select('*, company:company_id(name), candidate:candidate_id(name)');
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("Error fetching admin unlocks:", error);
+            throw error;
+        }
+    }, []);
+
     const deleteJob = async (id) => {
         const { error } = await supabase
             .from('jobs')
@@ -498,9 +512,9 @@ export const DataProvider = ({ children }) => {
             adminGetApplications,
             adminRepublishJob,
             incrementJobView,
-            incrementJobView,
             unlockCandidateContact,
-            fetchCandidateProfile
+            fetchCandidateProfile,
+            adminGetContactUnlocks
         }}>
             {!loading && children}
         </DataContext.Provider>
