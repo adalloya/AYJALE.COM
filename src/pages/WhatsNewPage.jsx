@@ -10,7 +10,8 @@ import {
     ArrowRight,
     CheckCircle2,
     Sparkles,
-    Layers
+    Layers,
+    Building2
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PhoneFrame, BrowserFrame } from '../components/marketing/DeviceFrames';
@@ -191,6 +192,31 @@ const WhatsNewPage = () => {
                         Crear Cuenta Gratis
                     </button>
                 </div>
+
+                {/* Company CTA Section */}
+                <div className="mt-20 bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative">
+                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10" />
+                    <div className="relative z-10 px-8 py-16 md:p-20 text-center">
+                        <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-bold mb-8">
+                            <Building2 className="w-4 h-4 mr-2" />
+                            Para Reclutadores y Empresas
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+                            ¿Buscas Talento?
+                        </h2>
+                        <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
+                            Descubre nuestras herramientas exclusivas para empresas: Buscador de CVs con IA, Pipeline de candidatos y más.
+                        </p>
+                        <button
+                            onClick={() => navigate('/solutions/companies')}
+                            className="px-10 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg shadow-xl hover:bg-slate-100 hover:scale-105 transition-all inline-flex items-center"
+                        >
+                            Ver Soluciones para Empresas
+                            <ArrowRight className="ml-2 w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     );
