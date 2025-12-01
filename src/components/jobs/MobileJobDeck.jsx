@@ -111,6 +111,20 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     // ...
 
+    const currentJob = jobs[currentIndex];
+    const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
+    const prevJob = currentIndex > 0 ? jobs[currentIndex - 1] : null;
+
+    // Determine which card is "behind" based on drag direction
+    // If dragging left (negative dragX), show next job. If dragging right, show prev job.
+    // Default to next job if no drag.
+    const backgroundJob = (dragX > 0 && prevJob) ? prevJob : nextJob;
+
+    const company = currentJob?.profiles;
+    const backgroundCompany = backgroundJob?.profiles;
+
+    const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
+
     // Dynamic Styles for Background Card
     // If swiping out, force full scale/opacity/color to match the incoming foreground state
     const bgScale = isSwipingOut ? 1 : 0.95 + (Math.abs(dragX) / windowWidth) * 0.05;
