@@ -162,15 +162,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 success={isSuccess}
             />
 
-            {/* Bottom Controls (Floating) */}
-            <div className="fixed bottom-0 left-0 right-0 bg-transparent p-4 flex justify-center items-center z-30 safe-area-bottom pointer-events-none">
-                <button
-                    onClick={onBack}
-                    className="bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl pointer-events-auto transform hover:scale-105 transition-transform"
-                >
-                    Volver al listado
-                </button>
-            </div>
+
         </div>
     );
 };
