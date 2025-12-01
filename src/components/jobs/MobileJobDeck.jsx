@@ -109,6 +109,58 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         setIsSwipingOut(false);
     };
 
+    const handleApply = () => {
+        if (!user) {
+            navigate(`/auth?returnUrl=/jobs/${currentJob.id}`);
+            return;
+        }
+
+        if (user.role !== 'candidate') {
+            alert('Solo los candidatos pueden postularse.');
+            return;
+        }
+
+        if (currentJob.is_external && currentJob.external_url) {
+            window.open(currentJob.external_url, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
+        // Check profile completeness (simplified version)
+        const required = ['name', 'title', 'location', 'bio'];
+        const hasRequired = required.every(field => user[field] && user[field].trim() !== '');
+
+        if (hasRequired) {
+            setShowModal(true);
+        } else {
+            navigate(`/profile?applyingTo=${currentJob.id}`);
+        }
+    };
+
+    const handleModalSubmit = async (comments) => {
+        setApplying(true);
+        try {
+            await applyToJob(currentJob.id, user.id, {
+                name: user.name,
+                email: user.email,
+                title: user.title,
+                location: user.location,
+                bio: user.bio,
+                skills: user.skills,
+                comments
+            });
+            setIsSuccess(true);
+            setTimeout(() => {
+                setShowModal(false);
+                setIsSuccess(false);
+            }, 3000);
+        } catch (error) {
+            console.error('Error applying:', error);
+            alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
+        } finally {
+            setApplying(false);
+        }
+    };
+
     // ...
 
     const currentJob = jobs[currentIndex];
