@@ -24,10 +24,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     // Mobile Deck Layout
     if (isMobileDeck) {
         return (
-            <div className="bg-white h-full flex flex-col relative overflow-hidden border-4 border-green-500">
-                <div className="bg-green-500 text-white text-center font-bold p-1 text-xs">
-                    MOBILE VIEW ACTIVE (v2.0)
-                </div>
+            <div className="bg-white h-full flex flex-col relative overflow-hidden">
                 {/* Banner Header */}
                 <div className="relative p-6 pt-12 pb-8 flex-shrink-0">
                     {/* Background Logo Banner */}
@@ -116,10 +113,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
     // Standard Desktop Layout
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col border-4 border-red-500">
-            <div className="bg-red-500 text-white text-center font-bold p-1 text-xs">
-                DESKTOP VIEW ACTIVE
-            </div>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
             {/* Header */}
             <div className="p-6 border-b border-slate-100">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
