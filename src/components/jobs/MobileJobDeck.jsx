@@ -17,7 +17,49 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     const [isSwipingOut, setIsSwipingOut] = useState(false);
 
-    // ...
+    const [dragX, setDragX] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
+
+    const cardRef = useRef(null);
+    const windowWidth = window.innerWidth;
+    const threshold = windowWidth * 0.3; // Drag 30% of screen to trigger
+
+    const [showModal, setShowModal] = useState(false);
+    const [applying, setApplying] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    // Initialize index based on initialJobId
+    useEffect(() => {
+        const index = jobs.findIndex(j => j.id === Number(initialJobId));
+        if (index !== -1) {
+            setCurrentIndex(index);
+        }
+    }, [initialJobId, jobs]);
+
+    const onTouchStart = (e) => {
+        if (exitDirection) return;
+        setIsDragging(true);
+        setTouchStart(e.targetTouches[0].clientX);
+        setTouchStartY(e.targetTouches[0].clientY);
+        setDragX(0);
+    };
+
+    const onTouchMove = (e) => {
+        if (!isDragging || !touchStart) return;
+
+        const currentX = e.targetTouches[0].clientX;
+        const currentY = e.targetTouches[0].clientY;
+        const diffX = currentX - touchStart;
+        const diffY = currentY - touchStartY;
+
+        // Lock vertical scroll if dragging horizontally
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (e.cancelable) e.preventDefault(); // Prevent scrolling
+        }
+
+        setDragX(diffX);
+    };
 
     const onTouchEnd = () => {
         if (!isDragging) return;
