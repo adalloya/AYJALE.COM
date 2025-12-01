@@ -52,9 +52,13 @@ const AdminDashboard = () => {
             try {
                 await updateUserProfile(userId, { role: 'company' });
                 alert('Rol actualizado correctamente.');
-                // Refresh data
-                const usersData = await adminGetUsers();
-                setAllUsers(usersData || []);
+
+                // Update local state immediately to reflect change without waiting for re-fetch
+                setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, role: 'company' } : u));
+
+                // Optional: Re-fetch to be sure, but local update handles the UI
+                // const usersData = await adminGetUsers();
+                // setAllUsers(usersData || []);
             } catch (error) {
                 console.error("Error migrating role:", error);
                 alert('Error al migrar rol: ' + error.message);
