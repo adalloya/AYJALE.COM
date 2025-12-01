@@ -41,13 +41,17 @@ const LandingPage = () => {
             {/* Announcement Banner */}
             <div
                 onClick={() => navigate('/whats-new')}
-                className="bg-gradient-to-r from-secondary-600 to-orange-500 text-white py-2.5 px-4 cursor-pointer hover:bg-secondary-700 transition-colors shadow-sm"
+                className="bg-gradient-to-r from-secondary-600 to-orange-500 text-white py-3 px-4 cursor-pointer hover:bg-secondary-700 transition-colors shadow-sm"
             >
-                <div className="max-w-7xl mx-auto flex items-center justify-center text-sm font-medium">
-                    <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                    <span className="mr-1 font-bold">¡Nuevo!</span>
-                    <span className="mr-2">Descubre la Inteligencia Artificial de Ayjale.com</span>
-                    <ArrowRight className="w-4 h-4" />
+                <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-medium text-center">
+                    <div className="flex items-center bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full">
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5 animate-pulse" />
+                        <span className="font-bold text-xs uppercase tracking-wide">Nuevo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span>Descubre la Inteligencia Artificial de Ayjale.com</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </div>
                 </div>
             </div>
 
