@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 
-const JobDetailView = ({ job, company, onApply, hasApplied }) => {
+const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -19,6 +19,97 @@ const JobDetailView = ({ job, company, onApply, hasApplied }) => {
         window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
     };
 
+    // Mobile Deck Layout
+    if (isMobileDeck) {
+        return (
+            <div className="bg-white h-full flex flex-col relative overflow-hidden">
+                {/* Banner Header */}
+                <div className="relative p-6 pt-12 pb-8 flex-shrink-0">
+                    {/* Background Logo Banner */}
+                    <div className="absolute inset-0 overflow-hidden z-0">
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/90 to-white z-10" />
+                        {!job.is_confidential && company?.logo && (
+                            <img
+                                src={company.logo}
+                                alt=""
+                                className="w-full h-full object-cover opacity-10 blur-sm scale-110"
+                            />
+                        )}
+                    </div>
+
+                    {/* Content Overlay */}
+                    <div className="relative z-20 flex flex-col items-center text-center">
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{job.title}</h1>
+                        <p className="text-slate-600 font-medium mb-4">
+                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                        </p>
+
+                        <div className="flex flex-wrap justify-center gap-2 mb-6">
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                                <Briefcase className="w-3 h-3 mr-1.5" />
+                                {job.type}
+                            </span>
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                                <DollarSign className="w-3 h-3 mr-1.5" />
+                                {job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'} {job.currency}
+                            </span>
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                                <MapPin className="w-3 h-3 mr-1.5" />
+                                {job.location}
+                            </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-3 w-full">
+                            {hasApplied ? (
+                                <button disabled className="flex-1 bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm">
+                                    Ya te has postulado
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={onApply}
+                                    className="flex-1 bg-secondary-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md active:scale-95"
+                                >
+                                    Postularme ahora
+                                </button>
+                            )}
+
+                            <button
+                                onClick={handleShare}
+                                className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-sm active:scale-95"
+                                title="Compartir"
+                            >
+                                <Share2 className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-20">
+                    <div className="prose prose-slate prose-sm max-w-none">
+                        <h2 className="text-lg font-bold text-slate-900 mb-4 mt-2">Descripción completa del empleo</h2>
+                        <div className="text-slate-600 whitespace-pre-line leading-relaxed">
+                            {job.description}
+                        </div>
+                    </div>
+
+                    <div className="pt-8 mt-8 border-t border-slate-100 flex justify-between items-center pb-8">
+                        <button
+                            onClick={handleReport}
+                            className="flex items-center text-slate-400 text-xs hover:text-slate-600 transition-colors"
+                        >
+                            <Flag className="w-3 h-3 mr-1.5" />
+                            Reportar empleo
+                        </button>
+                        <span className="text-xs text-slate-300 font-mono">ID: {String(job.id).slice(0, 8)}</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Standard Desktop Layout
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
             {/* Header */}
