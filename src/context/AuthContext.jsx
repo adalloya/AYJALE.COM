@@ -21,7 +21,10 @@ export const AuthProvider = ({ children }) => {
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
+            if (_event === 'PASSWORD_RECOVERY') {
+                // Force redirect to reset password page
+                window.location.href = '/reset-password';
+            } else if (session?.user) {
                 fetchProfile(session.user.id, session);
             } else {
                 setUser(null);
