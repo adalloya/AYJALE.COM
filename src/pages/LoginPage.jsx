@@ -1,10 +1,17 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, Building2, CheckCircle, Briefcase, Search } from 'lucide-react';
 
 const LoginPage = () => {
-    const { loginByRole } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     const handleLogin = (role) => {
         if (role === 'candidate') {
