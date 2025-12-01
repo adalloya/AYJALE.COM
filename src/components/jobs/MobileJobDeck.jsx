@@ -13,10 +13,15 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [slideDirection, setSlideDirection] = useState(''); // 'left' or 'right'
+
+    const [dragX, setDragX] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
+
+    const cardRef = useRef(null);
+    const windowWidth = window.innerWidth;
+    const threshold = windowWidth * 0.3; // Drag 30% of screen to trigger
 
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
@@ -30,66 +35,76 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         }
     }, [initialJobId, jobs]);
 
-    const minSwipeDistance = 50;
-    const maxVerticalDistance = 50; // Ignore horizontal swipe if vertical scroll is detected
-
     const onTouchStart = (e) => {
-        setTouchEnd(null);
+        if (exitDirection) return;
+        setIsDragging(true);
         setTouchStart(e.targetTouches[0].clientX);
         setTouchStartY(e.targetTouches[0].clientY);
+        setDragX(0);
     };
 
     const onTouchMove = (e) => {
-        setTouchEnd(e.targetTouches[0].clientX);
+        if (!isDragging || !touchStart) return;
+
+        const currentX = e.targetTouches[0].clientX;
+        const currentY = e.targetTouches[0].clientY;
+        const diffX = currentX - touchStart;
+        const diffY = currentY - touchStartY;
+
+        // Lock vertical scroll if dragging horizontally
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (e.cancelable) e.preventDefault(); // Prevent scrolling
+        }
+
+        setDragX(diffX);
     };
 
-    const onTouchEnd = (e) => {
-        if (!touchStart || !touchEnd) return;
+    const onTouchEnd = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
 
-        const distanceX = touchStart - touchEnd;
-        const distanceY = touchStartY - e.changedTouches[0].clientY;
-
-        // If vertical scroll is significant, ignore horizontal swipe
-        if (Math.abs(distanceY) > maxVerticalDistance) return;
-
-        const isLeftSwipe = distanceX > minSwipeDistance;
-        const isRightSwipe = distanceX < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            handleNext();
-        } else if (isRightSwipe) {
-            handlePrev();
+        if (Math.abs(dragX) > threshold) {
+            // Swiped far enough
+            if (dragX < 0 && currentIndex < jobs.length - 1) {
+                // Swipe Left -> Next
+                setExitDirection('left');
+                setTimeout(() => {
+                    handleNext();
+                }, 200); // Wait for animation
+            } else if (dragX > 0 && currentIndex > 0) {
+                // Swipe Right -> Prev
+                setExitDirection('right');
+                setTimeout(() => {
+                    handlePrev();
+                }, 200);
+            } else {
+                // Boundary hit (first or last item), spring back
+                setDragX(0);
+            }
+        } else {
+            // Not far enough, spring back
+            setDragX(0);
         }
     };
 
     const handleNext = () => {
-        if (currentIndex < jobs.length - 1 && !isAnimating) {
-            setSlideDirection('left');
-            setIsAnimating(true);
-            setTimeout(() => {
-                setCurrentIndex(prev => prev + 1);
-                setIsAnimating(false);
-                setSlideDirection('');
-                // Update URL without reloading
-                const nextJob = jobs[currentIndex + 1];
-                window.history.replaceState(null, '', `/jobs/${nextJob.id}`);
-            }, 300);
-        }
+        const nextIndex = currentIndex + 1;
+        setCurrentIndex(nextIndex);
+        setDragX(0);
+        setExitDirection(null);
+        // Update URL
+        const nextJob = jobs[nextIndex];
+        window.history.replaceState(null, '', `/jobs/${nextJob.id}`);
     };
 
     const handlePrev = () => {
-        if (currentIndex > 0 && !isAnimating) {
-            setSlideDirection('right');
-            setIsAnimating(true);
-            setTimeout(() => {
-                setCurrentIndex(prev => prev - 1);
-                setIsAnimating(false);
-                setSlideDirection('');
-                // Update URL without reloading
-                const prevJob = jobs[currentIndex - 1];
-                window.history.replaceState(null, '', `/jobs/${prevJob.id}`);
-            }, 300);
-        }
+        const prevIndex = currentIndex - 1;
+        setCurrentIndex(prevIndex);
+        setDragX(0);
+        setExitDirection(null);
+        // Update URL
+        const prevJob = jobs[prevIndex];
+        window.history.replaceState(null, '', `/jobs/${prevJob.id}`);
     };
 
     const handleApply = () => {
@@ -145,19 +160,36 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     };
 
     const currentJob = jobs[currentIndex];
+    const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
+    const prevJob = currentIndex > 0 ? jobs[currentIndex - 1] : null;
+
+    // Determine which card is "behind" based on drag direction
+    // If dragging left (negative dragX), show next job. If dragging right, show prev job.
+    // Default to next job if no drag.
+    const backgroundJob = (dragX > 0 && prevJob) ? prevJob : nextJob;
+
     const company = currentJob?.profiles;
+    const backgroundCompany = backgroundJob?.profiles;
+
     const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
 
-    // Animation classes
-    const containerClass = `h-full transition-transform duration-300 ease-in-out transform ${slideDirection === 'left' ? '-translate-x-full opacity-0' :
-            slideDirection === 'right' ? 'translate-x-full opacity-0' :
-                'translate-x-0 opacity-100'
-        }`;
+    // Dynamic Styles
+    const rotate = dragX * 0.05; // Slight rotation
+    const opacity = 1 - (Math.abs(dragX) / (windowWidth * 1.5)); // Fade out slightly
+
+    const cardStyle = {
+        transform: exitDirection
+            ? `translateX(${exitDirection === 'left' ? '-150%' : '150%'}) rotate(${exitDirection === 'left' ? -20 : 20}deg)`
+            : `translateX(${dragX}px) rotate(${rotate}deg)`,
+        opacity: exitDirection ? 0 : 1, // opacity,
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
+        zIndex: 10
+    };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-50 overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-100 overflow-hidden">
             {/* Top Navigation Bar */}
-            <div className="bg-white px-4 py-3 shadow-sm flex justify-between items-center z-10 flex-shrink-0">
+            <div className="bg-white px-4 py-3 shadow-sm flex justify-between items-center z-20 flex-shrink-0 relative">
                 <button
                     onClick={onBack}
                     className="flex items-center text-slate-600 font-medium text-sm"
@@ -170,16 +202,43 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 </div>
             </div>
 
-            {/* Swipeable Content Area */}
-            <div
-                className="flex-1 relative overflow-hidden"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-            >
-                <div className={containerClass}>
-                    {currentJob && (
-                        <div className="h-full pb-20 px-4 pt-4"> {/* Padding for bottom controls */}
+            {/* Deck Area */}
+            <div className="flex-1 relative w-full h-full overflow-hidden p-4">
+
+                {/* Background Card (The one appearing) */}
+                {backgroundJob && (
+                    <div
+                        className="absolute inset-4 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transform scale-95 opacity-50"
+                        style={{
+                            transform: `scale(${0.95 + (Math.abs(dragX) / windowWidth) * 0.05})`,
+                            opacity: 0.5 + (Math.abs(dragX) / windowWidth) * 0.5,
+                            zIndex: 1
+                        }}
+                    >
+                        <div className="h-full overflow-hidden pointer-events-none opacity-50 grayscale">
+                            {/* Simplified view for background to save performance? Or full view? */}
+                            <JobDetailView
+                                job={backgroundJob}
+                                company={backgroundCompany}
+                                onApply={() => { }}
+                                hasApplied={false}
+                                isMobileDeck={true}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Current Card (Draggable) */}
+                {currentJob && (
+                    <div
+                        ref={cardRef}
+                        className="absolute inset-4 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden cursor-grab active:cursor-grabbing"
+                        style={cardStyle}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    >
+                        <div className="h-full overflow-y-auto custom-scrollbar pb-20">
                             <JobDetailView
                                 job={currentJob}
                                 company={company}
@@ -188,8 +247,16 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 isMobileDeck={true}
                             />
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!currentJob && (
+                    <div className="flex items-center justify-center h-full text-slate-400">
+                        No hay más vacantes.
+                    </div>
+                )}
+
             </div>
 
             <ApplicationModal
@@ -202,28 +269,12 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             />
 
             {/* Bottom Controls (Floating) */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 flex justify-between items-center z-20 safe-area-bottom">
-                <button
-                    onClick={handlePrev}
-                    disabled={currentIndex === 0}
-                    className={`p-2 rounded-full border ${currentIndex === 0 ? 'text-slate-300 border-slate-200' : 'text-slate-600 border-slate-300 hover:bg-slate-50'}`}
-                >
-                    <ChevronLeft className="w-6 h-6" />
-                </button>
-
+            <div className="fixed bottom-0 left-0 right-0 bg-transparent p-4 flex justify-center items-center z-30 safe-area-bottom pointer-events-none">
                 <button
                     onClick={onBack}
-                    className="bg-slate-900 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg"
+                    className="bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl pointer-events-auto transform hover:scale-105 transition-transform"
                 >
                     Volver al listado
-                </button>
-
-                <button
-                    onClick={handleNext}
-                    disabled={currentIndex === jobs.length - 1}
-                    className={`p-2 rounded-full border ${currentIndex === jobs.length - 1 ? 'text-slate-300 border-slate-200' : 'text-slate-600 border-slate-300 hover:bg-slate-50'}`}
-                >
-                    <ChevronRight className="w-6 h-6" />
                 </button>
             </div>
         </div>
