@@ -131,6 +131,19 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const bgOpacity = isSwipingOut ? 1 : 0.5 + (Math.abs(dragX) / windowWidth) * 0.5;
     const bgGrayscale = isSwipingOut ? 0 : 1; // 1 = grayscale, 0 = color
 
+    // Dynamic Styles
+    const rotate = dragX * 0.05; // Slight rotation
+    const opacity = 1 - (Math.abs(dragX) / (windowWidth * 1.5)); // Fade out slightly
+
+    const cardStyle = {
+        transform: exitDirection
+            ? `translateX(${exitDirection === 'left' ? '-150%' : '150%'}) rotate(${exitDirection === 'left' ? -20 : 20}deg)`
+            : `translateX(${dragX}px) rotate(${rotate}deg)`,
+        opacity: exitDirection ? 0 : 1, // opacity,
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
+        zIndex: 10
+    };
+
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-100 overflow-hidden">
             {/* ... Top Bar ... */}
