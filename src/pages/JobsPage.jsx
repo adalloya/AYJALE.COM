@@ -129,7 +129,7 @@ const JobsPage = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-64px)] flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:h-[calc(100vh-64px)] flex flex-col">
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
@@ -141,6 +141,7 @@ const JobsPage = () => {
                 onSubmit={handleModalSubmit}
                 jobTitle={jobs.find(j => j.id === selectedJobId)?.title}
                 loading={applying}
+                success={isSuccess}
             />
 
             <JobFilters
@@ -150,9 +151,9 @@ const JobsPage = () => {
                 resultCount={filteredJobs.length}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 lg:overflow-hidden">
                 {/* Left Column: Job List */}
-                <div className="lg:col-span-5 overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
+                <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
                     {filteredJobs.map(job => {
                         const company = job.profiles;
                         const isSelected = job.id === selectedJobId;
