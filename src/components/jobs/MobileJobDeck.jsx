@@ -197,7 +197,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-100 overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col overflow-hidden">
             {/* ... Top Bar ... */}
             <div className="bg-white px-4 py-3 shadow-sm flex justify-between items-center z-20 flex-shrink-0 relative">
                 <button
