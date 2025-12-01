@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
-import { Search, MapPin, Briefcase, Package, Truck, Shield, Sparkles, ShoppingBag, Hammer } from 'lucide-react';
+import { Search, MapPin, Briefcase, Package, Truck, Shield, Sparkles, ShoppingBag, Hammer, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CompanyCarousel from '../components/CompanyCarousel';
 import MexicoMap from '../components/MexicoMap';
@@ -37,6 +37,20 @@ const LandingPage = () => {
                 title="Inicio"
                 description="Encuentra tu trabajo ideal en México. Conectamos a los mejores candidatos con las empresas líderes del país."
             />
+
+            {/* Announcement Banner */}
+            <div
+                onClick={() => navigate('/whats-new')}
+                className="bg-gradient-to-r from-secondary-600 to-orange-500 text-white py-2.5 px-4 cursor-pointer hover:bg-secondary-700 transition-colors shadow-sm"
+            >
+                <div className="max-w-7xl mx-auto flex items-center justify-center text-sm font-medium">
+                    <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                    <span className="mr-1 font-bold">¡Nuevo!</span>
+                    <span className="mr-2">Descubre la Inteligencia Artificial de Ayjale.com</span>
+                    <ArrowRight className="w-4 h-4" />
+                </div>
+            </div>
+
             {/* Hero Section */}
             <section className="text-center space-y-4 py-12">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">

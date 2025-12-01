@@ -23,6 +23,7 @@ import CandidateSearchPage from './pages/company/CandidateSearchPage';
 import EvaluationCenterPage from './pages/candidate/EvaluationCenterPage';
 import TestExecutionPage from './pages/candidate/TestExecutionPage';
 import TestRunner from './pages/assessment/TestRunner';
+import WhatsNewPage from './pages/WhatsNewPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -128,6 +129,8 @@ function App() {
                   <TestRunner />
                 </ProtectedRoute>
               } />
+
+              <Route path="/whats-new" element={<WhatsNewPage />} />
 
               {/* Placeholder for other routes */}
               <Route path="*" element={<Navigate to="/" replace />} />
