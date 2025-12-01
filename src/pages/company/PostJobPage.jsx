@@ -28,49 +28,61 @@ const PostJobPage = () => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const duplicateId = searchParams.get('duplicate');
+    const [lastInitializedId, setLastInitializedId] = useState(null);
 
     useEffect(() => {
         const targetId = jobId || duplicateId;
-        if (targetId && jobs.length > 0) {
-            const jobToEdit = jobs.find(j => j.id === Number(targetId));
-            if (jobToEdit) {
-                // Security check
-                if (jobToEdit.company_id !== user.id && user.role !== 'admin') {
-                    navigate('/dashboard');
-                    return;
-                }
 
-                // Parse location to extract State and City if possible
-                let state = jobToEdit.location;
-                let city = '';
+        // If no ID, nothing to do (new job)
+        if (!targetId) return;
 
-                // Check if location is in "City, State" format
-                if (jobToEdit.location && jobToEdit.location.includes(',')) {
-                    const parts = jobToEdit.location.split(',').map(p => p.trim());
-                    // Assuming format "City, State"
-                    if (parts.length >= 2) {
-                        const possibleState = parts[parts.length - 1];
-                        // Verify if the last part is a valid state
-                        if (MEXICAN_STATES.includes(possibleState)) {
-                            state = possibleState;
-                            city = parts.slice(0, parts.length - 1).join(', ');
-                        }
+        // If we already initialized this ID, stop.
+        if (lastInitializedId === targetId) return;
+
+        // If jobs aren't loaded yet, wait.
+        if (jobs.length === 0) return;
+
+        const jobToEdit = jobs.find(j => j.id === Number(targetId));
+        if (jobToEdit) {
+            // Security check
+            if (jobToEdit.company_id !== user.id && user.role !== 'admin') {
+                navigate('/dashboard');
+                return;
+            }
+
+            // Parse location to extract State and City if possible
+            let state = jobToEdit.location;
+            let city = '';
+
+            // Check if location is in "City, State" format
+            if (jobToEdit.location && jobToEdit.location.includes(',')) {
+                const parts = jobToEdit.location.split(',').map(p => p.trim());
+                // Assuming format "City, State"
+                if (parts.length >= 2) {
+                    const possibleState = parts[parts.length - 1];
+                    // Verify if the last part is a valid state
+                    if (MEXICAN_STATES.includes(possibleState)) {
+                        state = possibleState;
+                        city = parts.slice(0, parts.length - 1).join(', ');
                     }
                 }
-
-                setFormData({
-                    title: jobToEdit.title + (duplicateId ? ' (Copia)' : ''), // Append (Copia) if duplicating
-                    description: jobToEdit.description,
-                    category: jobToEdit.category,
-                    salary: jobToEdit.salary,
-                    type: jobToEdit.type,
-                    location: state,
-                    city: city,
-                    isConfidential: jobToEdit.is_confidential
-                });
             }
+
+            setFormData({
+                title: jobToEdit.title + (duplicateId ? ' (Copia)' : ''), // Append (Copia) if duplicating
+                description: jobToEdit.description,
+                category: jobToEdit.category,
+                salary: jobToEdit.salary,
+                type: jobToEdit.type,
+                location: state,
+                city: city,
+                isConfidential: jobToEdit.is_confidential
+            });
+
+            // Mark this ID as initialized so we don't overwrite user edits on next poll
+            setLastInitializedId(targetId);
         }
-    }, [jobId, duplicateId, jobs, user, navigate]);
+    }, [jobId, duplicateId, jobs, user, navigate, lastInitializedId]);
 
     const handleGenerateDescription = () => {
         if (!formData.title) {
