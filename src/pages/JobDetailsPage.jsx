@@ -10,11 +10,19 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { jobs, users, applications, applyToJob } = useData();
+    const { jobs, users, applications, applyToJob, loading } = useData();
     const { user } = useAuth();
 
     const job = jobs.find(j => j.id === Number(id));
     const company = job?.profiles;
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-600"></div>
+            </div>
+        );
+    }
 
     if (!job) {
         return <div className="text-center py-12">Vacante no encontrada.</div>;
