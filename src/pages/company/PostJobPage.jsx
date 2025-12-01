@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
+import { MEXICO_DATA } from '../../data/mexicoData';
 import { generateJobDescription } from '../../utils/jobDescriptionGenerator';
 import { Sparkles } from 'lucide-react';
 
@@ -19,7 +20,8 @@ const PostJobPage = () => {
         category: '',
         salary: '',
         type: 'Presencial',
-        location: '',
+        location: '', // This will hold the State
+        city: '',     // This will hold the City/Municipality
         isConfidential: false
     });
 
@@ -34,13 +36,33 @@ const PostJobPage = () => {
                     navigate('/dashboard');
                     return;
                 }
+
+                // Parse location to extract State and City if possible
+                let state = jobToEdit.location;
+                let city = '';
+
+                // Check if location is in "City, State" format
+                if (jobToEdit.location && jobToEdit.location.includes(',')) {
+                    const parts = jobToEdit.location.split(',').map(p => p.trim());
+                    // Assuming format "City, State"
+                    if (parts.length >= 2) {
+                        const possibleState = parts[parts.length - 1];
+                        // Verify if the last part is a valid state
+                        if (MEXICAN_STATES.includes(possibleState)) {
+                            state = possibleState;
+                            city = parts.slice(0, parts.length - 1).join(', ');
+                        }
+                    }
+                }
+
                 setFormData({
                     title: jobToEdit.title,
                     description: jobToEdit.description,
                     category: jobToEdit.category,
                     salary: jobToEdit.salary,
                     type: jobToEdit.type,
-                    location: jobToEdit.location,
+                    location: state,
+                    city: city,
                     isConfidential: jobToEdit.is_confidential
                 });
             }
@@ -64,13 +86,19 @@ const PostJobPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Combine City and State for storage
+        const fullLocation = formData.city
+            ? `${formData.city}, ${formData.location}`
+            : formData.location;
+
         const jobData = {
             title: formData.title,
             description: formData.description,
             category: formData.category,
             salary: Number(formData.salary),
             type: formData.type,
-            location: formData.location,
+            location: fullLocation,
             is_confidential: formData.isConfidential,
             currency: 'MXN'
         };
@@ -179,10 +207,26 @@ const PostJobPage = () => {
                             required
                             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
                             value={formData.location}
-                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                            onChange={e => setFormData({ ...formData, location: e.target.value, city: '' })}
                         >
-                            <option value="">Seleccionar...</option>
+                            <option value="">Seleccionar Estado...</option>
                             {MEXICAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Ciudad / Municipio</label>
+                        <select
+                            required
+                            disabled={!formData.location}
+                            className={`mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white ${!formData.location ? 'bg-slate-100 text-slate-400' : ''}`}
+                            value={formData.city}
+                            onChange={e => setFormData({ ...formData, city: e.target.value })}
+                        >
+                            <option value="">Seleccionar Ciudad...</option>
+                            {formData.location && MEXICO_DATA[formData.location]?.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
