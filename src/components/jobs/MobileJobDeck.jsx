@@ -575,4 +575,5 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     );
 };
 
-export default MobileJobDeck;
+import { memo } from 'react';
+export default memo(MobileJobDeck);

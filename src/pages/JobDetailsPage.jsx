@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MobileJobDeck from '../components/jobs/MobileJobDeck';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
@@ -120,9 +120,12 @@ const JobDetailsPage = () => {
     if (isMobile) {
         // console.log('JobDetailsPage: Detected Mobile View');
         // Filter jobs from context to match the IDs passed, or use current job if no IDs
-        const deckJobs = (jobIds && jobIds.length > 0)
-            ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
-            : [job];
+        // Filter jobs from context to match the IDs passed, or use current job if no IDs
+        const deckJobs = useMemo(() => {
+            return (jobIds && jobIds.length > 0)
+                ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
+                : (job ? [job] : []);
+        }, [jobIds, jobs, job]);
 
         // console.log('JobDetailsPage: Deck Jobs:', deckJobs.length);
 
