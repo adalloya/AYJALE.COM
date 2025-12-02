@@ -343,37 +343,19 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 {/* Right: Hamburger Menu */}
                 <div className="flex justify-end">
                     <button
-                        onClick={() => setIsMenuOpen(true)}
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="p-1 text-slate-600 hover:bg-slate-50 rounded-full"
                     >
-                        <Menu className="w-6 h-6" />
+                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>
             </div>
 
-            {/* Menu Overlay */}
+            {/* Menu Dropdown (Not full screen) */}
             {isMenuOpen && (
-                <div className="fixed inset-0 z-[200] bg-white animate-fade-in flex flex-col">
-                    {/* Menu Header */}
-                    <div className="px-4 py-3 shadow-sm flex justify-between items-center border-b border-slate-100">
-                        <img src={logo} alt="AyJale" className="h-8 w-auto object-contain" />
-                        <div className="flex items-center space-x-4">
-                            <button className="relative p-1 text-slate-400">
-                                <Bell className="w-6 h-6" />
-                                {/* Badge (optional, hardcoded for now or use notifications length if available) */}
-                                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white transform translate-x-1/4 -translate-y-1/4"></span>
-                            </button>
-                            <button
-                                onClick={() => setIsMenuOpen(false)}
-                                className="p-2 bg-slate-100 rounded-md text-slate-500 hover:bg-slate-200"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
-
+                <div className="absolute top-[60px] left-0 right-0 z-[200] bg-white shadow-xl border-b border-slate-100 animate-fade-in rounded-b-2xl">
                     {/* Menu Items */}
-                    <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+                    <nav className="px-4 py-4 space-y-4">
                         <button
                             onClick={() => navigate('/')}
                             className="block w-full text-left text-lg font-bold text-slate-700"
