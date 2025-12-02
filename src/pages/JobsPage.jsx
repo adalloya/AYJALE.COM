@@ -55,21 +55,38 @@ const JobsPage = () => {
         setSearchParams(params);
     };
 
-    const filteredJobs = jobs.filter(job => {
-        const company = job.profiles;
-        const companyName = company ? company.name.toLowerCase() : '';
+    const filteredJobs = jobs
+        .filter(job => job.active) // Only show active jobs
+        .map(job => {
+            const company = job.profiles;
+            const companyName = company ? company.name.toLowerCase() : '';
 
-        const matchesKeyword = job.title.toLowerCase().includes(filters.keyword.toLowerCase()) ||
-            job.description.toLowerCase().includes(filters.keyword.toLowerCase()) ||
-            companyName.includes(filters.keyword.toLowerCase());
+            // Calculate Match Score
+            let isMatch = true;
 
-        const matchesState = filters.state ? job.location.includes(filters.state) : true;
-        const matchesCategory = filters.category ? job.category === filters.category : true;
-        const matchesType = filters.type ? job.type === filters.type : true;
-        const matchesSalary = filters.minSalary ? job.salary >= Number(filters.minSalary) : true;
+            if (filters.keyword) {
+                const keyword = filters.keyword.toLowerCase();
+                const matchesKeyword = job.title.toLowerCase().includes(keyword) ||
+                    job.description.toLowerCase().includes(keyword) ||
+                    companyName.includes(keyword);
+                if (!matchesKeyword) isMatch = false;
+            }
 
-        return matchesKeyword && matchesState && matchesCategory && matchesType && matchesSalary && job.active;
-    }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            if (filters.state && !job.location.includes(filters.state)) isMatch = false;
+            if (filters.category && job.category !== filters.category) isMatch = false;
+            if (filters.type && job.type !== filters.type) isMatch = false;
+            if (filters.minSalary && job.salary < Number(filters.minSalary)) isMatch = false;
+
+            return { ...job, isMatch };
+        })
+        .sort((a, b) => {
+            // 1. Priority: Match status (Matches first)
+            if (a.isMatch && !b.isMatch) return -1;
+            if (!a.isMatch && b.isMatch) return 1;
+
+            // 2. Priority: Date (Newest first)
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
 
     // Auto-select first job if none selected and jobs exist (Desktop only)
     useEffect(() => {
@@ -202,80 +219,99 @@ const JobsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 lg:overflow-hidden">
                 {/* Left Column: Job List */}
                 <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
-                    {filteredJobs.map(job => {
+                    {filteredJobs.map((job, index) => {
                         const company = job.profiles;
                         const isSelected = job.id === selectedJobId;
-                        return (
-                            <div
-                                key={job.id}
-                                onClick={() => {
-                                    if (window.innerWidth < 1024) {
-                                        navigate(`/jobs/${job.id}`, {
-                                            state: {
-                                                jobIds: filteredJobs.map(j => j.id),
-                                                fromJobsPage: true
-                                            }
-                                        });
-                                    } else {
-                                        setSelectedJobId(job.id);
-                                    }
-                                }}
-                                className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
-                                    ? 'border-orange-500 ring-1 ring-orange-500 shadow-md'
-                                    : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
-                                    }`}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
-                                        {job.title.charAt(0).toUpperCase() + job.title.slice(1).toLowerCase()}
-                                    </h3>
-                                    {job.is_external && (
-                                        <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide">
-                                            Externa
-                                        </span>
-                                    )}
-                                </div>
 
-                                <div className="flex items-center mb-3">
-                                    <div className="flex-shrink-0 mr-3">
-                                        {!job.is_confidential && company?.logo ? (
-                                            <img
-                                                src={company.logo}
-                                                alt={company.name}
-                                                className="w-8 h-8 object-contain"
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
-                                                <Building className="w-4 h-4 text-orange-500 opacity-80" />
+                        // Check if we need to render a separator
+                        const showSeparator = index > 0 && filteredJobs[index - 1].isMatch && !job.isMatch;
+
+                        return (
+                            <div key={job.id}>
+                                {showSeparator && (
+                                    <div className="py-4 text-center">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-slate-200"></div>
                                             </div>
+                                            <div className="relative flex justify-center">
+                                                <span className="bg-slate-50 px-3 text-sm text-slate-500 font-medium">
+                                                    Otras vacantes disponibles
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div
+                                    onClick={() => {
+                                        if (window.innerWidth < 1024) {
+                                            navigate(`/jobs/${job.id}`, {
+                                                state: {
+                                                    jobIds: filteredJobs.map(j => j.id),
+                                                    fromJobsPage: true
+                                                }
+                                            });
+                                        } else {
+                                            setSelectedJobId(job.id);
+                                        }
+                                    }}
+                                    className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
+                                        ? 'border-orange-500 ring-1 ring-orange-500 shadow-md'
+                                        : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
+                                        } ${!job.isMatch ? 'opacity-90 bg-slate-50/50' : ''}`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
+                                            {job.title.charAt(0).toUpperCase() + job.title.slice(1).toLowerCase()}
+                                        </h3>
+                                        {job.is_external && (
+                                            <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide">
+                                                Externa
+                                            </span>
                                         )}
                                     </div>
-                                    <div className="text-sm text-slate-600 font-medium line-clamp-1">
-                                        {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+
+                                    <div className="flex items-center mb-3">
+                                        <div className="flex-shrink-0 mr-3">
+                                            {!job.is_confidential && company?.logo ? (
+                                                <img
+                                                    src={company.logo}
+                                                    alt={company.name}
+                                                    className="w-8 h-8 object-contain"
+                                                />
+                                            ) : (
+                                                <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
+                                                    <Building className="w-4 h-4 text-orange-500 opacity-80" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-sm text-slate-600 font-medium line-clamp-1">
+                                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-3">
-                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                        <Briefcase className="w-3 h-3 mr-1" />
-                                        {job.type}
-                                    </span>
-                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                        <Tag className="w-3 h-3 mr-1" />
-                                        {job.category}
-                                    </span>
-                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                        <MapPin className="w-3 h-3 mr-1" />
-                                        {job.location}
-                                    </span>
-                                    <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                        <DollarSign className="w-3 h-3 mr-1" />
-                                        ${job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'}
-                                    </span>
-                                </div>
+                                    <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-3">
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                            <Briefcase className="w-3 h-3 mr-1" />
+                                            {job.type}
+                                        </span>
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                            <Tag className="w-3 h-3 mr-1" />
+                                            {job.category}
+                                        </span>
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                            <MapPin className="w-3 h-3 mr-1" />
+                                            {job.location}
+                                        </span>
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
+                                            <DollarSign className="w-3 h-3 mr-1" />
+                                            ${job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'}
+                                        </span>
+                                    </div>
 
-                                <div className="text-xs text-slate-400 text-right">
-                                    {formatFriendlyDate(job.created_at)}
+                                    <div className="text-xs text-slate-400 text-right">
+                                        {formatFriendlyDate(job.created_at)}
+                                    </div>
                                 </div>
                             </div>
                         );

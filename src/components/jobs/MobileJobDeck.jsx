@@ -222,7 +222,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     const handleApply = () => {
         if (!user) {
-            navigate(`/auth?returnUrl=/jobs/${currentJob.id}`);
+            navigate(`/auth?mode=register&role=candidate&returnUrl=/jobs/${currentJob.id}`);
             return;
         }
 

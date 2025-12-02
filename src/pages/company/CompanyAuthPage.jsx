@@ -115,7 +115,7 @@ const CompanyAuthPage = () => {
                                             type="text"
                                             required
                                             className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                            placeholder="RFC"
+                                            placeholder="R.F.C."
                                             value={formData.rfc || ''}
                                             onChange={(e) => setFormData({ ...formData, rfc: e.target.value })}
                                         />
