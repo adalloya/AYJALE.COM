@@ -35,25 +35,32 @@ export const DataProvider = ({ children }) => {
     }, [user]);
 
     const fetchJobs = async () => {
-        let query = supabase
-            .from('jobs')
-            .select('*, profiles:company_id(name, logo)')
-            .order('created_at', { ascending: false });
+        try {
+            let query = supabase
+                .from('jobs')
+                .select('id, title, company_id, location, salary_min, salary_max, salary_period, type, created_at, active, expires_at, description, profiles:company_id(name, logo)')
+                .order('created_at', { ascending: false })
+                .limit(50); // Limit to prevent timeouts
 
-        // If not a company viewing their own jobs AND not an admin, filter out inactive/expired
-        const isCompany = user?.role === 'company';
-        const isAdmin = user?.role === 'admin';
+            // If not a company viewing their own jobs AND not an admin, filter out inactive/expired
+            const isCompany = user?.role === 'company';
+            const isAdmin = user?.role === 'admin';
 
-        if (!user || (!isCompany && !isAdmin)) {
-            query = query
-                .eq('active', true)
-                .gt('expires_at', new Date().toISOString());
+            if (!user || (!isCompany && !isAdmin)) {
+                query = query
+                    .eq('active', true)
+                    .gt('expires_at', new Date().toISOString());
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+            setJobs(data || []);
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+            // Don't set jobs to empty array here to preserve potential cache, or do it if needed.
+            // setJobs([]); 
         }
-
-        const { data, error } = await query;
-
-        if (error) console.error('Error fetching jobs:', error);
-        else setJobs(data || []);
     };
 
     const fetchApplications = async () => {
@@ -398,8 +405,13 @@ export const DataProvider = ({ children }) => {
             if (jobs.length === 0 && applications.length === 0) {
                 setLoading(true);
             }
-            await Promise.all([fetchJobs(), fetchApplications()]);
-            setLoading(false);
+            try {
+                await Promise.all([fetchJobs(), fetchApplications()]);
+            } catch (error) {
+                console.error("Error loading initial data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         loadData();

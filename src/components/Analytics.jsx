@@ -7,9 +7,15 @@ const Analytics = () => {
 
     useEffect(() => {
         // Initialize GA4 only once
-        if (!window.gaInitialized) {
-            ReactGA.initialize('G-2G0Q10W8W8'); // User provided ID
-            window.gaInitialized = true;
+        try {
+            if (!window.gaInitialized) {
+                console.log('Initializing GA4...');
+                ReactGA.initialize('G-2G0Q10W8W8'); // User provided ID
+                window.gaInitialized = true;
+                console.log('GA4 Initialized');
+            }
+        } catch (error) {
+            console.error('GA4 Initialization Error:', error);
         }
     }, []); // Empty dependency array means this runs once on mount
 
