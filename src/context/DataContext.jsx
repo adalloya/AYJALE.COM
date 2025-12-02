@@ -560,8 +560,9 @@ export const DataProvider = ({ children }) => {
                     className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-700 ease-out ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 >
                     <div className="text-center">
-                        <h1 className="text-3xl font-bold text-slate-800 mb-2">Bienvenido</h1>
-                        <p className="text-slate-500">Tu próxima chamba, ¡Aquí!</p>
+                        <h1 className="text-5xl md:text-7xl font-bold text-orange-500 tracking-tighter animate-pulse">
+                            Bienvenido
+                        </h1>
                     </div>
                 </div>
             )}
