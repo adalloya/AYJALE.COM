@@ -44,22 +44,7 @@ const LandingPage = () => {
                 description="Encuentra tu trabajo ideal en México. Conectamos a los mejores candidatos con las empresas líderes del país."
             />
 
-            {/* Announcement Banner */}
-            <div
-                onClick={() => navigate('/whats-new')}
-                className="bg-gradient-to-r from-secondary-600 to-orange-500 text-white py-3 px-4 cursor-pointer hover:bg-secondary-700 transition-colors shadow-sm"
-            >
-                <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-medium text-center">
-                    <div className="flex items-center bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full">
-                        <Sparkles className="w-3.5 h-3.5 mr-1.5 animate-pulse" />
-                        <span className="font-bold text-xs uppercase tracking-wide">Nuevo</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span>Descubre la Inteligencia Artificial de Ayjale.com</span>
-                        <ArrowRight className="w-4 h-4" />
-                    </div>
-                </div>
-            </div>
+
 
             {/* Hero Section */}
             <section className="text-center space-y-4 py-12">
@@ -142,9 +127,67 @@ const LandingPage = () => {
                 </div>
             </div>
 
-            {/* Interactive State Selector */}
             <div className="bg-slate-50 border-y border-slate-200">
                 <MexicoMap />
+            </div>
+
+            {/* What's New Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
+                        <Sparkles className="w-8 h-8 text-secondary-600" />
+                        Novedades
+                    </h2>
+                    <p className="text-slate-600 mt-3 text-lg max-w-2xl mx-auto">
+                        Descubre las últimas actualizaciones y herramientas para mejorar tu búsqueda.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {/* Card 1: AI */}
+                    <div onClick={() => navigate('/whats-new')} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                        <div className="h-48 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Sparkles className="w-16 h-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-secondary-600 transition-colors">Inteligencia Artificial</h3>
+                            <p className="text-slate-600 mb-4 line-clamp-2">Descubre cómo nuestra nueva IA analiza tu perfil para encontrar las mejores vacantes automáticamente.</p>
+                            <div className="flex items-center text-secondary-600 font-bold text-sm">
+                                Leer más <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 2: Mobile App (Placeholder) */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                        <div className="h-48 bg-gradient-to-br from-secondary-500 to-orange-500 flex items-center justify-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Briefcase className="w-16 h-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-secondary-600 transition-colors">Nueva App Móvil</h3>
+                            <p className="text-slate-600 mb-4 line-clamp-2">Lleva tu búsqueda de empleo a todos lados con nuestra nueva experiencia móvil optimizada.</p>
+                            <div className="flex items-center text-secondary-600 font-bold text-sm">
+                                Próximamente <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 3: Companies (Placeholder) */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                        <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Shield className="w-16 h-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-secondary-600 transition-colors">Empresas Verificadas</h3>
+                            <p className="text-slate-600 mb-4 line-clamp-2">Conoce nuestro nuevo sello de verificación para empresas seguras y confiables.</p>
+                            <div className="flex items-center text-secondary-600 font-bold text-sm">
+                                Ver empresas <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

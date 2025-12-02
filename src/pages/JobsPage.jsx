@@ -75,7 +75,19 @@ const JobsPage = () => {
             if (filters.state && !job.location.includes(filters.state)) isMatch = false;
             if (filters.category && job.category !== filters.category) isMatch = false;
             if (filters.type && job.type !== filters.type) isMatch = false;
-            if (filters.minSalary && job.salary < Number(filters.minSalary)) isMatch = false;
+            // Salary Filter: Check against min_salary, max_salary, or legacy salary
+            if (filters.minSalary) {
+                const min = Number(filters.minSalary);
+                const jobMin = job.salary_min || job.salary || 0;
+                const jobMax = job.salary_max || job.salary || 0;
+                // If the job's max salary is less than the filter's min, it's not a match
+                // OR if we want to be strict: if job's min is less than filter min?
+                // Usually "Min Salary" filter means "Show me jobs that pay at least X".
+                // So if job.max < X, it's definitely out.
+                // If job.min >= X, it's in.
+                // Let's say: if job.salary_max (or salary) is less than filter min, exclude it.
+                if (jobMax < min) isMatch = false;
+            }
 
             return { ...job, isMatch };
         })
@@ -193,6 +205,24 @@ const JobsPage = () => {
         }
     };
 
+    // Helper to format salary for list view
+    const formatSalaryList = (job) => {
+        if (!job) return 'No mostrado';
+        const fmt = (n) => {
+            const num = Number(n);
+            return isNaN(num) ? n : num.toLocaleString('es-MX');
+        };
+
+        if (job.salary_min && job.salary_max) return `$${fmt(job.salary_min)} - $${fmt(job.salary_max)}`;
+        if (job.salary_min) return `Desde $${fmt(job.salary_min)}`;
+        if (job.salary_max) return `Hasta $${fmt(job.salary_max)}`;
+        if (job.salary && job.salary !== 'N/A') {
+            const num = Number(job.salary);
+            return !isNaN(num) && num > 0 ? `$${fmt(num)}` : 'No mostrado';
+        }
+        return 'No mostrado';
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 h-full flex flex-col">
             <SEO
@@ -305,7 +335,7 @@ const JobsPage = () => {
                                         </span>
                                         <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
                                             <DollarSign className="w-3 h-3 mr-1" />
-                                            ${job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'}
+                                            {formatSalaryList(job)}
                                         </span>
                                     </div>
 
