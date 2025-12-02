@@ -28,6 +28,12 @@ const LandingPage = () => {
         if (filters.state) params.append('state', filters.state);
         if (filters.category) params.append('category', filters.category);
         if (filters.keyword) params.append('keyword', filters.keyword);
+
+        // Force deck view on mobile search
+        if (window.innerWidth < 1024) {
+            params.append('view', 'deck');
+        }
+
         navigate(`/jobs?${params.toString()}`);
     };
 
@@ -119,7 +125,10 @@ const LandingPage = () => {
                     {categories.map((cat) => (
                         <button
                             key={cat.id}
-                            onClick={() => navigate(`/jobs?category=${cat.name}`)}
+                            onClick={() => {
+                                const isMobile = window.innerWidth < 1024;
+                                navigate(`/jobs?category=${cat.name}${isMobile ? '&view=deck' : ''}`);
+                            }}
                             className="group relative flex flex-col items-center p-6 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
                         >
                             <div className={`p-4 rounded-full ${cat.color} bg-opacity-10 mb-4 group-hover:scale-110 transition-transform duration-300`}>

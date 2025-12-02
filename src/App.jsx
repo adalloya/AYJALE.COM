@@ -52,11 +52,14 @@ const DashboardDispatcher = () => {
   return <Navigate to="/" />;
 }
 
+import Analytics from './components/Analytics';
+
 function App() {
   return (
     <AuthProvider>
       <DataProvider>
         <Router>
+          <Analytics />
           <Layout>
             <Routes>
               <Route path="/" element={<LandingPage />} />

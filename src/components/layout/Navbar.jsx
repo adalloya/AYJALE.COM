@@ -98,26 +98,36 @@ const Navbar = () => {
                     </div>
 
                     <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
-                        <Link to="/" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                            Inicio
-                        </Link>
-
-                        {(!user || user.role !== 'company') && (
-                            <Link to="/jobs" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                                Vacantes
-                            </Link>
-                        )}
-
-                        {!user && (
-                            <>
-                                <Link to="/company/login" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                                    Soy Empresa
+                        <ul className="flex space-x-8 items-center">
+                            <li>
+                                <Link to="/" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                    Inicio
                                 </Link>
-                                <Link to="/auth?mode=register&role=candidate" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
-                                    Soy Candidato
-                                </Link>
-                            </>
-                        )}
+                            </li>
+
+                            {(!user || user.role !== 'company') && (
+                                <li>
+                                    <Link to="/jobs" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                        Vacantes
+                                    </Link>
+                                </li>
+                            )}
+
+                            {!user && (
+                                <>
+                                    <li>
+                                        <Link to="/company/login" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                            Soy Empresa
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/auth?mode=register&role=candidate" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
+                                            Soy Candidato
+                                        </Link>
+                                    </li>
+                                </>
+                            )}
+                        </ul>
 
                         {user && user.role === 'candidate' && (
                             <>
