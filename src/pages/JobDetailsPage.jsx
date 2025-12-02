@@ -134,7 +134,7 @@ const JobDetailsPage = () => {
                 <MobileJobDeck
                     jobs={deckJobs}
                     initialJobId={id}
-                    onBack={() => {
+                    onBack={useCallback(() => {
                         // Check if we have history state to go back to
                         if (location.key !== 'default') {
                             navigate(-1);
@@ -142,7 +142,7 @@ const JobDetailsPage = () => {
                             // Fallback if opened directly
                             navigate('/');
                         }
-                    }}
+                    }, [location.key, navigate])}
                 />
             );
         }

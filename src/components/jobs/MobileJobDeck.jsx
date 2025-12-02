@@ -5,7 +5,6 @@ import JobDetailView from './JobDetailView';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
-import SwipeTutorial from './SwipeTutorial';
 import logo from '../../assets/ayjale_logo_new.png';
 
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
@@ -229,9 +228,9 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         setIsSwipingOut(false);
     };
 
-    const handleApply = () => {
+    const handleApply = useCallback(() => {
         if (!user) {
-            navigate(`/auth?mode=register&role=candidate&returnUrl=/jobs/${currentJob.id}`);
+            navigate(`/auth?returnUrl=/jobs/${currentJob.id}`);
             return;
         }
 
@@ -245,16 +244,12 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             return;
         }
 
-        // Check profile completeness (simplified version)
-        const required = ['name', 'title', 'location', 'bio'];
-        const hasRequired = required.every(field => user[field] && user[field].trim() !== '');
-
-        if (hasRequired) {
+        if (isProfileComplete()) {
             setShowModal(true);
         } else {
             navigate(`/profile?applyingTo=${currentJob.id}`);
         }
-    };
+    }, [user, currentJob, navigate, isProfileComplete]);
 
     const handleModalSubmit = async (comments) => {
         setApplying(true);
@@ -320,194 +315,237 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const showBoundaryOverlay = (currentIndex === 0 && dragX > 0) || (currentIndex === jobs.length - 1 && dragX < 0) || boundaryFeedback.active;
     const overlayType = boundaryFeedback.active ? boundaryFeedback.type : (dragX > 0 ? 'start' : 'end');
 
+    // Render
     return (
-        <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col overflow-hidden">
-            {/* ... Top Bar ... */}
-            {/* ... Top Bar ... */}
-            <div className="bg-white px-4 py-3 shadow-sm grid grid-cols-3 items-center z-20 flex-shrink-0 relative">
-                {/* Left: Back Button */}
-                <button
-                    onClick={onBack}
-                    className="flex items-center text-slate-600 font-medium text-sm justify-start"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-1" />
-                    Volver
-                </button>
-
-                {/* Center: Counter */}
-                <div className="text-xs text-slate-400 font-medium text-center">
-                    {currentIndex + 1} de {jobs.length}
+        <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-none">
+            {/* Header */}
+            <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-50 h-[60px] flex-shrink-0 relative">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onBack}
+                        className="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
+                    >
+                        <ArrowLeft className="w-6 h-6" />
+                    </button>
+                    <img src={logo} alt="AyJale" className="h-8 w-auto object-contain" />
                 </div>
 
-                {/* Right: Hamburger Menu */}
-                <div className="flex justify-end">
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="p-1 text-slate-600 hover:bg-slate-50 rounded-full"
+                        onClick={() => setShowSearch(true)}
+                        className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
                     >
-                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        <Search className="w-6 h-6" />
                     </button>
+
+                    <div className="relative" ref={menuRef}>
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-2 -mr-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
+                        >
+                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isMenuOpen && (
+                            <div className="absolute top-[60px] right-0 w-64 bg-white shadow-xl border border-slate-100 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
+                                <div className="p-2">
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            navigate('/');
+                                        }}
+                                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                    >
+                                        <Home className="w-5 h-5 text-slate-400" />
+                                        Inicio
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            navigate('/jobs');
+                                        }}
+                                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                    >
+                                        <Briefcase className="w-5 h-5 text-slate-400" />
+                                        Vacantes
+                                    </button>
+                                    {user ? (
+                                        <>
+                                            <button
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    navigate('/profile');
+                                                }}
+                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                            >
+                                                <User className="w-5 h-5 text-slate-400" />
+                                                Mi Perfil
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    navigate('/dashboard');
+                                                }}
+                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                            >
+                                                <LayoutDashboard className="w-5 h-5 text-slate-400" />
+                                                Panel de candidato
+                                            </button>
+                                            <div className="h-px bg-slate-100 my-1" />
+                                            <button
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    handleLogout();
+                                                }}
+                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 font-medium flex items-center gap-3 transition-colors"
+                                            >
+                                                <LogOut className="w-5 h-5" />
+                                                Cerrar Sesión
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="h-px bg-slate-100 my-1" />
+                                            <button
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    navigate('/auth');
+                                                }}
+                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                            >
+                                                <LogIn className="w-5 h-5 text-slate-400" />
+                                                Iniciar Sesión
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Menu Dropdown (Not full screen) */}
-            {isMenuOpen && (
-                <div className="absolute top-[60px] left-0 right-0 z-[200] bg-white shadow-xl border-b border-slate-100 animate-fade-in rounded-b-2xl">
-                    {/* Menu Items */}
-                    <nav className="px-4 py-4 space-y-4">
+            {/* Search Overlay */}
+            {showSearch && (
+                <div className="absolute inset-0 z-[60] bg-white animate-in fade-in slide-in-from-top-5 duration-200">
+                    <div className="p-4 flex items-center gap-3 border-b border-slate-100">
                         <button
-                            onClick={() => navigate('/')}
-                            className="block w-full text-left text-lg font-bold text-slate-700"
+                            onClick={() => setShowSearch(false)}
+                            className="p-2 -ml-2 text-slate-400 hover:text-slate-600"
                         >
-                            Inicio
+                            <ArrowLeft className="w-6 h-6" />
                         </button>
-
-                        {user && (
-                            <>
-                                <button
-                                    onClick={() => navigate('/dashboard')}
-                                    className="block w-full text-left text-lg font-bold text-slate-700"
-                                >
-                                    Panel de candidato
-                                </button>
-                                <button
-                                    onClick={() => navigate('/profile')}
-                                    className="block w-full text-left text-lg font-bold text-slate-700"
-                                >
-                                    Mi Perfil
-                                </button>
-                            </>
-                        )}
-
-                        <button
-                            onClick={() => navigate('/jobs')}
-                            className="block w-full text-left text-lg font-bold text-slate-700"
-                        >
-                            Buscar Vacantes
-                        </button>
-
-                        {user ? (
-                            <button
-                                onClick={() => {
-                                    logout();
-                                    navigate('/');
+                        <div className="flex-1 relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Buscar vacantes..."
+                                className="w-full pl-10 pr-4 py-2 bg-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-500/20 text-slate-900"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleSearch(e.target.value);
+                                    }
                                 }}
-                                className="block w-full text-left text-lg font-bold text-red-600 mt-8"
-                            >
-                                Cerrar Sesión
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => navigate('/auth?mode=login')}
-                                className="block w-full text-left text-lg font-bold text-primary-600 mt-8"
-                            >
-                                Iniciar Sesión
-                            </button>
-                        )}
-                    </nav>
+                            />
+                        </div>
+                    </div>
+                    <div className="p-6">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Populares</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {['Ventas', 'Administración', 'Chofer', 'Atención al cliente', 'Limpieza'].map(term => (
+                                <button
+                                    key={term}
+                                    onClick={() => handleSearch(term)}
+                                    className="px-4 py-2 bg-slate-50 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors"
+                                >
+                                    {term}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Deck Area */}
-            <div className="flex-1 relative w-full h-full overflow-hidden p-4">
-
-                {/* Background Card (Job) */}
-                {backgroundJob && (
-                    <div
-                        className="absolute inset-4 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
-                        style={{
-                            transform: `scale(${bgScale})`,
-                            opacity: bgOpacity,
-                            zIndex: 1,
-                            transition: isSwipingOut ? 'all 0.2s ease-out' : 'none'
-                        }}
-                    >
+            {/* Main Content Area (Swipeable) */}
+            <div
+                className="flex-1 relative overflow-hidden bg-slate-100"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
+                {/* Cards Container */}
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                    {/* Next Card (Background) */}
+                    {nextJob && (
                         <div
-                            className="h-full overflow-hidden pointer-events-none transition-all duration-200"
-                            style={{ filter: `grayscale(${bgGrayscale})` }}
+                            className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden transform scale-95 opacity-50 translate-y-4"
                         >
                             <JobDetailView
-                                job={backgroundJob}
-                                company={backgroundCompany}
-                                onApply={() => { }}
+                                job={nextJob}
+                                company={nextJob.profiles}
+                                onApply={() => { }} // Dummy handler for background card
                                 hasApplied={false}
                                 isMobileDeck={true}
                             />
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Boundary Overlay (Static, Centered) */}
-                {showBoundaryOverlay && (
+                    {/* Current Card (Foreground) */}
                     <div
-                        className="absolute inset-0 z-[60] flex items-center justify-center pointer-events-none"
+                        className="absolute inset-4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden transition-transform duration-300 ease-out will-change-transform"
                         style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                            opacity: boundaryFeedback.active
-                                ? (boundaryFeedback.fading ? 0 : 1)
-                                : Math.min(1, Math.abs(dragX) / (windowWidth * 0.25)),
-                            transition: boundaryFeedback.active ? 'opacity 0.5s ease-out' : 'none'
+                            transform: `translateX(${dragX}px) rotate(${dragX * 0.05}deg)`,
+                            zIndex: 10
                         }}
                     >
-                        <div className="transform scale-110 text-center p-6 rounded-2xl bg-white/90 backdrop-blur-sm shadow-2xl">
-                            {overlayType === 'start' ? (
-                                <>
-                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <ChevronLeft className="w-8 h-8 text-blue-500" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-800 mb-1">¡Estás al día!</h3>
-                                    <p className="text-sm text-slate-500 font-medium">Es la más reciente</p>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <ChevronRight className="w-8 h-8 text-orange-500" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-800 mb-1">¡Has visto todo!</h3>
-                                    <p className="text-sm text-slate-500 font-medium">No hay más por ahora, pero vuelve mañana</p>
-                                </>
-                            )}
-                        </div>
+                        {/* Swipe Indicators */}
+                        {dragX !== 0 && (
+                            <div className={`absolute top-8 ${dragX > 0 ? 'left-8' : 'right-8'} z-50 transform -rotate-12`}>
+                                <div className={`px-4 py-2 border-4 rounded-xl font-bold text-2xl tracking-wider uppercase ${dragX > 0
+                                    ? 'border-green-500 text-green-500' // Right swipe (Next/Like)
+                                    : 'border-red-500 text-red-500'     // Left swipe (Prev/Dislike)
+                                    }`}>
+                                    {dragX > 0 ? 'SIGUIENTE' : 'ANTERIOR'}
+                                </div>
+                            </div>
+                        )}
+
+                        <JobDetailView
+                            job={currentJob}
+                            company={currentJob.profiles}
+                            onApply={handleApply}
+                            hasApplied={hasApplied}
+                            isMobileDeck={true}
+                        />
                     </div>
-                )}
+                </div>
 
-                {/* Tutorial Overlay */}
-                <SwipeTutorial visible={showTutorial} />
-
-                {/* Current Card */}
-                {currentJob && (
-                    <div
-                        key={currentJob.id} // Key ensures fresh mount on change, preventing "slide-in"
-                        ref={cardRef}
-                        className="absolute inset-4 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden cursor-grab active:cursor-grabbing"
-                        style={cardStyle}
-                        onTouchStart={onTouchStart}
-                        onTouchMove={onTouchMove}
-                        onTouchEnd={onTouchEnd}
-                        onMouseDown={onTouchStart}
-                        onMouseMove={onTouchMove}
-                        onMouseUp={onTouchEnd}
-                        onMouseLeave={onTouchEnd}
+                {/* Navigation Controls (Bottom) */}
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6 z-40 pointer-events-none">
+                    <button
+                        onClick={handlePrev}
+                        disabled={currentIndex === 0}
+                        className={`w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center transition-all pointer-events-auto ${currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'active:scale-90 text-red-500'
+                            }`}
                     >
-                        <div className="h-full overflow-y-auto custom-scrollbar">
-                            <JobDetailView
-                                job={currentJob}
-                                company={company}
-                                onApply={handleApply}
-                                hasApplied={hasApplied}
-                                isMobileDeck={true}
-                            />
-                        </div>
-                    </div>
-                )}
+                        <ChevronLeft className="w-8 h-8" />
+                    </button>
 
-                {/* Empty State */}
-                {!currentJob && (
-                    <div className="flex items-center justify-center h-full text-slate-400">
-                        No hay más vacantes.
-                    </div>
-                )}
+                    <span className="bg-slate-900/80 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                        {currentIndex + 1} / {jobs.length}
+                    </span>
 
+                    <button
+                        onClick={handleNext}
+                        disabled={currentIndex === jobs.length - 1}
+                        className={`w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center transition-all pointer-events-auto ${currentIndex === jobs.length - 1 ? 'opacity-50 cursor-not-allowed' : 'active:scale-90 text-green-500'
+                            }`}
+                    >
+                        <ChevronRight className="w-8 h-8" />
+                    </button>
+                </div>
             </div>
 
             <ApplicationModal
@@ -518,14 +556,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 loading={applying}
                 success={isSuccess}
             />
-
-            {/* Floating Search Button */}
-            <button
-                onClick={() => setShowSearch(true)}
-                className="absolute bottom-6 right-6 z-[80] bg-white text-secondary-600 p-4 rounded-full shadow-lg border border-slate-100 active:scale-95 transition-transform"
-            >
-                <Search className="w-6 h-6" />
-            </button>
 
             {/* Search Overlay */}
             {showSearch && (
