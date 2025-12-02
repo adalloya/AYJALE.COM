@@ -77,7 +77,7 @@ const EditCompanyProfileModal = ({ user, onClose, onSave }) => {
 
                         {/* RFC */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">RFC <span className="text-red-500">*</span></label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">R.F.C. <span className="text-red-500">*</span></label>
                             <div className="relative">
                                 <FileText className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
                                 <input
@@ -86,7 +86,7 @@ const EditCompanyProfileModal = ({ user, onClose, onSave }) => {
                                     className="pl-10 w-full border border-slate-300 rounded-lg py-2 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                                     value={formData.rfc}
                                     onChange={e => setFormData({ ...formData, rfc: e.target.value })}
-                                    placeholder="Requerido"
+                                    placeholder="R.F.C."
                                 />
                             </div>
                         </div>
