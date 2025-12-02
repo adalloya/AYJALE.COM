@@ -557,7 +557,7 @@ export const DataProvider = ({ children }) => {
         <DataContext.Provider value={value}>
             {showWelcome && (
                 <div
-                    className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-500 ease-out ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-300 ease-out ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 >
                     <div className="text-center">
                         <h1 className="text-5xl md:text-7xl font-bold text-orange-500 tracking-tighter animate-pulse">
