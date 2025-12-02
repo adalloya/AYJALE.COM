@@ -309,12 +309,17 @@ export const DataProvider = ({ children }) => {
     };
 
     // Increment job view count when a job is viewed
-    const incrementJobView = async (jobId) => {
+    const incrementJobView = useCallback(async (jobId) => {
         try {
             // Optimistically update local state first
-            const job = jobs.find(j => j.id === Number(jobId));
-            const currentCount = job?.view_count || 0;
-            setJobs(prev => prev.map(j => j.id === Number(jobId) ? { ...j, view_count: currentCount + 1 } : j));
+            setJobs(prev => {
+                return prev.map(j => {
+                    if (j.id === Number(jobId)) {
+                        return { ...j, view_count: (j.view_count || 0) + 1 };
+                    }
+                    return j;
+                });
+            });
 
             // Call the secure RPC function to increment in DB (bypasses RLS)
             // TEMPORARILY DISABLED TO PREVENT 400 ERRORS
@@ -329,7 +334,7 @@ export const DataProvider = ({ children }) => {
         } catch (e) {
             console.error('Exception in incrementJobView:', e);
         }
-    };
+    }, []);
 
 
     const updateApplicationStatus = async (appId, status) => {

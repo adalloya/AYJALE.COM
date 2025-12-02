@@ -20,8 +20,8 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
     };
 
-    console.log('JobDetailView: Job Data:', job);
-    console.log('JobDetailView: Company Data:', company);
+    // console.log('JobDetailView: Job Data:', job);
+    // console.log('JobDetailView: Company Data:', company);
 
     const formatTitle = (title) => {
         if (!title) return '';

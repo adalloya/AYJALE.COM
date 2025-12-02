@@ -118,13 +118,13 @@ const JobDetailsPage = () => {
 
     // If on mobile, always show the deck (either with list or single job)
     if (isMobile) {
-        console.log('JobDetailsPage: Detected Mobile View');
+        // console.log('JobDetailsPage: Detected Mobile View');
         // Filter jobs from context to match the IDs passed, or use current job if no IDs
         const deckJobs = (jobIds && jobIds.length > 0)
             ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
             : [job];
 
-        console.log('JobDetailsPage: Deck Jobs:', deckJobs.length);
+        // console.log('JobDetailsPage: Deck Jobs:', deckJobs.length);
 
         if (deckJobs.length > 0) {
             return (
