@@ -510,8 +510,8 @@ export const DataProvider = ({ children }) => {
     }, [applications, user, contactUnlocks]); // Added contactUnlocks dependency
 
 
-    // Welcome Screen Logic
-    const [showWelcome, setShowWelcome] = useState(true);
+    // Welcome Screen Logic - Only show on Landing Page ('/')
+    const [showWelcome, setShowWelcome] = useState(window.location.pathname === '/');
 
     useEffect(() => {
         if (!loading) {
