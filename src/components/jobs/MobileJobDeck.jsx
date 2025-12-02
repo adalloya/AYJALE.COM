@@ -7,7 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
 import SwipeTutorial from './SwipeTutorial';
 import logo from '../../assets/ayjale_logo_new.png';
-import { Bell } from 'lucide-react';
 
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();

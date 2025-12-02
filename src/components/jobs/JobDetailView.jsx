@@ -53,7 +53,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
             }
         }
 
-        if (job.salary_period && salaryText !== 'No mostrado') {
+        if (job.salary_period && typeof job.salary_period === 'string' && salaryText !== 'No mostrado') {
             const periodMap = {
                 'monthly': 'mensuales',
                 'yearly': 'anuales',
@@ -288,4 +288,5 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     );
 };
 
-export default JobDetailView;
+import { memo } from 'react';
+export default memo(JobDetailView);
