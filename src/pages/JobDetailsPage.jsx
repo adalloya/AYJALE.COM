@@ -32,8 +32,9 @@ const JobDetailsPage = () => {
             setIsMobile(mobile);
 
             // If resizing to desktop, redirect to main jobs page with selected job
+            // We use replace: true to avoid cluttering history
             if (!mobile && id) {
-                navigate(`/jobs?jobId=${id}`);
+                navigate(`/jobs?jobId=${id}`, { replace: true });
             }
         };
 
@@ -131,9 +132,11 @@ const JobDetailsPage = () => {
                     jobs={deckJobs}
                     initialJobId={id}
                     onBack={() => {
-                        if (user) {
-                            navigate('/dashboard');
+                        // Check if we have history state to go back to
+                        if (location.key !== 'default') {
+                            navigate(-1);
                         } else {
+                            // Fallback if opened directly
                             navigate('/');
                         }
                     }}
