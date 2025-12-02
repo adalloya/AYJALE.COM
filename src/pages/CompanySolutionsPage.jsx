@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Briefcase,
@@ -19,6 +19,10 @@ import { BrowserFrame } from '../components/marketing/DeviceFrames';
 const CompanySolutionsPage = () => {
     const navigate = useNavigate();
     const [formStatus, setFormStatus] = useState('idle'); // idle, submitting, success
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     const handleContactSubmit = (e) => {
         e.preventDefault();
