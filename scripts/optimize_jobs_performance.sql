@@ -12,9 +12,11 @@ CREATE INDEX IF NOT EXISTS idx_jobs_company_id ON jobs(company_id);
 -- Index for salary filtering
 CREATE INDEX IF NOT EXISTS idx_jobs_salary_min_max ON jobs(salary_min, salary_max);
 
+-- Enable pg_trgm extension for text search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Index for location filtering
 CREATE INDEX IF NOT EXISTS idx_jobs_location ON jobs USING gin(location gin_trgm_ops);
 
--- Index for title/description search (optional, requires pg_trgm extension)
--- CREATE EXTENSION IF NOT EXISTS pg_trgm;
--- CREATE INDEX IF NOT EXISTS idx_jobs_search ON jobs USING gin(title gin_trgm_ops, description gin_trgm_ops);
+-- Index for title/description search
+CREATE INDEX IF NOT EXISTS idx_jobs_search ON jobs USING gin(title gin_trgm_ops, description gin_trgm_ops);

@@ -35,9 +35,10 @@ export const DataProvider = ({ children }) => {
     }, [user]);
 
     const fetchJobs = async () => {
+        console.log('[DataContext] Starting fetchJobs...');
+        const startTime = Date.now();
         try {
             // SIMPLIFIED QUERY TO REDUCE CPU LOAD
-            // Removed view_count temporarily to prevent errors/retries
             let query = supabase
                 .from('jobs')
                 .select('id, title, company_id, location, salary, salary_min, salary_max, salary_period, type, created_at, active, expires_at, description, profiles:company_id(name, logo)')
@@ -53,12 +54,24 @@ export const DataProvider = ({ children }) => {
                     .gt('expires_at', new Date().toISOString());
             }
 
-            const { data, error } = await query;
+            // 5 Second Timeout Race
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Database Request Timed Out (5s)')), 5000)
+            );
+
+            const { data, error } = await Promise.race([
+                query,
+                timeoutPromise
+            ]);
 
             if (error) throw error;
+
+            console.log(`[DataContext] fetchJobs success in ${Date.now() - startTime}ms. Items: ${data?.length}`);
             setJobs(data || []);
         } catch (error) {
-            console.error('Error fetching jobs:', error);
+            console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
+            // Optional: Set empty jobs or error state here so UI stops loading
+            setJobs([]);
         }
     };
 
