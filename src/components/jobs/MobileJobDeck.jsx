@@ -50,13 +50,34 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     };
 
     // Initialize index based on initialJobId
+    // Initialize index based on initialJobId
+    // We split this into two effects to prevent "snap back" when polling updates 'jobs'
+
+    const isInitialized = useRef(false);
+
+    // Effect 1: Initial Load (Runs when jobs populate)
     useEffect(() => {
+        if (isInitialized.current || jobs.length === 0) return;
+
         const index = jobs.findIndex(j => j.id === Number(initialJobId));
-        // Only update if found AND different from current (prevents reset loops)
+        if (index !== -1) {
+            setCurrentIndex(index);
+            isInitialized.current = true;
+        }
+    }, [jobs, initialJobId]);
+
+    // Effect 2: Navigation Sync (Runs ONLY when initialJobId changes)
+    useEffect(() => {
+        if (jobs.length === 0) return;
+
+        const index = jobs.findIndex(j => j.id === Number(initialJobId));
+        // Only update if found AND different from current
         if (index !== -1 && index !== currentIndex) {
             setCurrentIndex(index);
+            // Ensure we mark as initialized if we sync from URL
+            isInitialized.current = true;
         }
-    }, [initialJobId, jobs]); // Removed currentIndex from deps to avoid loop, logic inside handles it
+    }, [initialJobId]); // IMPORTANT: Do not include 'jobs' here to avoid reset on polling
 
     // Tutorial Logic
     useEffect(() => {
