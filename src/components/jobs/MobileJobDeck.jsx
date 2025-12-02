@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut } from 'lucide-react';
 import JobDetailView from './JobDetailView';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +11,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { applications, applyToJob } = useData();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(null);
@@ -41,6 +41,14 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     // Search State
     const [showSearch, setShowSearch] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const handleLogout = () => {
+        // Assuming logout function is available from useAuth, if not we might need to get it
+        // But useAuth usually provides it. Let's check imports.
+        // Yes, useAuth is imported.
+        // We need to destructure logout from useAuth
+    };
 
     const handleSearch = (keyword) => {
         setShowSearch(false);
@@ -314,18 +322,98 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     return (
         <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col overflow-hidden">
             {/* ... Top Bar ... */}
-            <div className="bg-white px-4 py-3 shadow-sm flex justify-between items-center z-20 flex-shrink-0 relative">
+            {/* ... Top Bar ... */}
+            <div className="bg-white px-4 py-3 shadow-sm grid grid-cols-3 items-center z-20 flex-shrink-0 relative">
+                {/* Left: Back Button */}
                 <button
                     onClick={onBack}
-                    className="flex items-center text-slate-600 font-medium text-sm"
+                    className="flex items-center text-slate-600 font-medium text-sm justify-start"
                 >
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     Volver
                 </button>
-                <div className="text-xs text-slate-400 font-medium">
+
+                {/* Center: Counter */}
+                <div className="text-xs text-slate-400 font-medium text-center">
                     {currentIndex + 1} de {jobs.length}
                 </div>
+
+                {/* Right: Hamburger Menu */}
+                <div className="flex justify-end">
+                    <button
+                        onClick={() => setIsMenuOpen(true)}
+                        className="p-1 text-slate-600 hover:bg-slate-50 rounded-full"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                </div>
             </div>
+
+            {/* Menu Overlay */}
+            {isMenuOpen && (
+                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}>
+                    <div
+                        className="absolute right-0 top-0 bottom-0 w-64 bg-white shadow-2xl p-6 flex flex-col animate-slide-in-right"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-lg font-bold text-slate-800">Menú</h2>
+                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-600">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <nav className="flex-1 space-y-2">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
+                            >
+                                <Home className="w-5 h-5 mr-3 text-slate-400" />
+                                Inicio
+                            </button>
+
+                            {user && (
+                                <>
+                                    <button
+                                        onClick={() => navigate('/dashboard')}
+                                        className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
+                                    >
+                                        <LayoutDashboard className="w-5 h-5 mr-3 text-slate-400" />
+                                        Dashboard
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/profile')}
+                                        className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
+                                    >
+                                        <User className="w-5 h-5 mr-3 text-slate-400" />
+                                        Mi Perfil
+                                    </button>
+                                </>
+                            )}
+                        </nav>
+
+                        {user ? (
+                            <button
+                                onClick={() => {
+                                    logout();
+                                    navigate('/');
+                                }}
+                                className="flex items-center w-full p-3 rounded-xl hover:bg-red-50 text-red-600 font-medium mt-auto"
+                            >
+                                <LogOut className="w-5 h-5 mr-3" />
+                                Cerrar Sesión
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => navigate('/auth?mode=login')}
+                                className="flex items-center w-full p-3 rounded-xl bg-orange-500 text-white font-medium mt-auto justify-center shadow-md shadow-orange-200"
+                            >
+                                Iniciar Sesión
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Deck Area */}
             <div className="flex-1 relative w-full h-full overflow-hidden p-4">

@@ -113,7 +113,7 @@ export const DataProvider = ({ children }) => {
             .eq('candidate_id', candidateId)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') { // Ignore "Row not found"
             console.error('Error fetching candidate profile:', error);
@@ -510,6 +510,19 @@ export const DataProvider = ({ children }) => {
     }, [applications, user, contactUnlocks]); // Added contactUnlocks dependency
 
 
+    // Welcome Screen Logic
+    const [showWelcome, setShowWelcome] = useState(true);
+
+    useEffect(() => {
+        if (!loading) {
+            // Wait for fade out animation (700ms) then unmount
+            const timer = setTimeout(() => {
+                setShowWelcome(false);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [loading]);
+
     const value = useMemo(() => ({
         jobs,
         applications,
@@ -542,13 +555,19 @@ export const DataProvider = ({ children }) => {
 
     return (
         <DataContext.Provider value={value}>
-            {loading ? (
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            {showWelcome && (
+                <div
+                    className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-700 ease-out ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                >
+                    <div className="text-center">
+                        <h1 className="text-5xl md:text-7xl font-bold text-orange-500 tracking-tighter animate-pulse">
+                            Bienvenido
+                        </h1>
+                        <p className="mt-4 text-slate-400 text-sm tracking-widest uppercase">TalentoMX</p>
+                    </div>
                 </div>
-            ) : (
-                children
             )}
+            {children}
         </DataContext.Provider>
     );
 };

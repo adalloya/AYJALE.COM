@@ -97,7 +97,7 @@ const Navbar = () => {
                         </Link>
                     </div>
 
-                    <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
+                    <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
                         <ul className="flex space-x-8 items-center">
                             <li>
                                 <Link to="/" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
@@ -196,7 +196,7 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    <div className="-mr-2 flex items-center sm:hidden">
+                    <div className="-mr-2 flex items-center md:hidden">
                         {user && (
                             <div className="relative mr-2">
                                 <button
@@ -229,7 +229,7 @@ const Navbar = () => {
 
             {/* Mobile menu */}
             {isMenuOpen && (
-                <div ref={menuRef} className="sm:hidden">
+                <div ref={menuRef} className="md:hidden">
                     <div className="pt-2 pb-3 space-y-1">
                         <Link
                             to="/"
