@@ -194,7 +194,8 @@ const ChatBox = ({ applicationId }) => {
 
     useEffect(() => {
         loadMessages();
-        const interval = setInterval(loadMessages, 5000);
+        // Poll every 30 seconds instead of 5
+        const interval = setInterval(loadMessages, 30000);
         return () => clearInterval(interval);
     }, [applicationId]);
 

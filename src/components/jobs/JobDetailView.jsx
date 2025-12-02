@@ -20,11 +20,44 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
     };
 
+    console.log('JobDetailView: Job Data:', job);
     console.log('JobDetailView: Company Data:', company);
 
     const formatTitle = (title) => {
         if (!title) return '';
         return title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
+    };
+
+    const formatSalary = (job) => {
+        if (!job) return 'No mostrado';
+
+        let salaryText = 'No mostrado';
+
+        // Helper to format number
+        const fmt = (n) => {
+            const num = Number(n);
+            return isNaN(num) ? n : num.toLocaleString('es-MX');
+        };
+
+        if (job.salary_min && job.salary_max) {
+            salaryText = `${fmt(job.salary_min)} - ${fmt(job.salary_max)}`;
+        } else if (job.salary_min) {
+            salaryText = `Desde ${fmt(job.salary_min)}`;
+        } else if (job.salary_max) {
+            salaryText = `Hasta ${fmt(job.salary_max)}`;
+        } else if (job.salary && job.salary !== 'N/A') {
+            // Handle legacy salary (check if it's a valid number-like value)
+            const num = Number(job.salary);
+            if (!isNaN(num) && num > 0) {
+                salaryText = `${fmt(num)}`;
+            }
+        }
+
+        if (job.salary_period && salaryText !== 'No mostrado') {
+            salaryText += ` ${job.salary_period}`;
+        }
+
+        return salaryText;
     };
 
     // Mobile Deck Layout
@@ -80,7 +113,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
-                                {job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'} {job.currency}
+                                {formatSalary(job)}
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <MapPin className="w-3 h-3 mr-1.5" />
@@ -190,7 +223,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1.5" />
-                                {job.salary ? job.salary.toLocaleString('es-MX') : 'N/A'} {job.currency}
+                                {formatSalary(job)}
                             </span>
                         </div>
                     </div>

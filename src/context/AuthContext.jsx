@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
@@ -18,6 +18,9 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setLoading(false);
             }
+        }).catch(err => {
+            console.error("Error getting session:", err);
+            setLoading(false);
         });
 
         // Listen for auth changes
@@ -234,9 +237,19 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const value = useMemo(() => ({
+        user, login, logout, loading, updateUser, register, resetPassword, loginWithGoogle, loginWithApple
+    }), [user, loading]);
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading, updateUser, register, resetPassword, loginWithGoogle, loginWithApple }}>
-            {!loading && children}
+        <AuthContext.Provider value={value}>
+            {loading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 };

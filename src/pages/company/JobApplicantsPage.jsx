@@ -347,7 +347,8 @@ const ChatBox = ({ applicationId }) => {
     useEffect(() => {
         loadMessages();
         // Optional: Set up polling or subscription here
-        const interval = setInterval(loadMessages, 5000);
+        // Poll every 30 seconds instead of 5
+        const interval = setInterval(loadMessages, 30000);
         return () => clearInterval(interval);
     }, [applicationId]);
 

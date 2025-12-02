@@ -149,7 +149,7 @@ const AdminDashboard = () => {
                     <div>
                         <p className="text-sm text-slate-500 font-medium">Vistas Totales</p>
                         <p className="text-2xl font-bold text-slate-900">
-                            {jobs.reduce((acc, job) => acc + (job.views || 0), 0)}
+                            {jobs.reduce((acc, job) => acc + (job.view_count || 0), 0)}
                         </p>
                     </div>
                 </div>
@@ -167,7 +167,7 @@ const AdminDashboard = () => {
                         <Lock className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Contactos</p>
+                        <p className="text-sm text-slate-500 font-medium">Candidatos Desbloqueados</p>
                         <p className="text-2xl font-bold text-slate-900">{allUnlocks.length}</p>
                     </div>
                 </div>

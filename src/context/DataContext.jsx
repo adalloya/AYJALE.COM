@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
 
@@ -36,13 +36,14 @@ export const DataProvider = ({ children }) => {
 
     const fetchJobs = async () => {
         try {
+            // SIMPLIFIED QUERY TO REDUCE CPU LOAD
+            // Removed view_count temporarily to prevent errors/retries
             let query = supabase
                 .from('jobs')
-                .select('id, title, company_id, location, salary_min, salary_max, salary_period, type, created_at, active, expires_at, description, profiles:company_id(name, logo)')
+                .select('id, title, company_id, location, salary, salary_min, salary_max, salary_period, type, created_at, active, expires_at, description, profiles:company_id(name, logo)')
                 .order('created_at', { ascending: false })
-                .limit(50); // Limit to prevent timeouts
+                .limit(50);
 
-            // If not a company viewing their own jobs AND not an admin, filter out inactive/expired
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
 
@@ -58,8 +59,6 @@ export const DataProvider = ({ children }) => {
             setJobs(data || []);
         } catch (error) {
             console.error('Error fetching jobs:', error);
-            // Don't set jobs to empty array here to preserve potential cache, or do it if needed.
-            // setJobs([]); 
         }
     };
 
@@ -415,16 +414,6 @@ export const DataProvider = ({ children }) => {
         };
 
         loadData();
-
-        // Poll for updates every 1 second
-        const intervalId = setInterval(() => {
-            if (user) {
-                fetchJobs();
-                fetchApplications();
-            }
-        }, 1000);
-
-        return () => clearInterval(intervalId);
     }, [user]); // Re-fetch when user changes (e.g. login/logout)
 
     // Fetch unlocks on load/user change
@@ -500,34 +489,45 @@ export const DataProvider = ({ children }) => {
     }, [applications, user, contactUnlocks]); // Added contactUnlocks dependency
 
 
+    const value = useMemo(() => ({
+        jobs,
+        applications,
+        users,
+        loading,
+        notifications,
+        contactUnlocks,
+        addJob,
+        updateJob,
+        deleteJob,
+        toggleJobStatus,
+        closeJob,
+        republishJob,
+        applyToJob,
+        updateApplicationStatus,
+        fetchMessages,
+        sendMessage,
+        updateUserProfile,
+        adminGetUsers,
+        adminGetApplications,
+        adminRepublishJob,
+        incrementJobView,
+        unlockCandidateContact,
+        fetchCandidateProfile,
+        adminGetContactUnlocks
+    }), [
+        jobs, applications, users, loading, notifications, contactUnlocks, user,
+        adminGetUsers, adminGetApplications, adminGetContactUnlocks, fetchContactUnlocks
+    ]);
+
     return (
-        <DataContext.Provider value={{
-            jobs,
-            applications,
-            users,
-            loading,
-            notifications,
-            contactUnlocks,
-            addJob,
-            updateJob,
-            deleteJob,
-            toggleJobStatus,
-            closeJob,
-            republishJob,
-            applyToJob,
-            updateApplicationStatus,
-            fetchMessages,
-            sendMessage,
-            updateUserProfile,
-            adminGetUsers,
-            adminGetApplications,
-            adminRepublishJob,
-            incrementJobView,
-            unlockCandidateContact,
-            fetchCandidateProfile,
-            adminGetContactUnlocks
-        }}>
-            {!loading && children}
+        <DataContext.Provider value={value}>
+            {loading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+            ) : (
+                children
+            )}
         </DataContext.Provider>
     );
 };
