@@ -132,7 +132,7 @@ const Navbar = () => {
                         {user && user.role === 'candidate' && (
                             <>
                                 <Link to="/dashboard" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                                    <LayoutDashboard className="w-4 h-4 mr-1" /> Mis Postulaciones
+                                    Panel de candidato
                                 </Link>
                                 <Link to="/profile" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                                     <User className="w-4 h-4 mr-1" /> Mi Perfil
@@ -246,7 +246,7 @@ const Navbar = () => {
                                     onClick={() => setIsMenuOpen(false)}
                                     className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
                                 >
-                                    Mis Postulaciones
+                                    Panel de candidato
                                 </Link>
                                 <Link
                                     to="/profile"

@@ -387,7 +387,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                     onClick={() => navigate('/dashboard')}
                                     className="block w-full text-left text-lg font-bold text-slate-700"
                                 >
-                                    Mis Postulaciones
+                                    Panel de candidato
                                 </button>
                                 <button
                                     onClick={() => navigate('/profile')}
