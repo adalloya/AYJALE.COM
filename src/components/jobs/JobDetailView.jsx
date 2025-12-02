@@ -54,7 +54,15 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         }
 
         if (job.salary_period && salaryText !== 'No mostrado') {
-            salaryText += ` ${job.salary_period}`;
+            const periodMap = {
+                'monthly': 'mensuales',
+                'yearly': 'anuales',
+                'weekly': 'semanales',
+                'hourly': 'por hora',
+                'daily': 'diarios'
+            };
+            const translatedPeriod = periodMap[job.salary_period.toLowerCase()] || job.salary_period;
+            salaryText += ` ${translatedPeriod}`;
         }
 
         return salaryText;

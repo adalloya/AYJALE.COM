@@ -220,14 +220,27 @@ const JobsPage = () => {
             return isNaN(num) ? n : num.toLocaleString('es-MX');
         };
 
-        if (job.salary_min && job.salary_max) return `$${fmt(job.salary_min)} - $${fmt(job.salary_max)}`;
-        if (job.salary_min) return `Desde $${fmt(job.salary_min)}`;
-        if (job.salary_max) return `Hasta $${fmt(job.salary_max)}`;
-        if (job.salary && job.salary !== 'N/A') {
+        let salaryText = 'No mostrado';
+        if (job.salary_min && job.salary_max) salaryText = `$${fmt(job.salary_min)} - $${fmt(job.salary_max)}`;
+        else if (job.salary_min) salaryText = `Desde $${fmt(job.salary_min)}`;
+        else if (job.salary_max) salaryText = `Hasta $${fmt(job.salary_max)}`;
+        else if (job.salary && job.salary !== 'N/A') {
             const num = Number(job.salary);
-            return !isNaN(num) && num > 0 ? `$${fmt(num)}` : 'No mostrado';
+            salaryText = !isNaN(num) && num > 0 ? `$${fmt(num)}` : 'No mostrado';
         }
-        return 'No mostrado';
+
+        if (job.salary_period && salaryText !== 'No mostrado') {
+            const periodMap = {
+                'monthly': 'mensuales',
+                'yearly': 'anuales',
+                'weekly': 'semanales',
+                'hourly': 'por hora',
+                'daily': 'diarios'
+            };
+            const translatedPeriod = periodMap[job.salary_period.toLowerCase()] || job.salary_period;
+            salaryText += ` ${translatedPeriod}`;
+        }
+        return salaryText;
     };
 
     return (
