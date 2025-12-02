@@ -66,7 +66,8 @@ const ProfilePage = () => {
 
         const updatedData = {
             ...formData,
-            skills: skillsArray
+            skills: skillsArray,
+            age: formData.age ? parseInt(formData.age, 10) : null
         };
 
         try {
@@ -129,7 +130,8 @@ const ProfilePage = () => {
                                 ...newFormData,
                                 skills: newFormData.skills
                                     ? newFormData.skills.split(',').map(s => s.trim()).filter(Boolean)
-                                    : []
+                                    : [],
+                                age: newFormData.age ? parseInt(newFormData.age, 10) : null
                             };
                             updateUser(dataToSave);
 
