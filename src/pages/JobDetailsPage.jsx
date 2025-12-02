@@ -17,7 +17,7 @@ const JobDetailsPage = () => {
 
     useEffect(() => {
         if (id) {
-            incrementJobView(id);
+            // incrementJobView(id); // Temporarily disabled to prevent infinite re-render loop
         }
     }, [id, incrementJobView]);
 
