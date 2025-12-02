@@ -151,25 +151,14 @@ const TestRunner = () => {
     const [cognitivePuzzle, setCognitivePuzzle] = useState(null);
     const [cognitiveScore, setCognitiveScore] = useState(0);
 
-    const fetchNextPuzzle = async () => {
-        setLoading(true);
-        try {
-            const types = ['abstract', 'numerical', 'verbal'];
-            const type = types[questionIndex % 3]; // Rotate types
-            const response = await fetch(`/api/v1/cognitive/generate?type=${type}&difficulty=1`);
-            if (!response.ok) throw new Error('API Error');
-            const data = await response.json();
-            setCognitivePuzzle(data);
-        } catch (error) {
-            console.warn('API unavailable, using mock puzzle:', error);
-            // Fallback to mock data
-            const mockType = ['abstract', 'numerical', 'verbal'][questionIndex % 3];
-            const mockPuzzle = MOCK_COGNITIVE_PUZZLES.find(p => p.type === mockType) || MOCK_COGNITIVE_PUZZLES[0];
-            setCognitivePuzzle(mockPuzzle);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // SIMULATION: Use Mock Data directly (No API)
+    setLoading(true);
+    setTimeout(() => {
+        const mockType = ['abstract', 'numerical', 'verbal'][questionIndex % 3];
+        const mockPuzzle = MOCK_COGNITIVE_PUZZLES.find(p => p.type === mockType) || MOCK_COGNITIVE_PUZZLES[0];
+        setCognitivePuzzle(mockPuzzle);
+        setLoading(false);
+    }, 500);
 
     // Trigger fetch when entering cognitive module or changing question
     useEffect(() => {
@@ -201,13 +190,8 @@ const TestRunner = () => {
 
     const fetchSJT = async () => {
         setLoading(true);
-        try {
-            const response = await fetch('/api/v1/language/sjt/generate');
-            if (!response.ok) throw new Error('API Error');
-            const data = await response.json();
-            setSjtScenario(data);
-        } catch (error) {
-            console.warn('API unavailable, using mock SJT:', error);
+        // SIMULATION: Use Mock Data directly
+        setTimeout(() => {
             setSjtScenario({
                 text: "You are leading a project team that is behind schedule. One key member is underperforming due to personal issues. The client is demanding an update. What do you do?",
                 options: [
@@ -217,9 +201,8 @@ const TestRunner = () => {
                     "Ignore the personal issues and demand performance."
                 ]
             });
-        } finally {
             setLoading(false);
-        }
+        }, 500);
     };
 
     useEffect(() => {

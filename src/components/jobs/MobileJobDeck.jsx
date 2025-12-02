@@ -6,6 +6,8 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
 import SwipeTutorial from './SwipeTutorial';
+import logo from '../../assets/ayjale_logo_new.png';
+import { Bell } from 'lucide-react';
 
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
@@ -351,46 +353,57 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
             {/* Menu Overlay */}
             {isMenuOpen && (
-                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}>
-                    <div
-                        className="absolute right-0 top-0 bottom-0 w-64 bg-white shadow-2xl p-6 flex flex-col animate-slide-in-right"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-lg font-bold text-slate-800">Menú</h2>
-                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-600">
+                <div className="fixed inset-0 z-[200] bg-white animate-fade-in flex flex-col">
+                    {/* Menu Header */}
+                    <div className="px-4 py-3 shadow-sm flex justify-between items-center border-b border-slate-100">
+                        <img src={logo} alt="AyJale" className="h-8 w-auto object-contain" />
+                        <div className="flex items-center space-x-4">
+                            <button className="relative p-1 text-slate-400">
+                                <Bell className="w-6 h-6" />
+                                {/* Badge (optional, hardcoded for now or use notifications length if available) */}
+                                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white transform translate-x-1/4 -translate-y-1/4"></span>
+                            </button>
+                            <button
+                                onClick={() => setIsMenuOpen(false)}
+                                className="p-2 bg-slate-100 rounded-md text-slate-500 hover:bg-slate-200"
+                            >
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
+                    </div>
 
-                        <nav className="flex-1 space-y-2">
-                            <button
-                                onClick={() => navigate('/')}
-                                className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
-                            >
-                                <Home className="w-5 h-5 mr-3 text-slate-400" />
-                                Inicio
-                            </button>
+                    {/* Menu Items */}
+                    <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="block w-full text-left text-lg font-bold text-slate-700"
+                        >
+                            Inicio
+                        </button>
 
-                            {user && (
-                                <>
-                                    <button
-                                        onClick={() => navigate('/dashboard')}
-                                        className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
-                                    >
-                                        <LayoutDashboard className="w-5 h-5 mr-3 text-slate-400" />
-                                        Dashboard
-                                    </button>
-                                    <button
-                                        onClick={() => navigate('/profile')}
-                                        className="flex items-center w-full p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium"
-                                    >
-                                        <User className="w-5 h-5 mr-3 text-slate-400" />
-                                        Mi Perfil
-                                    </button>
-                                </>
-                            )}
-                        </nav>
+                        {user && (
+                            <>
+                                <button
+                                    onClick={() => navigate('/dashboard')}
+                                    className="block w-full text-left text-lg font-bold text-slate-700"
+                                >
+                                    Mis Postulaciones
+                                </button>
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="block w-full text-left text-lg font-bold text-slate-700"
+                                >
+                                    Mi Perfil
+                                </button>
+                            </>
+                        )}
+
+                        <button
+                            onClick={() => navigate('/jobs')}
+                            className="block w-full text-left text-lg font-bold text-slate-700"
+                        >
+                            Buscar Vacantes
+                        </button>
 
                         {user ? (
                             <button
@@ -398,20 +411,19 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                     logout();
                                     navigate('/');
                                 }}
-                                className="flex items-center w-full p-3 rounded-xl hover:bg-red-50 text-red-600 font-medium mt-auto"
+                                className="block w-full text-left text-lg font-bold text-red-600 mt-8"
                             >
-                                <LogOut className="w-5 h-5 mr-3" />
                                 Cerrar Sesión
                             </button>
                         ) : (
                             <button
                                 onClick={() => navigate('/auth?mode=login')}
-                                className="flex items-center w-full p-3 rounded-xl bg-orange-500 text-white font-medium mt-auto justify-center shadow-md shadow-orange-200"
+                                className="block w-full text-left text-lg font-bold text-primary-600 mt-8"
                             >
                                 Iniciar Sesión
                             </button>
                         )}
-                    </div>
+                    </nav>
                 </div>
             )}
 
