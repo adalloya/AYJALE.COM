@@ -304,12 +304,15 @@ export const DataProvider = ({ children }) => {
             setJobs(prev => prev.map(j => j.id === Number(jobId) ? { ...j, view_count: currentCount + 1 } : j));
 
             // Call the secure RPC function to increment in DB (bypasses RLS)
+            // TEMPORARILY DISABLED TO PREVENT 400 ERRORS
+            /*
             const { error } = await supabase.rpc('increment_job_view', { job_id: Number(jobId) });
 
             if (error) {
                 console.error('Error incrementing job view via RPC:', error);
                 // Revert optimistic update if needed, but usually fine to leave it for UX
             }
+            */
         } catch (e) {
             console.error('Exception in incrementJobView:', e);
         }

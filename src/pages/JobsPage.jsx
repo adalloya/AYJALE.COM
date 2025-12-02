@@ -56,49 +56,56 @@ const JobsPage = () => {
     };
 
     const filteredJobs = jobs
-        .filter(job => job.active) // Only show active jobs
-        .map(job => {
-            const company = job.profiles;
-            const companyName = company ? company.name.toLowerCase() : '';
+        .filter(job => {
+            if (!job.active) return false;
 
-            // Calculate Match Score
-            let isMatch = true;
-
+            // Keyword Filter
             if (filters.keyword) {
                 const keyword = filters.keyword.toLowerCase();
+                const companyName = job.profiles ? job.profiles.name.toLowerCase() : '';
                 const matchesKeyword = job.title.toLowerCase().includes(keyword) ||
                     job.description.toLowerCase().includes(keyword) ||
                     companyName.includes(keyword);
-                if (!matchesKeyword) isMatch = false;
+                if (!matchesKeyword) return false;
             }
 
-            if (filters.state && !job.location.includes(filters.state)) isMatch = false;
-            if (filters.category && job.category !== filters.category) isMatch = false;
-            if (filters.type && job.type !== filters.type) isMatch = false;
-            // Salary Filter: Check against min_salary, max_salary, or legacy salary
+            // State Filter
+            if (filters.state && !job.location.includes(filters.state)) return false;
+
+            // Category Filter (with Legacy Mapping)
+            if (filters.category) {
+                const categoryMapping = {
+                    'Almacén e Inventarios': ['Almacén'],
+                    'Limpieza y Servicios Generales': ['Limpieza'],
+                    'Administrativo y Oficina': ['Administración'],
+                    'Logística y Transporte': ['Chofer'],
+                    'Producción y Manufactura': ['Producción'],
+                    'Ventas y Comercio': ['Ventas'],
+                    'Mantenimiento y Reparaciones': ['Mantenimiento'],
+                    'Seguridad y Vigilancia': ['Seguridad'],
+                    'Hostelería y Turismo': ['Servicios']
+                };
+
+                const legacyMatches = categoryMapping[filters.category] || [];
+                const allValidCategories = [filters.category, ...legacyMatches];
+
+                if (!allValidCategories.includes(job.category)) return false;
+            }
+
+            // Type Filter
+            if (filters.type && job.type !== filters.type) return false;
+
+            // Salary Filter
             if (filters.minSalary) {
                 const min = Number(filters.minSalary);
                 const jobMin = job.salary_min || job.salary || 0;
                 const jobMax = job.salary_max || job.salary || 0;
-                // If the job's max salary is less than the filter's min, it's not a match
-                // OR if we want to be strict: if job's min is less than filter min?
-                // Usually "Min Salary" filter means "Show me jobs that pay at least X".
-                // So if job.max < X, it's definitely out.
-                // If job.min >= X, it's in.
-                // Let's say: if job.salary_max (or salary) is less than filter min, exclude it.
-                if (jobMax < min) isMatch = false;
+                if (jobMax < min) return false;
             }
 
-            return { ...job, isMatch };
+            return true;
         })
-        .sort((a, b) => {
-            // 1. Priority: Match status (Matches first)
-            if (a.isMatch && !b.isMatch) return -1;
-            if (!a.isMatch && b.isMatch) return 1;
-
-            // 2. Priority: Date (Newest first)
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     // Auto-select first job if none selected and jobs exist (Desktop only)
     useEffect(() => {
@@ -253,25 +260,8 @@ const JobsPage = () => {
                         const company = job.profiles;
                         const isSelected = job.id === selectedJobId;
 
-                        // Check if we need to render a separator
-                        const showSeparator = index > 0 && filteredJobs[index - 1].isMatch && !job.isMatch;
-
                         return (
                             <div key={job.id}>
-                                {showSeparator && (
-                                    <div className="py-4 text-center">
-                                        <div className="relative">
-                                            <div className="absolute inset-0 flex items-center">
-                                                <div className="w-full border-t border-slate-200"></div>
-                                            </div>
-                                            <div className="relative flex justify-center">
-                                                <span className="bg-slate-50 px-3 text-sm text-slate-500 font-medium">
-                                                    Otras vacantes disponibles
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                                 <div
                                     onClick={() => {
                                         if (window.innerWidth < 1024) {
@@ -288,7 +278,7 @@ const JobsPage = () => {
                                     className={`bg-white rounded-xl p-4 cursor-pointer transition-all border ${isSelected
                                         ? 'border-orange-500 ring-1 ring-orange-500 shadow-md'
                                         : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
-                                        } ${!job.isMatch ? 'opacity-90 bg-slate-50/50' : ''}`}
+                                        }`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
