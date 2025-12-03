@@ -46,6 +46,22 @@ const JobDetailsPage = () => {
     const company = job?.profiles;
     const jobIds = location.state?.jobIds;
 
+    const deckJobs = useMemo(() => {
+        return (jobIds && jobIds.length > 0)
+            ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
+            : (job ? [job] : []);
+    }, [jobIds, jobs, job]);
+
+    const handleBack = useCallback(() => {
+        // Check if we have history state to go back to
+        if (location.key !== 'default') {
+            navigate(-1);
+        } else {
+            // Fallback if opened directly
+            navigate('/');
+        }
+    }, [location.key, navigate]);
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
@@ -116,21 +132,7 @@ const JobDetailsPage = () => {
         }
     };
 
-    const deckJobs = useMemo(() => {
-        return (jobIds && jobIds.length > 0)
-            ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
-            : (job ? [job] : []);
-    }, [jobIds, jobs, job]);
 
-    const handleBack = useCallback(() => {
-        // Check if we have history state to go back to
-        if (location.key !== 'default') {
-            navigate(-1);
-        } else {
-            // Fallback if opened directly
-            navigate('/');
-        }
-    }, [location.key, navigate]);
 
     // If on mobile, always show the deck (either with list or single job)
     if (isMobile) {
