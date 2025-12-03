@@ -503,7 +503,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 {/* Cards Container */}
                 <div className="absolute inset-0 flex items-center justify-center p-4">
                     {/* Background Card */}
-                    {(dragX > 0 ? prevJob : nextJob) && (
+                    {Math.abs(dragX) > 1 && (dragX > 0 ? prevJob : nextJob) && (
                         <div
                             className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
                             style={{
