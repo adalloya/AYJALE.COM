@@ -16,6 +16,9 @@ const JobDetailsPage = () => {
     const { user } = useAuth();
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [showModal, setShowModal] = useState(false);
+    const [applying, setApplying] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     console.log('JobDetailsPage Render', { id, isMobile, jobsLen: jobs.length });
 
