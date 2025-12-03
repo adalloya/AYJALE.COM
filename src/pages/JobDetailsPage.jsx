@@ -116,16 +116,26 @@ const JobDetailsPage = () => {
         }
     };
 
+    const deckJobs = useMemo(() => {
+        return (jobIds && jobIds.length > 0)
+            ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
+            : (job ? [job] : []);
+    }, [jobIds, jobs, job]);
+
+    const handleBack = useCallback(() => {
+        // Check if we have history state to go back to
+        if (location.key !== 'default') {
+            navigate(-1);
+        } else {
+            // Fallback if opened directly
+            navigate('/');
+        }
+    }, [location.key, navigate]);
+
     // If on mobile, always show the deck (either with list or single job)
     if (isMobile) {
         // console.log('JobDetailsPage: Detected Mobile View');
         // Filter jobs from context to match the IDs passed, or use current job if no IDs
-        // Filter jobs from context to match the IDs passed, or use current job if no IDs
-        const deckJobs = useMemo(() => {
-            return (jobIds && jobIds.length > 0)
-                ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
-                : (job ? [job] : []);
-        }, [jobIds, jobs, job]);
 
         // console.log('JobDetailsPage: Deck Jobs:', deckJobs.length);
 
@@ -134,15 +144,7 @@ const JobDetailsPage = () => {
                 <MobileJobDeck
                     jobs={deckJobs}
                     initialJobId={id}
-                    onBack={useCallback(() => {
-                        // Check if we have history state to go back to
-                        if (location.key !== 'default') {
-                            navigate(-1);
-                        } else {
-                            // Fallback if opened directly
-                            navigate('/');
-                        }
-                    }, [location.key, navigate])}
+                    onBack={handleBack}
                 />
             );
         }
