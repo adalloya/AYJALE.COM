@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut } from 'lucide-react';
 import JobDetailView from './JobDetailView';
@@ -7,13 +7,19 @@ import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
 import logo from '../../assets/ayjale_logo_new.png';
 
-const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
+const MobileJobDeck = memo(({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { applications, applyToJob } = useData();
     const { user, logout } = useAuth();
 
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Safety check: Ensure currentIndex is valid
+    if (currentIndex >= jobs.length && jobs.length > 0) {
+        setCurrentIndex(0);
+    }
+
     const [touchStart, setTouchStart] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
 
@@ -611,6 +617,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
         </div>
     );
-};
+});
 
 export default MobileJobDeck;
