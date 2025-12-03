@@ -1,4 +1,5 @@
 import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag } from 'lucide-react';
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -288,5 +289,4 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     );
 };
 
-import { memo } from 'react';
 export default memo(JobDetailView);
