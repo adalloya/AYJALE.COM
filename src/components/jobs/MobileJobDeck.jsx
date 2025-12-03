@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut } from 'lucide-react';
 import JobDetailView from './JobDetailView';
@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
 import logo from '../../assets/ayjale_logo_new.png';
 
-const MobileJobDeck = memo(({ jobs, initialJobId, onBack }) => {
+const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { applications, applyToJob } = useData();
@@ -617,6 +617,6 @@ const MobileJobDeck = memo(({ jobs, initialJobId, onBack }) => {
 
         </div>
     );
-});
+};
 
 export default MobileJobDeck;
