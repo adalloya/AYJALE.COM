@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut, Briefcase, LogIn } from 'lucide-react';
 import JobDetailView from './JobDetailView';
@@ -69,9 +69,9 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         if (logout) logout();
-    };
+    }, [logout]);
 
     const handleSearch = (keyword) => {
         setShowSearch(false);
@@ -99,16 +99,16 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     // Effect 2: Navigation Sync (Runs ONLY when initialJobId changes)
     useEffect(() => {
-        if (jobs.length === 0) return;
-
-        const index = jobs.findIndex(j => j.id === Number(initialJobId));
-        // Only update if found AND different from current
-        if (index !== -1 && index !== currentIndex) {
-            setCurrentIndex(index);
-            // Ensure we mark as initialized if we sync from URL
-            isInitialized.current = true;
+        if (jobs.length > 0) {
+            const index = jobs.findIndex(j => j.id === Number(initialJobId));
+            // Only update if found AND different from current
+            if (index !== -1 && index !== currentIndex) {
+                setCurrentIndex(index);
+                // Ensure we mark as initialized if we sync from URL
+                isInitialized.current = true;
+            }
         }
-    }, [initialJobId]);
+    }, [initialJobId, jobs]); // Removed currentIndex to avoid loop
 
     // Tutorial Logic
     useEffect(() => {
@@ -199,62 +199,81 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         resetInactivity();
         if (!isDragging) return;
         setIsDragging(false);
-
-        // Check for boundary hit to trigger feedback animation
-        const isStartBoundary = currentIndex === 0 && dragX > 50;
-        const isEndBoundary = currentIndex === jobs.length - 1 && dragX < -50;
-
-        if (isStartBoundary || isEndBoundary) {
-            const type = isStartBoundary ? 'start' : 'end';
-            setBoundaryFeedback({ active: true, type, fading: false });
-
-            setTimeout(() => {
-                setBoundaryFeedback(prev => ({ ...prev, fading: true }));
-                setTimeout(() => {
-                    setBoundaryFeedback({ active: false, type: null, fading: false });
-                }, 500);
-            }, 1000);
-        }
+        setTouchStart(null);
+        setTouchStartY(null);
 
         if (Math.abs(dragX) > threshold) {
-            if ((dragX < 0 && currentIndex < jobs.length - 1) || (dragX > 0 && currentIndex > 0)) {
-                setIsSwipingOut(true);
+            // Swipe Out
+            const direction = dragX > 0 ? 'right' : 'left';
 
-                if (dragX < 0) {
-                    setExitDirection('left');
-                    setTimeout(() => handleNext(), 200);
-                } else {
-                    setExitDirection('right');
-                    setTimeout(() => handlePrev(), 200);
+            // Boundary Check
+            if ((currentIndex === 0 && direction === 'right') ||
+                (currentIndex === jobs.length - 1 && direction === 'left')) {
+                // Hit boundary - bounce back
+                setBoundaryFeedback({
+                    active: true,
+                    type: direction === 'right' ? 'start' : 'end',
+                    fading: false
+                });
+
+                // Haptic feedback if available
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(50);
                 }
-            } else {
+
                 setDragX(0);
+
+                // Hide feedback after delay
+                setTimeout(() => {
+                    setBoundaryFeedback(prev => ({ ...prev, fading: true }));
+                    setTimeout(() => {
+                        setBoundaryFeedback({ active: false, type: null, fading: false });
+                    }, 300);
+                }, 1500);
+                return;
             }
+
+            // Valid Swipe
+            setExitDirection(direction);
+            setIsSwipingOut(true); // Trigger background transition
+
+            // Wait for animation to complete before switching
+            setTimeout(() => {
+                if (direction === 'right') {
+                    handlePrev();
+                } else {
+                    handleNext();
+                }
+                setExitDirection(null);
+                setDragX(0);
+                setIsSwipingOut(false); // Reset background transition
+            }, 200); // 200ms matches CSS transition
         } else {
+            // Reset (Snap Back)
             setDragX(0);
         }
     };
 
     const handleNext = () => {
-        const nextIndex = currentIndex + 1;
-        setCurrentIndex(nextIndex);
-        resetState();
-        const nextJob = jobs[nextIndex];
-        navigate(`/jobs/${nextJob.id}`, {
-            replace: true,
-            state: location.state
-        });
+        if (currentIndex < jobs.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+            const nextJob = jobs[currentIndex + 1];
+            navigate(`/jobs/${nextJob.id}`, {
+                replace: true,
+                state: location.state
+            });
+        }
     };
 
     const handlePrev = () => {
-        const prevIndex = currentIndex - 1;
-        setCurrentIndex(prevIndex);
-        resetState();
-        const prevJob = jobs[prevIndex];
-        navigate(`/jobs/${prevJob.id}`, {
-            replace: true,
-            state: location.state
-        });
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+            const prevJob = jobs[currentIndex - 1];
+            navigate(`/jobs/${prevJob.id}`, {
+                replace: true,
+                state: location.state
+            });
+        }
     };
 
     const isProfileComplete = useCallback(() => {
@@ -319,137 +338,164 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         }
     };
 
-    // Dynamic Styles for Background Card
-    const bgScale = isSwipingOut ? 1 : 0.95 + (Math.abs(dragX) / windowWidth) * 0.05;
-    const bgOpacity = isSwipingOut ? 1 : 0.5 + (Math.abs(dragX) / windowWidth) * 0.5;
-    const bgGrayscale = isSwipingOut ? 0 : 1;
+    // Calculate dynamic styles for smooth animation
+    // We want the background card to scale up and fade in as we drag
+    const progress = Math.min(Math.abs(dragX) / threshold, 1); // 0 to 1
 
-    // Dynamic Styles
-    const rotate = dragX * 0.05;
-    const opacity = 1 - (Math.abs(dragX) / (windowWidth * 1.5));
+    // Background Card Styles
+    // Starts at scale 0.9, opacity 0.5
+    // Ends at scale 1.0, opacity 1.0
+    const bgScale = 0.9 + (0.1 * progress);
+    const bgOpacity = 0.5 + (0.5 * progress);
+    const bgGrayscale = 1 - progress; // 1 (gray) -> 0 (color)
 
+    // Foreground Card Styles
+    const rotate = dragX * 0.05; // Slight rotation
+
+    // Fix: Keep opacity 1 during drag (User Request)
+    // Only fade out when actually exiting (swiped away)
     const cardStyle = {
         transform: exitDirection
-            ? `translateX(${exitDirection === 'left' ? '-150%' : '150%'}) rotate(${exitDirection === 'left' ? -20 : 20}deg)`
+            ? `translateX(${exitDirection === 'right' ? '150%' : '-150%'}) rotate(${exitDirection === 'right' ? 20 : -20}deg)`
             : `translateX(${dragX}px) rotate(${rotate}deg)`,
-        opacity: exitDirection ? 0 : 1,
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
-        zIndex: 10
+        opacity: 1, // Keep fully opaque even when exiting
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        zIndex: (isDragging || exitDirection) ? 60 : 40 // Fix: Only float over header when interacting
     };
 
     // Helper to determine if overlay should be shown
     const showBoundaryOverlay = (currentIndex === 0 && dragX > 0) || (currentIndex === jobs.length - 1 && dragX < 0) || boundaryFeedback.active;
     const overlayType = boundaryFeedback.active ? boundaryFeedback.type : (dragX > 0 ? 'start' : 'end');
 
+    // Memoized Header to prevent flickering during drag
+    const header = useMemo(() => (
+        <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-50 h-[60px] flex-shrink-0 relative">
+            <button
+                onClick={onBack}
+                className="flex items-center text-slate-600 font-medium text-sm hover:text-slate-900 transition-colors"
+            >
+                <ArrowLeft className="w-5 h-5 mr-1" />
+                Volver
+            </button>
+
+            <div className="text-sm font-medium text-slate-400">
+                {currentIndex + 1} de {jobs.length}
+            </div>
+
+            <div className="flex items-center gap-3">
+                <div className="relative" ref={menuRef}>
+                    <button
+                        onClick={() => setIsMenuOpen(prev => !prev)}
+                        className="p-2 -mr-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
+                    >
+                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isMenuOpen && (
+                        <div className="absolute top-[60px] right-0 w-64 bg-white shadow-xl border border-slate-100 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
+                            <div className="p-2">
+                                <button
+                                    onClick={() => {
+                                        setIsMenuOpen(false);
+                                        navigate('/');
+                                    }}
+                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                >
+                                    <Home className="w-5 h-5 text-slate-400" />
+                                    Inicio
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsMenuOpen(false);
+                                        // Only navigate if not already on jobs page
+                                        if (!location.pathname.startsWith('/jobs')) {
+                                            navigate('/jobs');
+                                        }
+                                    }}
+                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                >
+                                    <Briefcase className="w-5 h-5 text-slate-400" />
+                                    Vacantes
+                                </button>
+                                {user ? (
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                navigate('/profile');
+                                            }}
+                                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                        >
+                                            <User className="w-5 h-5 text-slate-400" />
+                                            Mi Perfil
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                navigate('/dashboard');
+                                            }}
+                                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                        >
+                                            <LayoutDashboard className="w-5 h-5 text-slate-400" />
+                                            Panel de candidato
+                                        </button>
+                                        <div className="h-px bg-slate-100 my-1" />
+                                        <button
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                handleLogout();
+                                            }}
+                                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 font-medium flex items-center gap-3 transition-colors"
+                                        >
+                                            <LogOut className="w-5 h-5" />
+                                            Cerrar Sesión
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="h-px bg-slate-100 my-1" />
+                                        <button
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                navigate('/auth');
+                                            }}
+                                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
+                                        >
+                                            <LogIn className="w-5 h-5 text-slate-400" />
+                                            Iniciar Sesión
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    ), [currentIndex, jobs.length, isMenuOpen, user, onBack, navigate, handleLogout]);
+
+    // Memoized Progress Bar
+    const progressBar = useMemo(() => (
+        <div className="h-1 bg-slate-100 w-full flex-shrink-0">
+            <div
+                className="h-full bg-secondary-500 transition-all duration-300 ease-out"
+                style={{ width: `${((currentIndex + 1) / jobs.length) * 100}%` }}
+            />
+        </div>
+    ), [currentIndex, jobs.length]);
+
+
+
     // Render
     return (
         <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-pan-y">
-            {/* Header */}
-            <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-50 h-[60px] flex-shrink-0 relative">
-                <button
-                    onClick={onBack}
-                    className="flex items-center text-slate-600 font-medium text-sm hover:text-slate-900 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5 mr-1" />
-                    Volver
-                </button>
-
-                <div className="text-sm font-medium text-slate-400">
-                    {currentIndex + 1} de {jobs.length}
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative" ref={menuRef}>
-                        <button
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="p-2 -mr-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
-                        >
-                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {isMenuOpen && (
-                            <div className="absolute top-[60px] right-0 w-64 bg-white shadow-xl border border-slate-100 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
-                                <div className="p-2">
-                                    <button
-                                        onClick={() => {
-                                            setIsMenuOpen(false);
-                                            navigate('/');
-                                        }}
-                                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
-                                    >
-                                        <Home className="w-5 h-5 text-slate-400" />
-                                        Inicio
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setIsMenuOpen(false);
-                                            navigate('/jobs');
-                                        }}
-                                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
-                                    >
-                                        <Briefcase className="w-5 h-5 text-slate-400" />
-                                        Vacantes
-                                    </button>
-                                    {user ? (
-                                        <>
-                                            <button
-                                                onClick={() => {
-                                                    setIsMenuOpen(false);
-                                                    navigate('/profile');
-                                                }}
-                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
-                                            >
-                                                <User className="w-5 h-5 text-slate-400" />
-                                                Mi Perfil
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setIsMenuOpen(false);
-                                                    navigate('/dashboard');
-                                                }}
-                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
-                                            >
-                                                <LayoutDashboard className="w-5 h-5 text-slate-400" />
-                                                Panel de candidato
-                                            </button>
-                                            <div className="h-px bg-slate-100 my-1" />
-                                            <button
-                                                onClick={() => {
-                                                    setIsMenuOpen(false);
-                                                    handleLogout();
-                                                }}
-                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 font-medium flex items-center gap-3 transition-colors"
-                                            >
-                                                <LogOut className="w-5 h-5" />
-                                                Cerrar Sesión
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="h-px bg-slate-100 my-1" />
-                                            <button
-                                                onClick={() => {
-                                                    setIsMenuOpen(false);
-                                                    navigate('/auth');
-                                                }}
-                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-3 transition-colors"
-                                            >
-                                                <LogIn className="w-5 h-5 text-slate-400" />
-                                                Iniciar Sesión
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+            {header}
+            {progressBar}
 
             {/* Main Content Area (Swipeable) */}
             <div
-                className="flex-1 relative overflow-hidden bg-white"
+                className="flex-1 relative bg-white"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -547,7 +593,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 type="text"
                                 autoFocus
                                 placeholder="Buscar puesto o empresa..."
-                                className="flex-1 pl-4 pr-3 py-4 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-lg outline-none"
+                                className="flex-1 min-w-0 pl-4 pr-3 py-4 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-lg outline-none"
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
                             />
@@ -555,14 +601,14 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 <button
                                     type="button"
                                     onClick={() => setSearchKeyword('')}
-                                    className="p-3 text-slate-300 hover:text-slate-500 transition-colors"
+                                    className="p-3 text-slate-300 hover:text-slate-500 transition-colors flex-shrink-0"
                                 >
                                     <X className="w-6 h-6" />
                                 </button>
                             )}
                             <button
                                 type="submit"
-                                className="bg-secondary-600 text-white p-3.5 rounded-xl hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1"
+                                className="bg-secondary-600 text-white p-3.5 rounded-xl hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1 flex-shrink-0"
                             >
                                 <Search className="w-6 h-6" />
                             </button>

@@ -46,16 +46,13 @@ const JobDetailsPage = () => {
     }, [jobIds, jobs, job]);
 
     const handleBack = useCallback(() => {
-        // Check if we have history state to go back to
-        if (location.key !== 'default') {
-            navigate(-1);
-        } else {
-            // Fallback if opened directly
-            navigate('/');
-        }
-    }, [location.key, navigate]);
+        // Always go back to Landing Page to search again (User Request)
+        navigate('/');
+    }, [navigate]);
 
-    if (loading) {
+    // Optimistic rendering: If we have the job, show it even if loading (background refresh)
+    // Only show spinner if we are loading AND don't have the job yet
+    if (loading && !job) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-600"></div>

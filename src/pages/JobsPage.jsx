@@ -117,7 +117,9 @@ const JobsPage = () => {
     // Handle resize and initial mobile load
     useEffect(() => {
         const handleResize = () => {
+            console.log('JobsPage Resize:', window.innerWidth, selectedJobId);
             if (window.innerWidth < 1024 && selectedJobId) {
+                console.log('Navigating to mobile deck:', selectedJobId);
                 // If resizing to mobile and a job is selected, go to deck view
                 navigate(`/jobs/${selectedJobId}`, {
                     state: {
