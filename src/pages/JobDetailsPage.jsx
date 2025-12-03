@@ -1,6 +1,6 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MobileJobDeck from '../components/jobs/MobileJobDeck';
-import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';

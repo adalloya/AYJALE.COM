@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut } from 'lucide-react';
 import JobDetailView from './JobDetailView';
