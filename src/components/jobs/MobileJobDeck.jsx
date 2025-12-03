@@ -222,6 +222,14 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         });
     };
 
+    const isProfileComplete = useCallback(() => {
+        if (!user) return false;
+        const required = ['name', 'title', 'location', 'bio'];
+        const hasRequired = required.every(field => user[field] && user[field].trim() !== '');
+        const hasSkills = Array.isArray(user.skills) ? user.skills.length > 0 : (user.skills && user.skills.trim() !== '');
+        return hasRequired && hasSkills;
+    }, [user]);
+
     const resetState = () => {
         setDragX(0);
         setExitDirection(null);
