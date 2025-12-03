@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Search, X, Menu, Home, LayoutDashboard, User, LogOut, Briefcase, LogIn } from 'lucide-react';
 import JobDetailView from './JobDetailView';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ApplicationModal from './ApplicationModal';
+import SwipeTutorial from './SwipeTutorial';
 import logo from '../../assets/ayjale_logo_new.png';
 
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
@@ -14,6 +15,12 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const { user, logout } = useAuth();
 
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const currentJob = jobs[currentIndex];
+    const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
+    const prevJob = currentIndex > 0 ? jobs[currentIndex - 1] : null;
+    const company = currentJob?.profiles;
+    const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
 
     // Safety check: Ensure currentIndex is valid
     useEffect(() => {
@@ -30,10 +37,21 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [isSwipingOut, setIsSwipingOut] = useState(false);
 
     const [dragX, setDragX] = useState(0);
+
+    // Determine which card is "behind" based on drag direction
+    let backgroundJob = null;
+    if (dragX > 0) {
+        backgroundJob = prevJob; // Swiping Right -> Show Previous
+    } else if (dragX < 0) {
+        backgroundJob = nextJob; // Swiping Left -> Show Next
+    }
+    const backgroundCompany = backgroundJob?.profiles;
+
     const [isDragging, setIsDragging] = useState(false);
     const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
 
     const cardRef = useRef(null);
+    const menuRef = useRef(null);
     const windowWidth = window.innerWidth;
     const threshold = windowWidth * 0.3; // Drag 30% of screen to trigger
 
@@ -52,10 +70,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleLogout = () => {
-        // Assuming logout function is available from useAuth, if not we might need to get it
-        // But useAuth usually provides it. Let's check imports.
-        // Yes, useAuth is imported.
-        // We need to destructure logout from useAuth
+        if (logout) logout();
     };
 
     const handleSearch = (keyword) => {
@@ -93,7 +108,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             // Ensure we mark as initialized if we sync from URL
             isInitialized.current = true;
         }
-    }, [initialJobId]); // IMPORTANT: Do not include 'jobs' here to avoid reset on polling
+    }, [initialJobId]);
 
     // Tutorial Logic
     useEffect(() => {
@@ -114,28 +129,46 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             tutorialTimersRef.current.push(timer);
         };
 
-        // Schedule triggers: Immediate (Mount), 10s, 30s, 60s
+        // Schedule triggers: Immediate (Mount), 5s, 25s (5+20)
         // Immediate show on mount (small delay for transition)
         setTimeout(() => {
             setShowTutorial(true);
             setTimeout(() => setShowTutorial(false), 3000);
         }, 500);
 
-        scheduleTutorial(10000); // 10s
-        scheduleTutorial(30000); // 30s
-        scheduleTutorial(60000); // 60s
+        scheduleTutorial(5000); // 5s
+        scheduleTutorial(25000); // 25s (5s + 20s)
 
         return () => {
             tutorialTimersRef.current.forEach(clearTimeout);
         };
-    }, []); // Run once on mount
+    }, []);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
     const resetInactivity = () => {
         lastInteractionRef.current = Date.now();
         if (showTutorial) setShowTutorial(false);
     };
 
-    const onTouchStart = (e) => {
+    const handleTouchStart = (e) => {
         resetInactivity();
         if (exitDirection) return;
         setIsDragging(true);
@@ -144,7 +177,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         setDragX(0);
     };
 
-    const onTouchMove = (e) => {
+    const handleTouchMove = (e) => {
         resetInactivity();
         if (!isDragging || !touchStart) return;
 
@@ -162,34 +195,30 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         setDragX(diffX);
     };
 
-    const onTouchEnd = () => {
+    const handleTouchEnd = () => {
         resetInactivity();
         if (!isDragging) return;
         setIsDragging(false);
 
         // Check for boundary hit to trigger feedback animation
-        const isStartBoundary = currentIndex === 0 && dragX > 50; // Threshold to trigger message
+        const isStartBoundary = currentIndex === 0 && dragX > 50;
         const isEndBoundary = currentIndex === jobs.length - 1 && dragX < -50;
 
         if (isStartBoundary || isEndBoundary) {
             const type = isStartBoundary ? 'start' : 'end';
-            // Trigger lingering feedback
             setBoundaryFeedback({ active: true, type, fading: false });
 
-            // Start fade out after delay (linger)
             setTimeout(() => {
                 setBoundaryFeedback(prev => ({ ...prev, fading: true }));
-                // Remove completely after fade duration
                 setTimeout(() => {
                     setBoundaryFeedback({ active: false, type: null, fading: false });
-                }, 500); // 500ms fade duration matches CSS transition
-            }, 1000); // 1s linger duration
+                }, 500);
+            }, 1000);
         }
 
         if (Math.abs(dragX) > threshold) {
-            // Swiped far enough
             if ((dragX < 0 && currentIndex < jobs.length - 1) || (dragX > 0 && currentIndex > 0)) {
-                setIsSwipingOut(true); // Trigger background animation
+                setIsSwipingOut(true);
 
                 if (dragX < 0) {
                     setExitDirection('left');
@@ -199,10 +228,10 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                     setTimeout(() => handlePrev(), 200);
                 }
             } else {
-                setDragX(0); // Boundary hit
+                setDragX(0);
             }
         } else {
-            setDragX(0); // Not far enough
+            setDragX(0);
         }
     };
 
@@ -210,11 +239,10 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         const nextIndex = currentIndex + 1;
         setCurrentIndex(nextIndex);
         resetState();
-        // Update URL using navigate to keep router in sync
         const nextJob = jobs[nextIndex];
         navigate(`/jobs/${nextJob.id}`, {
             replace: true,
-            state: location.state // Preserve state (jobIds list)
+            state: location.state
         });
     };
 
@@ -222,11 +250,10 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         const prevIndex = currentIndex - 1;
         setCurrentIndex(prevIndex);
         resetState();
-        // Update URL using navigate to keep router in sync
         const prevJob = jobs[prevIndex];
         navigate(`/jobs/${prevJob.id}`, {
             replace: true,
-            state: location.state // Preserve state (jobIds list)
+            state: location.state
         });
     };
 
@@ -292,37 +319,20 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         }
     };
 
-    const currentJob = jobs[currentIndex];
-    const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
-    const prevJob = currentIndex > 0 ? jobs[currentIndex - 1] : null;
-
-    // Determine which card is "behind" based on drag direction
-    let backgroundJob = null;
-    if (dragX > 0) {
-        backgroundJob = prevJob; // Swiping Right -> Show Previous
-    } else if (dragX < 0) {
-        backgroundJob = nextJob; // Swiping Left -> Show Next
-    }
-
-    const company = currentJob?.profiles;
-    const backgroundCompany = backgroundJob?.profiles;
-
-    const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
-
     // Dynamic Styles for Background Card
     const bgScale = isSwipingOut ? 1 : 0.95 + (Math.abs(dragX) / windowWidth) * 0.05;
     const bgOpacity = isSwipingOut ? 1 : 0.5 + (Math.abs(dragX) / windowWidth) * 0.5;
-    const bgGrayscale = isSwipingOut ? 0 : 1; // 1 = grayscale, 0 = color
+    const bgGrayscale = isSwipingOut ? 0 : 1;
 
     // Dynamic Styles
-    const rotate = dragX * 0.05; // Slight rotation
-    const opacity = 1 - (Math.abs(dragX) / (windowWidth * 1.5)); // Fade out slightly
+    const rotate = dragX * 0.05;
+    const opacity = 1 - (Math.abs(dragX) / (windowWidth * 1.5));
 
     const cardStyle = {
         transform: exitDirection
             ? `translateX(${exitDirection === 'left' ? '-150%' : '150%'}) rotate(${exitDirection === 'left' ? -20 : 20}deg)`
             : `translateX(${dragX}px) rotate(${rotate}deg)`,
-        opacity: exitDirection ? 0 : 1, // opacity,
+        opacity: exitDirection ? 0 : 1,
         transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
         zIndex: 10
     };
@@ -333,27 +343,22 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     // Render
     return (
-        <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-none">
+        <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-pan-y">
             {/* Header */}
             <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-50 h-[60px] flex-shrink-0 relative">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={onBack}
-                        className="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
-                    >
-                        <ArrowLeft className="w-6 h-6" />
-                    </button>
-                    <img src={logo} alt="AyJale" className="h-8 w-auto object-contain" />
+                <button
+                    onClick={onBack}
+                    className="flex items-center text-slate-600 font-medium text-sm hover:text-slate-900 transition-colors"
+                >
+                    <ArrowLeft className="w-5 h-5 mr-1" />
+                    Volver
+                </button>
+
+                <div className="text-sm font-medium text-slate-400">
+                    {currentIndex + 1} de {jobs.length}
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setShowSearch(true)}
-                        className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors active:scale-95"
-                    >
-                        <Search className="w-6 h-6" />
-                    </button>
-
                     <div className="relative" ref={menuRef}>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -442,91 +447,55 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 </div>
             </div>
 
-            {/* Search Overlay */}
-            {showSearch && (
-                <div className="absolute inset-0 z-[60] bg-white animate-in fade-in slide-in-from-top-5 duration-200">
-                    <div className="p-4 flex items-center gap-3 border-b border-slate-100">
-                        <button
-                            onClick={() => setShowSearch(false)}
-                            className="p-2 -ml-2 text-slate-400 hover:text-slate-600"
-                        >
-                            <ArrowLeft className="w-6 h-6" />
-                        </button>
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input
-                                autoFocus
-                                type="text"
-                                placeholder="Buscar vacantes..."
-                                className="w-full pl-10 pr-4 py-2 bg-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-500/20 text-slate-900"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleSearch(e.target.value);
-                                    }
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <div className="p-6">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Populares</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {['Ventas', 'Administración', 'Chofer', 'Atención al cliente', 'Limpieza'].map(term => (
-                                <button
-                                    key={term}
-                                    onClick={() => handleSearch(term)}
-                                    className="px-4 py-2 bg-slate-50 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors"
-                                >
-                                    {term}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Main Content Area (Swipeable) */}
             <div
-                className="flex-1 relative overflow-hidden bg-slate-100"
+                className="flex-1 relative overflow-hidden bg-white"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
                 {/* Cards Container */}
                 <div className="absolute inset-0 flex items-center justify-center p-4">
-                    {/* Next Card (Background) */}
-                    {nextJob && (
+                    {/* Background Card */}
+                    {(dragX > 0 ? prevJob : nextJob) && (
                         <div
-                            className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden transform scale-95 opacity-50 translate-y-4"
+                            className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
+                            style={{
+                                transform: `scale(${bgScale})`,
+                                opacity: bgOpacity,
+                                zIndex: 1,
+                                transition: isSwipingOut ? 'all 0.2s ease-out' : 'none'
+                            }}
                         >
-                            <JobDetailView
-                                job={nextJob}
-                                company={nextJob.profiles}
-                                onApply={() => { }} // Dummy handler for background card
-                                hasApplied={false}
-                                isMobileDeck={true}
-                            />
+                            <div
+                                className="h-full overflow-hidden pointer-events-none transition-all duration-200"
+                                style={{ filter: `grayscale(${bgGrayscale})` }}
+                            >
+                                <JobDetailView
+                                    job={dragX > 0 ? prevJob : nextJob}
+                                    company={(dragX > 0 ? prevJob : nextJob).profiles}
+                                    onApply={() => { }}
+                                    hasApplied={false}
+                                    isMobileDeck={true}
+                                />
+                            </div>
                         </div>
                     )}
 
                     {/* Current Card (Foreground) */}
                     <div
-                        className="absolute inset-4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden transition-transform duration-300 ease-out will-change-transform"
-                        style={{
-                            transform: `translateX(${dragX}px) rotate(${dragX * 0.05}deg)`,
-                            zIndex: 10
-                        }}
+                        key={currentJob?.id}
+                        className="absolute inset-4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden cursor-grab active:cursor-grabbing"
+                        style={cardStyle}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        onMouseDown={handleTouchStart}
+                        onMouseMove={handleTouchMove}
+                        onMouseUp={handleTouchEnd}
+                        onMouseLeave={handleTouchEnd}
                     >
-                        {/* Swipe Indicators */}
-                        {dragX !== 0 && (
-                            <div className={`absolute top-8 ${dragX > 0 ? 'left-8' : 'right-8'} z-50 transform -rotate-12`}>
-                                <div className={`px-4 py-2 border-4 rounded-xl font-bold text-2xl tracking-wider uppercase ${dragX > 0
-                                    ? 'border-green-500 text-green-500' // Right swipe (Next/Like)
-                                    : 'border-red-500 text-red-500'     // Left swipe (Prev/Dislike)
-                                    }`}>
-                                    {dragX > 0 ? 'SIGUIENTE' : 'ANTERIOR'}
-                                </div>
-                            </div>
-                        )}
+
 
                         <JobDetailView
                             job={currentJob}
@@ -538,30 +507,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                     </div>
                 </div>
 
-                {/* Navigation Controls (Bottom) */}
-                <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6 z-40 pointer-events-none">
-                    <button
-                        onClick={handlePrev}
-                        disabled={currentIndex === 0}
-                        className={`w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center transition-all pointer-events-auto ${currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'active:scale-90 text-red-500'
-                            }`}
-                    >
-                        <ChevronLeft className="w-8 h-8" />
-                    </button>
 
-                    <span className="bg-slate-900/80 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
-                        {currentIndex + 1} / {jobs.length}
-                    </span>
-
-                    <button
-                        onClick={handleNext}
-                        disabled={currentIndex === jobs.length - 1}
-                        className={`w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center transition-all pointer-events-auto ${currentIndex === jobs.length - 1 ? 'opacity-50 cursor-not-allowed' : 'active:scale-90 text-green-500'
-                            }`}
-                    >
-                        <ChevronRight className="w-8 h-8" />
-                    </button>
-                </div>
             </div>
 
             <ApplicationModal
@@ -572,6 +518,14 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 loading={applying}
                 success={isSuccess}
             />
+
+            {/* Floating Search Button */}
+            <button
+                onClick={() => setShowSearch(true)}
+                className="absolute bottom-6 right-6 z-[80] bg-white text-orange-600 p-4 rounded-full shadow-lg border border-slate-100 active:scale-95 transition-transform"
+            >
+                <Search className="w-6 h-6" />
+            </button>
 
             {/* Search Overlay */}
             {showSearch && (
@@ -616,6 +570,32 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                     </div>
                 </div>
             )}
+
+            {/* Boundary Feedback Overlay */}
+            {(boundaryFeedback.active || (isDragging && ((currentIndex === 0 && dragX > 50) || (currentIndex === jobs.length - 1 && dragX < -50)))) && (
+                <div className={`absolute inset-0 z-[60] flex items-center justify-center pointer-events-none transition-opacity duration-300 ${boundaryFeedback.fading ? 'opacity-0' : 'opacity-100'}`}>
+                    <div className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl p-8 flex flex-col items-center text-center transform scale-110 animate-bounce-subtle border border-slate-100">
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'bg-blue-50 text-blue-500' : 'bg-orange-50 text-orange-500'}`}>
+                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? (
+                                <ChevronLeft className="w-8 h-8" />
+                            ) : (
+                                <ChevronRight className="w-8 h-8" />
+                            )}
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-1">
+                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? '¡Estás al día!' : '¡Has visto todo!'}
+                        </h3>
+                        <p className="text-slate-500 font-medium">
+                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'Es la más reciente' : 'No hay más por ahora, pero vuelve mañana'}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <SwipeTutorial
+                visible={showTutorial}
+                onDismiss={() => setShowTutorial(false)}
+            />
 
         </div>
     );

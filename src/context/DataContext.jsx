@@ -420,6 +420,7 @@ export const DataProvider = ({ children }) => {
 
     // Fetch initial data and set up polling
     useEffect(() => {
+        console.log('[DataContext] Initial Load Effect Triggered', { user: user?.id });
         const loadData = async () => {
             // Only show loading spinner on initial load
             if (jobs.length === 0 && applications.length === 0) {

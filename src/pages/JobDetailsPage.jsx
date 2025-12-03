@@ -15,16 +15,9 @@ const JobDetailsPage = () => {
     const { jobs, users, applications, applyToJob, loading, incrementJobView } = useData();
     const { user } = useAuth();
 
-    useEffect(() => {
-        if (id) {
-            // incrementJobView(id); // Temporarily disabled to prevent infinite re-render loop
-        }
-    }, [id, incrementJobView]);
-
-    const [showModal, setShowModal] = useState(false);
-    const [applying, setApplying] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    console.log('JobDetailsPage Render', { id, isMobile, jobsLen: jobs.length });
 
     useEffect(() => {
         const handleResize = () => {

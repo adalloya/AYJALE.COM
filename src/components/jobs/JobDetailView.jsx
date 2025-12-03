@@ -133,13 +133,13 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         {/* Actions */}
                         <div className="flex items-center gap-3 w-full">
                             {hasApplied ? (
-                                <button disabled className="flex-1 bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm">
+                                <button disabled className="flex-1 bg-green-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm">
                                     Ya te has postulado
                                 </button>
                             ) : (
                                 <button
                                     onClick={onApply}
-                                    className="flex-1 bg-secondary-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md active:scale-95"
+                                    className="flex-1 bg-orange-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-orange-700 transition-all shadow-md active:scale-95"
                                 >
                                     Postularme ahora
                                 </button>

@@ -43,10 +43,12 @@ export const AuthProvider = ({ children }) => {
     const fetchProfile = async (userId, session = null) => {
         // Check ref instead of state to avoid stale closure issues
         if (loadedUserId.current === userId) {
+            // console.log('[AuthContext] Profile already loaded for:', userId);
             setLoading(false);
             return;
         }
 
+        console.log('[AuthContext] Fetching profile for:', userId);
         loadedUserId.current = userId; // Mark as processing/loaded
 
         try {
@@ -76,6 +78,7 @@ export const AuthProvider = ({ children }) => {
                 };
             }
 
+            console.log('[AuthContext] Setting user:', finalUser?.id);
             setUser(finalUser);
         } catch (error) {
             console.error('Error fetching profile:', error);
