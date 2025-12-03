@@ -193,12 +193,13 @@ const TestRunner = () => {
         // SIMULATION: Use Mock Data directly
         setTimeout(() => {
             setSjtScenario({
-                text: "You are leading a project team that is behind schedule. One key member is underperforming due to personal issues. The client is demanding an update. What do you do?",
+                context: "Gestión de Equipos",
+                question: "Estás liderando un equipo que está retrasado. Un miembro clave tiene bajo rendimiento por problemas personales. El cliente exige una actualización. ¿Qué haces?",
                 options: [
-                    "Discuss the situation privately with the member and reassign tasks temporarily.",
-                    "Report the delay to the client immediately and ask for an extension.",
-                    "Push the team to work overtime to catch up.",
-                    "Ignore the personal issues and demand performance."
+                    { text: "Discutir la situación en privado con el miembro y reasignar tareas temporalmente." },
+                    { text: "Informar del retraso al cliente inmediatamente y pedir una extensión." },
+                    { text: "Presionar al equipo para trabajar horas extra y ponerse al día." },
+                    { text: "Ignorar los problemas personales y exigir rendimiento." }
                 ]
             });
             setLoading(false);
