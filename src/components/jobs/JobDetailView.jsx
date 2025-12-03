@@ -289,4 +289,4 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     );
 };
 
-export default memo(JobDetailView);
+export default JobDetailView;

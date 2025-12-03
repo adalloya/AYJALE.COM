@@ -605,4 +605,4 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     );
 };
 
-export default memo(MobileJobDeck);
+export default MobileJobDeck;
