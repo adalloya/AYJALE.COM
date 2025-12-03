@@ -139,6 +139,10 @@ const JobDetailsPage = () => {
                     onBack={handleBack}
                 />
             );
+        } else {
+            // If on mobile but jobs not loaded yet, show spinner or blank
+            // DO NOT fall through to desktop render
+            return <div className="min-h-screen bg-slate-50" />;
         }
     }
 

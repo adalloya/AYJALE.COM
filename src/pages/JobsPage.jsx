@@ -245,6 +245,12 @@ const JobsPage = () => {
         return salaryText;
     };
 
+    // Prevent flash of list view on mobile when redirecting to deck
+    // We check this condition during render to avoid painting the list before the useEffect redirect happens
+    if (window.innerWidth < 1024 && !location.state?.showList && !searchParams.get('showList')) {
+        return <div className="min-h-screen bg-slate-50" />;
+    }
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 h-full flex flex-col">
             <SEO
