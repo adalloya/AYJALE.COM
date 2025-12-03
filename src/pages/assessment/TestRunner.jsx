@@ -152,20 +152,20 @@ const TestRunner = () => {
     const [cognitiveScore, setCognitiveScore] = useState(0);
 
     // SIMULATION: Use Mock Data directly (No API)
-    setLoading(true);
-    setTimeout(() => {
-        const mockType = ['abstract', 'numerical', 'verbal'][questionIndex % 3];
-        const mockPuzzle = MOCK_COGNITIVE_PUZZLES.find(p => p.type === mockType) || MOCK_COGNITIVE_PUZZLES[0];
-        setCognitivePuzzle(mockPuzzle);
-        setLoading(false);
-    }, 500);
-
-    // Trigger fetch when entering cognitive module or changing question
     useEffect(() => {
         if (currentModule === 'cognitive') {
-            fetchNextPuzzle();
+            setLoading(true);
+            const timer = setTimeout(() => {
+                const mockType = ['abstract', 'numerical', 'verbal'][questionIndex % 3];
+                const mockPuzzle = MOCK_COGNITIVE_PUZZLES.find(p => p.type === mockType) || MOCK_COGNITIVE_PUZZLES[0];
+                setCognitivePuzzle(mockPuzzle);
+                setLoading(false);
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [currentModule, questionIndex]);
+
+
 
     const handleCognitiveAnswer = async (answer) => {
         // In a real app, verify answer with backend
