@@ -16,9 +16,11 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Safety check: Ensure currentIndex is valid
-    if (currentIndex >= jobs.length && jobs.length > 0) {
-        setCurrentIndex(0);
-    }
+    useEffect(() => {
+        if (currentIndex >= jobs.length && jobs.length > 0) {
+            setCurrentIndex(0);
+        }
+    }, [currentIndex, jobs.length]);
 
     const [touchStart, setTouchStart] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
