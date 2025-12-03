@@ -401,6 +401,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                     {/* Background Card */}
                     {backgroundJob && (
                         <div
+                            key={backgroundJob.id}
                             className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
                             style={{
                                 transform: `scale(${bgScale})`,
