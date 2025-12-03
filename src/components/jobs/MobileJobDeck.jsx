@@ -40,12 +40,8 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [dragX, setDragX] = useState(0);
 
     // Determine which card is "behind" based on drag direction
-    let backgroundJob = null;
-    if (dragX > 0) {
-        backgroundJob = prevJob; // Swiping Right -> Show Previous
-    } else if (dragX < 0) {
-        backgroundJob = nextJob; // Swiping Left -> Show Next
-    }
+    // Only show if drag is significant to prevent flicker
+    const backgroundJob = Math.abs(dragX) > 1 ? (dragX > 0 ? prevJob : nextJob) : null;
     const backgroundCompany = backgroundJob?.profiles;
 
     const [isDragging, setIsDragging] = useState(false);
@@ -81,7 +77,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         });
     };
 
-    // Initialize index based on initialJobId
     // Initialize index based on initialJobId
     // We split this into two effects to prevent "snap back" when polling updates 'jobs'
 
@@ -379,6 +374,8 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     ), [currentIndex, jobs.length]);
 
     // Render
+    if (!currentJob) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-600"></div></div>;
+
     return (
         <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-pan-y">
             <MobileHeader
@@ -402,7 +399,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                 {/* Cards Container */}
                 <div className="absolute inset-0 flex items-center justify-center p-4">
                     {/* Background Card */}
-                    {Math.abs(dragX) > 1 && (dragX > 0 ? prevJob : nextJob) && (
+                    {backgroundJob && (
                         <div
                             className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
                             style={{
@@ -417,8 +414,8 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 style={{ filter: `grayscale(${bgGrayscale})` }}
                             >
                                 <JobDetailView
-                                    job={dragX > 0 ? prevJob : nextJob}
-                                    company={(dragX > 0 ? prevJob : nextJob).profiles}
+                                    job={backgroundJob}
+                                    company={backgroundJob?.profiles}
                                     onApply={() => { }}
                                     hasApplied={false}
                                     isMobileDeck={true}
@@ -444,7 +441,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
                         <JobDetailView
                             job={currentJob}
-                            company={currentJob.profiles}
+                            company={currentJob?.profiles}
                             onApply={handleApply}
                             hasApplied={hasApplied}
                             isMobileDeck={true}
