@@ -324,7 +324,7 @@ const TestRunner = () => {
                         Nuestra IA está analizando tus resultados. Recibirás tu Perfil de Talento en breve.
                     </p>
                     <button
-                        onClick={() => navigate('/evaluation-center')}
+                        onClick={() => navigate('/dashboard')}
                         className="w-full py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-colors"
                     >
                         Volver al Dashboard
