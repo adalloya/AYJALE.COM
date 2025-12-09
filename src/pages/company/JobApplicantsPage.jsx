@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowLeft, MapPin, Briefcase, User, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, User, CheckCircle, XCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import AvatarPlaceholder from '../../components/AvatarPlaceholder';
 import TalentProfileCard from '../../components/assessment/TalentProfileCard';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
@@ -369,6 +369,16 @@ const ChatBox = ({ applicationId }) => {
 
     return (
         <div className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+            <div className="p-2 border-b border-slate-200 flex justify-between items-center bg-white">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Historial de Mensajes</span>
+                <button
+                    onClick={loadMessages}
+                    className="p-1 hover:bg-slate-100 rounded-full text-slate-500 hover:text-primary-600 transition-colors"
+                    title="Actualizar mensajes"
+                >
+                    <RefreshCw size={14} />
+                </button>
+            </div>
             <div className="h-64 overflow-y-auto p-4 space-y-3">
                 {loading ? (
                     <p className="text-center text-slate-400 text-sm">Cargando mensajes...</p>
