@@ -132,7 +132,7 @@ export const DataProvider = ({ children }) => {
                 company_id: user.id,
                 active: true
             }])
-            .select();
+            .select('*, profiles:company_id(name, logo)');
 
         if (error) {
             console.error('Error adding job:', error);
