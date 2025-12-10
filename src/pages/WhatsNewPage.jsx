@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PhoneFrame, BrowserFrame } from '../components/marketing/DeviceFrames';
+import fastRegImage from '../assets/images/fast_registration.png';
 
 const WhatsNewPage = () => {
     const navigate = useNavigate();
@@ -220,7 +221,7 @@ const WhatsNewPage = () => {
                             <div className="relative">
                                 <div className="absolute inset-0 bg-blue-500 rounded-[2rem] transform rotate-3 scale-105 opacity-50 blur-lg"></div>
                                 <img
-                                    src="/assets/images/fast_registration.png"
+                                    src={fastRegImage}
                                     alt="Fast Registration Interface"
                                     className="relative rounded-[2rem] shadow-2xl border-4 border-white/20 transform -rotate-2 hover:rotate-0 transition-transform duration-500 max-h-[500px] w-auto object-cover"
                                 />
