@@ -104,12 +104,6 @@ const JobDetailsPage = () => {
         setApplying(true);
         try {
             await applyToJob(job.id, user.id, {
-                name: user.name,
-                email: user.email,
-                title: user.title,
-                location: user.location,
-                bio: user.bio,
-                skills: user.skills, // Assuming it's already in correct format in user object
                 comments
             });
             setIsSuccess(true);
