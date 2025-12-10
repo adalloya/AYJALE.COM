@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// EMERGENCY HOTFIX: Hardcoding credentials because Vercel Env Vars are not updating
+const supabaseUrl = 'https://tmflytdmznczikakjhok.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtZmx5dGRtem5jemlrYWtqaG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMTA0MjIsImV4cCI6MjA4MDg4NjQyMn0.su7XSKcWEvZsyiPswsgpe7rxVYZe5cQAiXMbuAPNq10'
 
-console.log('%c [DEBUG] Supabase Config Check:', 'color: #00ff00; font-weight: bold');
+console.log('%c [DEBUG] Supabase Config Check (Hardcoded):', 'color: #00ff00; font-weight: bold');
 console.log('URL:', supabaseUrl);
-console.log('Key (first 10):', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'MISSING');
 
 let supabase;
 
