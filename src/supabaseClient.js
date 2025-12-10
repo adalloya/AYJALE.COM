@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+console.log('%c [DEBUG] Supabase Config Check:', 'color: #00ff00; font-weight: bold');
+console.log('URL:', supabaseUrl);
+console.log('Key (first 10):', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'MISSING');
+
 let supabase;
 
 if (!supabaseUrl || !supabaseAnonKey) {
