@@ -174,6 +174,61 @@ const WhatsNewPage = () => {
                     </div>
                 </div>
 
+                {/* Feature 4: Fast Registration */}
+                <div className="mt-24 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-white/10 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-60 h-60 bg-white/10 rounded-full blur-2xl opacity-30"></div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                        <div className="flex-1">
+                            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 text-white text-sm font-bold mb-6">
+                                <Zap className="w-4 h-4 mr-2 text-yellow-300" />
+                                Máxima Velocidad
+                            </div>
+                            <h2 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight">
+                                Regístrate en <br />
+                                <span className="text-yellow-300">menos de 2 minutos</span>
+                            </h2>
+                            <p className="text-blue-100 text-lg mb-8 leading-relaxed max-w-xl">
+                                Sabemos que urge encontrar trabajo. Por eso eliminamos la burocracia.
+                                Sin formularios interminables ni preguntas innecesarias.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="flex items-center">
+                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-4">
+                                        <Smartphone className="w-5 h-5 text-white" />
+                                    </div>
+                                    <span className="font-semibold text-lg">Optimizado para celular</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-4">
+                                        <Sparkles className="w-5 h-5 text-white" />
+                                    </div>
+                                    <span className="font-semibold text-lg">Importación inteligente de datos</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => navigate('/auth')}
+                                className="mt-10 px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg shadow-xl hover:bg-blue-50 hover:scale-105 transition-all inline-flex items-center"
+                            >
+                                Comenzar Registro
+                                <ArrowRight className="ml-2 w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="flex-1 w-full max-w-md md:max-w-none flex justify-center md:justify-end">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-blue-500 rounded-[2rem] transform rotate-3 scale-105 opacity-50 blur-lg"></div>
+                                <img
+                                    src="/assets/images/fast_registration.png"
+                                    alt="Fast Registration Interface"
+                                    className="relative rounded-[2rem] shadow-2xl border-4 border-white/20 transform -rotate-2 hover:rotate-0 transition-transform duration-500 max-h-[500px] w-auto object-cover"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {/* CTA Section */}
