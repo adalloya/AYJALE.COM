@@ -159,7 +159,7 @@ const LandingPage = () => {
                     </div>
 
                     {/* Card 2: Mobile App (Placeholder) */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                    <div onClick={() => navigate('/whats-new')} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
                         <div className="h-48 bg-gradient-to-br from-secondary-500 to-orange-500 flex items-center justify-center relative overflow-hidden">
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Briefcase className="w-16 h-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-500" />
@@ -174,7 +174,7 @@ const LandingPage = () => {
                     </div>
 
                     {/* Card 3: Companies (Placeholder) */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                    <div onClick={() => navigate('/jobs')} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1">
                         <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center relative overflow-hidden">
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Shield className="w-16 h-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-500" />
