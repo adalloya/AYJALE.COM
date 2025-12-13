@@ -66,7 +66,7 @@ const ProfilePage = () => {
 
         const updatedData = {
             ...formData,
-            skills: skillsArray,
+            skills: skillsArray.join(', '), // Convert back to string for TEXT column compatibility
             age: formData.age ? parseInt(formData.age, 10) : null
         };
 

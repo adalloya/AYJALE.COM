@@ -179,15 +179,19 @@ export const AuthProvider = ({ children }) => {
             // 2. If session exists (auto-confirm enabled), set user immediately
             if (data?.session?.user) {
                 // FORCE UPDATE of profile to save extra fields that the SQL trigger ignores
+                // We handle both phone (AuthPage) and phone_number (CompanyAuthPage) to ensure data is captured
+                const phoneToSave = userData.phone || userData.phone_number;
+
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
+                        phone: phoneToSave, // Save to both for compatibility
+                        phone_number: phoneToSave,
                         rfc: userData.rfc,
                         industry: userData.industry,
                         location: userData.location,
                         address: userData.address,
                         recruiter_name: userData.recruiter_name,
-                        phone_number: userData.phone_number
                     })
                     .eq('id', data.user.id);
 
