@@ -312,236 +312,229 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const handleModalSubmit = async (comments) => {
         setApplying(true);
         try {
-            await applyToJob(currentJob.id, user.id, {
-                name: user.name,
-                email: user.email,
-                title: user.title,
-                location: user.location,
-                bio: user.bio,
-                skills: user.skills,
-                comments
-            });
-            setIsSuccess(true);
-            setTimeout(() => {
-                setShowModal(false);
-                setIsSuccess(false);
-            }, 3000);
-        } catch (error) {
-            console.error('Error applying:', error);
-            alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
-        } finally {
-            setApplying(false);
-        }
-    };
+            comments
+        });
+        setIsSuccess(true);
+        setTimeout(() => {
+            setShowModal(false);
+            setIsSuccess(false);
+        }, 3000);
+    } catch (error) {
+        console.error('Error applying:', error);
+        alert(`Error al enviar la postulación: ${error.message || 'Intenta de nuevo.'}`);
+    } finally {
+        setApplying(false);
+    }
+};
 
-    // Calculate dynamic styles for smooth animation
-    // We want the background card to scale up and fade in as we drag
-    const progress = Math.min(Math.abs(dragX) / threshold, 1); // 0 to 1
+// Calculate dynamic styles for smooth animation
+// We want the background card to scale up and fade in as we drag
+const progress = Math.min(Math.abs(dragX) / threshold, 1); // 0 to 1
 
-    // Background Card Styles
-    // Starts at scale 0.9, opacity 0.5
-    // Ends at scale 1.0, opacity 1.0
-    const bgScale = 0.9 + (0.1 * progress);
-    const bgOpacity = 0.5 + (0.5 * progress);
-    const bgGrayscale = 1 - progress; // 1 (gray) -> 0 (color)
+// Background Card Styles
+// Starts at scale 0.9, opacity 0.5
+// Ends at scale 1.0, opacity 1.0
+const bgScale = 0.9 + (0.1 * progress);
+const bgOpacity = 0.5 + (0.5 * progress);
+const bgGrayscale = 1 - progress; // 1 (gray) -> 0 (color)
 
-    // Foreground Card Styles
-    const rotate = dragX * 0.05; // Slight rotation
+// Foreground Card Styles
+const rotate = dragX * 0.05; // Slight rotation
 
-    // Fix: Keep opacity 1 during drag (User Request)
-    // Only fade out when actually exiting (swiped away)
-    const cardStyle = {
-        transform: exitDirection
-            ? `translateX(${exitDirection === 'right' ? '150%' : '-150%'}) rotate(${exitDirection === 'right' ? 20 : -20}deg)`
-            : `translateX(${dragX}px) rotate(${rotate}deg)`,
-        opacity: 1, // Keep fully opaque even when exiting
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-        zIndex: (isDragging || exitDirection) ? 60 : 40 // Fix: Only float over header when interacting
-    };
+// Fix: Keep opacity 1 during drag (User Request)
+// Only fade out when actually exiting (swiped away)
+const cardStyle = {
+    transform: exitDirection
+        ? `translateX(${exitDirection === 'right' ? '150%' : '-150%'}) rotate(${exitDirection === 'right' ? 20 : -20}deg)`
+        : `translateX(${dragX}px) rotate(${rotate}deg)`,
+    opacity: 1, // Keep fully opaque even when exiting
+    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+    zIndex: (isDragging || exitDirection) ? 60 : 40 // Fix: Only float over header when interacting
+};
 
-    // Helper to determine if overlay should be shown
-    const showBoundaryOverlay = (currentIndex === 0 && dragX > 0) || (currentIndex === jobs.length - 1 && dragX < 0) || boundaryFeedback.active;
-    const overlayType = boundaryFeedback.active ? boundaryFeedback.type : (dragX > 0 ? 'start' : 'end');
+// Helper to determine if overlay should be shown
+const showBoundaryOverlay = (currentIndex === 0 && dragX > 0) || (currentIndex === jobs.length - 1 && dragX < 0) || boundaryFeedback.active;
+const overlayType = boundaryFeedback.active ? boundaryFeedback.type : (dragX > 0 ? 'start' : 'end');
 
-    // Memoized Progress Bar
-    const progressBar = useMemo(() => (
-        <div className="h-1 bg-slate-100 w-full flex-shrink-0">
-            <div
-                className="h-full bg-secondary-500 transition-all duration-300 ease-out"
-                style={{ width: `${((currentIndex + 1) / jobs.length) * 100}%` }}
-            />
-        </div>
-    ), [currentIndex, jobs.length]);
+// Memoized Progress Bar
+const progressBar = useMemo(() => (
+    <div className="h-1 bg-slate-100 w-full flex-shrink-0">
+        <div
+            className="h-full bg-secondary-500 transition-all duration-300 ease-out"
+            style={{ width: `${((currentIndex + 1) / jobs.length) * 100}%` }}
+        />
+    </div>
+), [currentIndex, jobs.length]);
 
-    // Render
-    if (!currentJob) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-600"></div></div>;
+// Render
+if (!currentJob) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-600"></div></div>;
 
-    return (
-        <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-pan-y">
-            <MobileHeader
-                currentIndex={currentIndex}
-                totalJobs={jobs.length}
-                onBack={onBack}
-                isMenuOpen={isMenuOpen}
-                setIsMenuOpen={setIsMenuOpen}
-                user={user}
-                handleLogout={handleLogout}
-            />
-            {progressBar}
+return (
+    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col h-[100dvh] w-full overflow-hidden overscroll-none touch-pan-y">
+        <MobileHeader
+            currentIndex={currentIndex}
+            totalJobs={jobs.length}
+            onBack={onBack}
+            isMenuOpen={isMenuOpen}
+            setIsMenuOpen={setIsMenuOpen}
+            user={user}
+            handleLogout={handleLogout}
+        />
+        {progressBar}
 
-            {/* Main Content Area (Swipeable) */}
-            <div
-                className="flex-1 relative bg-white"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-            >
-                {/* Cards Container */}
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                    {/* Background Card */}
-                    {backgroundJob && (
-                        <div
-                            key={backgroundJob.id}
-                            className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
-                            style={{
-                                transform: `scale(${bgScale})`,
-                                opacity: bgOpacity,
-                                zIndex: 1,
-                                transition: isSwipingOut ? 'all 0.2s ease-out' : 'none'
-                            }}
-                        >
-                            <div
-                                className="h-full overflow-hidden pointer-events-none transition-all duration-200"
-                                style={{ filter: `grayscale(${bgGrayscale})` }}
-                            >
-                                <JobDetailView
-                                    job={backgroundJob}
-                                    company={backgroundJob?.profiles}
-                                    onApply={() => { }}
-                                    hasApplied={false}
-                                    isMobileDeck={true}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Current Card (Foreground) */}
+        {/* Main Content Area (Swipeable) */}
+        <div
+            className="flex-1 relative bg-white"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* Cards Container */}
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+                {/* Background Card */}
+                {backgroundJob && (
                     <div
-                        key={currentJob?.id}
-                        className="absolute inset-4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden cursor-grab active:cursor-grabbing"
-                        style={cardStyle}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        onMouseDown={handleTouchStart}
-                        onMouseMove={handleTouchMove}
-                        onMouseUp={handleTouchEnd}
-                        onMouseLeave={handleTouchEnd}
+                        key={backgroundJob.id}
+                        className="absolute inset-4 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"
+                        style={{
+                            transform: `scale(${bgScale})`,
+                            opacity: bgOpacity,
+                            zIndex: 1,
+                            transition: isSwipingOut ? 'all 0.2s ease-out' : 'none'
+                        }}
                     >
-
-
-                        <JobDetailView
-                            job={currentJob}
-                            company={currentJob?.profiles}
-                            onApply={handleApply}
-                            hasApplied={hasApplied}
-                            isMobileDeck={true}
-                        />
+                        <div
+                            className="h-full overflow-hidden pointer-events-none transition-all duration-200"
+                            style={{ filter: `grayscale(${bgGrayscale})` }}
+                        >
+                            <JobDetailView
+                                job={backgroundJob}
+                                company={backgroundJob?.profiles}
+                                onApply={() => { }}
+                                hasApplied={false}
+                                isMobileDeck={true}
+                            />
+                        </div>
                     </div>
+                )}
+
+                {/* Current Card (Foreground) */}
+                <div
+                    key={currentJob?.id}
+                    className="absolute inset-4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden cursor-grab active:cursor-grabbing"
+                    style={cardStyle}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onMouseDown={handleTouchStart}
+                    onMouseMove={handleTouchMove}
+                    onMouseUp={handleTouchEnd}
+                    onMouseLeave={handleTouchEnd}
+                >
+
+
+                    <JobDetailView
+                        job={currentJob}
+                        company={currentJob?.profiles}
+                        onApply={handleApply}
+                        hasApplied={hasApplied}
+                        isMobileDeck={true}
+                    />
                 </div>
-
-
             </div>
 
-            <ApplicationModal
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-                onSubmit={handleModalSubmit}
-                jobTitle={currentJob?.title}
-                loading={applying}
-                success={isSuccess}
-            />
-
-            {/* Floating Search Button */}
-            <button
-                onClick={() => setShowSearch(true)}
-                className="absolute bottom-6 right-6 z-[80] bg-white text-orange-600 p-4 rounded-full shadow-lg border border-slate-100 active:scale-95 transition-transform"
-            >
-                <Search className="w-6 h-6" />
-            </button>
-
-            {/* Search Overlay */}
-            {showSearch && (
-                <div className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center px-6 animate-fade-in" onClick={() => setShowSearch(false)}>
-                    <div
-                        className="w-full max-w-md transform transition-all scale-100 relative"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (searchKeyword.trim()) {
-                                    handleSearch(searchKeyword);
-                                }
-                            }}
-                            className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden p-1"
-                        >
-                            <input
-                                type="text"
-                                autoFocus
-                                placeholder="Buscar puesto o empresa..."
-                                className="flex-1 min-w-0 pl-4 pr-3 py-4 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-lg outline-none"
-                                value={searchKeyword}
-                                onChange={(e) => setSearchKeyword(e.target.value)}
-                            />
-                            {searchKeyword && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchKeyword('')}
-                                    className="p-3 text-slate-300 hover:text-slate-500 transition-colors flex-shrink-0"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                            )}
-                            <button
-                                type="submit"
-                                className="bg-secondary-600 text-white p-3.5 rounded-xl hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1 flex-shrink-0"
-                            >
-                                <Search className="w-6 h-6" />
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Boundary Feedback Overlay */}
-            {(boundaryFeedback.active || (isDragging && ((currentIndex === 0 && dragX > 50) || (currentIndex === jobs.length - 1 && dragX < -50)))) && (
-                <div className={`absolute inset-0 z-[60] flex items-center justify-center pointer-events-none transition-opacity duration-300 ${boundaryFeedback.fading ? 'opacity-0' : 'opacity-100'}`}>
-                    <div className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl p-8 flex flex-col items-center text-center transform scale-110 animate-bounce-subtle border border-slate-100">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'bg-blue-50 text-blue-500' : 'bg-orange-50 text-orange-500'}`}>
-                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? (
-                                <ChevronLeft className="w-8 h-8" />
-                            ) : (
-                                <ChevronRight className="w-8 h-8" />
-                            )}
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-1">
-                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? '¡Estás al día!' : '¡Has visto todo!'}
-                        </h3>
-                        <p className="text-slate-500 font-medium">
-                            {(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'Es la más reciente' : 'No hay más por ahora, pero vuelve mañana'}
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            <SwipeTutorial
-                visible={showTutorial}
-                onDismiss={() => setShowTutorial(false)}
-            />
 
         </div>
-    );
+
+        <ApplicationModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            onSubmit={handleModalSubmit}
+            jobTitle={currentJob?.title}
+            loading={applying}
+            success={isSuccess}
+        />
+
+        {/* Floating Search Button */}
+        <button
+            onClick={() => setShowSearch(true)}
+            className="absolute bottom-6 right-6 z-[80] bg-white text-orange-600 p-4 rounded-full shadow-lg border border-slate-100 active:scale-95 transition-transform"
+        >
+            <Search className="w-6 h-6" />
+        </button>
+
+        {/* Search Overlay */}
+        {showSearch && (
+            <div className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center px-6 animate-fade-in" onClick={() => setShowSearch(false)}>
+                <div
+                    className="w-full max-w-md transform transition-all scale-100 relative"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (searchKeyword.trim()) {
+                                handleSearch(searchKeyword);
+                            }
+                        }}
+                        className="relative flex items-center bg-white rounded-2xl shadow-2xl overflow-hidden p-1"
+                    >
+                        <input
+                            type="text"
+                            autoFocus
+                            placeholder="Buscar puesto o empresa..."
+                            className="flex-1 min-w-0 pl-4 pr-3 py-4 bg-transparent border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-lg outline-none"
+                            value={searchKeyword}
+                            onChange={(e) => setSearchKeyword(e.target.value)}
+                        />
+                        {searchKeyword && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchKeyword('')}
+                                className="p-3 text-slate-300 hover:text-slate-500 transition-colors flex-shrink-0"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            className="bg-secondary-600 text-white p-3.5 rounded-xl hover:bg-secondary-700 active:scale-95 transition-all shadow-md ml-1 flex-shrink-0"
+                        >
+                            <Search className="w-6 h-6" />
+                        </button>
+                    </form>
+                </div>
+            </div>
+        )}
+
+        {/* Boundary Feedback Overlay */}
+        {(boundaryFeedback.active || (isDragging && ((currentIndex === 0 && dragX > 50) || (currentIndex === jobs.length - 1 && dragX < -50)))) && (
+            <div className={`absolute inset-0 z-[60] flex items-center justify-center pointer-events-none transition-opacity duration-300 ${boundaryFeedback.fading ? 'opacity-0' : 'opacity-100'}`}>
+                <div className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl p-8 flex flex-col items-center text-center transform scale-110 animate-bounce-subtle border border-slate-100">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'bg-blue-50 text-blue-500' : 'bg-orange-50 text-orange-500'}`}>
+                        {(boundaryFeedback.type === 'start' || (dragX > 0)) ? (
+                            <ChevronLeft className="w-8 h-8" />
+                        ) : (
+                            <ChevronRight className="w-8 h-8" />
+                        )}
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-1">
+                        {(boundaryFeedback.type === 'start' || (dragX > 0)) ? '¡Estás al día!' : '¡Has visto todo!'}
+                    </h3>
+                    <p className="text-slate-500 font-medium">
+                        {(boundaryFeedback.type === 'start' || (dragX > 0)) ? 'Es la más reciente' : 'No hay más por ahora, pero vuelve mañana'}
+                    </p>
+                </div>
+            </div>
+        )}
+
+        <SwipeTutorial
+            visible={showTutorial}
+            onDismiss={() => setShowTutorial(false)}
+        />
+
+    </div>
+);
 };
 
 export default MobileJobDeck;
