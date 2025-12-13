@@ -192,6 +192,9 @@ export const AuthProvider = ({ children }) => {
                         location: userData.location,
                         address: userData.address,
                         recruiter_name: userData.recruiter_name,
+                        // Persist Logo if provided (Base64)
+                        logo: userData.logo,
+                        logo_url: userData.logo // Alias for compatibility
                     })
                     .eq('id', data.user.id);
 

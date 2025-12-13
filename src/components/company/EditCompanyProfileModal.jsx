@@ -75,6 +75,36 @@ const EditCompanyProfileModal = ({ user, onClose, onSave }) => {
                             </div>
                         </div>
 
+                        {/* Logo Update */}
+                        <div className="col-span-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Actualizar Logotipo</label>
+                            <div className="flex items-center space-x-4">
+                                {user.logo && (
+                                    <img src={user.logo} alt="Current" className="w-12 h-12 rounded bg-slate-100 object-contain border" />
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="block w-full text-sm text-slate-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-full file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-secondary-50 file:text-secondary-700
+                                        hover:file:bg-secondary-100"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setFormData({ ...formData, logo: reader.result });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+
                         {/* RFC */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">R.F.C. <span className="text-red-500">*</span></label>

@@ -179,24 +179,52 @@ const CompanyAuthPage = () => {
                                         />
                                     </div>
                                 </div>
-                            </>
+                            </div>
+                    </div>
+
+                    {/* Logo Upload Field */}
+                    <div className="relative">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Logotipo de la Empresa</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="block w-full text-sm text-slate-500
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-secondary-50 file:text-secondary-700
+                                            hover:file:bg-secondary-100"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                        setFormData({ ...formData, logo: reader.result });
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            }}
+                        />
+                        <p className="mt-1 text-xs text-slate-500">Formato: PNG, JPG (Max 2MB)</p>
+                    </div>
+                </>
                         )}
 
-                        <div>
-                            <button
-                                type="submit"
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
-                            >
-                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                    <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />
-                                </span>
-                                {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
-                            </button>
-                        </div>
-                    </div>
-                </form>
+                <div>
+                    <button
+                        type="submit"
+                        className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
+                    >
+                        <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />
+                        </span>
+                        {isLogin ? 'Ingresar al Panel' : 'Registrar Empresa'}
+                    </button>
+                </div>
             </div>
-        </div>
+        </form>
+            </div >
+        </div >
     );
 };
 
