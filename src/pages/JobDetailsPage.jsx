@@ -148,6 +148,37 @@ const JobDetailsPage = () => {
             <SEO
                 title={job.title}
                 description={`${job.title} en ${job.location}. ${job.description.substring(0, 150)}...`}
+                keywords={`${job.title}, vacantes ${job.location}, empleo ${job.category}, trabajo en ${company?.name || 'confidencial'}`}
+                structuredData={{
+                    "@context": "https://schema.org/",
+                    "@type": "JobPosting",
+                    "title": job.title,
+                    "description": job.description,
+                    "datePosted": job.created_at,
+                    "hiringOrganization": {
+                        "@type": "Organization",
+                        "name": company?.name || "Confidencial",
+                        "sameAs": company?.website || "https://ayjale.com"
+                    },
+                    "jobLocation": {
+                        "@type": "Place",
+                        "address": {
+                            "@type": "PostalAddress",
+                            "addressLocality": job.location || "México",
+                            "addressCountry": "MX"
+                        }
+                    },
+                    "baseSalary": {
+                        "@type": "MonetaryAmount",
+                        "currency": job.currency || "MXN",
+                        "value": {
+                            "@type": "QuantitativeValue",
+                            "value": job.salary,
+                            "unitText": "MONTH"
+                        }
+                    },
+                    "employmentType": job.type === 'Medio tiempo' ? "PART_TIME" : "FULL_TIME"
+                }}
             />
             <button
                 onClick={() => navigate('/jobs')}

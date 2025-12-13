@@ -41,7 +41,20 @@ const LandingPage = () => {
         <div className="min-h-screen bg-slate-50">
             <SEO
                 title="Inicio"
-                description="Encuentra tu trabajo ideal en México. Conectamos a los mejores candidatos con las empresas líderes del país."
+                description="La bolsa de trabajo moderna de México. Encuentra empleo rápido con ayuda de Inteligencia Artificial. Vacantes verificadas en Tecnología, Ventas, y más."
+                keywords="bolsa de trabajo méxico, buscar empleo, vacantes 2025, trabajo remoto, inteligencia artificial empleos, reclutamiento ai, ayjale empleos, trabajo en monterrey, trabajo en cdmx, vacantes tecnologia"
+                structuredData={{
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "url": "https://ayjale.com",
+                    "logo": "https://ayjale.com/logo-icon.png",
+                    "name": "AyJale",
+                    "description": "Plataforma de búsqueda de empleo impulsada por Inteligencia Artificial en México.",
+                    "sameAs": [
+                        "https://www.linkedin.com/company/ayjale",
+                        "https://twitter.com/ayjale"
+                    ]
+                }}
             />
 
 

@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /evaluation-center
 
 Sitemap: https://ayjale.com/sitemap.xml
