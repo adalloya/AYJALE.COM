@@ -120,16 +120,22 @@ const CompanyAuthPage = () => {
                                             onChange={(e) => setFormData({ ...formData, rfc: e.target.value })}
                                         />
                                     </div>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            required
-                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                            placeholder="Industria (ej. Tecnología)"
-                                            value={formData.industry || ''}
-                                            onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                        />
-                                    </div>
+                                    <select
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm bg-white"
+                                        value={formData.industry || ''}
+                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                    >
+                                        <option value="">Industria / Sector...</option>
+                                        <option value="Tecnología">Tecnología</option>
+                                        <option value="Salud">Salud</option>
+                                        <option value="Educación">Educación</option>
+                                        <option value="Finanzas">Finanzas</option>
+                                        <option value="Manufactura">Manufactura</option>
+                                        <option value="Comercio">Comercio</option>
+                                        <option value="Servicios">Servicios</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
                                 </div>
                                 <div className="relative">
                                     <input

@@ -79,7 +79,7 @@ const EditCompanyProfileModal = ({ user, onClose, onSave }) => {
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">R.F.C. <span className="text-red-500">*</span></label>
                             <div className="relative">
-                                <FileText className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
+                                <FileText className="absolute left-3 top-2.5 text-slate-400 w-5 h-5 pointer-events-none" />
                                 <input
                                     type="text"
                                     required

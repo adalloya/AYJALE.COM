@@ -176,8 +176,25 @@ export const AuthProvider = ({ children }) => {
 
             console.log('register successful, data:', data);
 
-            // 2. If session exists (auto-confirm enabled), set user immediately to avoid ProtectedRoute redirect
+            // 2. If session exists (auto-confirm enabled), set user immediately
             if (data?.session?.user) {
+                // FORCE UPDATE of profile to save extra fields that the SQL trigger ignores
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({
+                        rfc: userData.rfc,
+                        industry: userData.industry,
+                        location: userData.location,
+                        address: userData.address,
+                        recruiter_name: userData.recruiter_name,
+                        phone_number: userData.phone_number
+                    })
+                    .eq('id', data.user.id);
+
+                if (profileError) {
+                    console.error('Error saving profile details:', profileError);
+                    // We don't throw here to avoid blocking login, but we log it
+                }
                 // Manually construct user object temporarily or fetch profile
                 // Since trigger creates profile, we might need to wait a bit or just set basic info
                 // For now, let's rely on onAuthStateChange but keep loading true for a moment?
