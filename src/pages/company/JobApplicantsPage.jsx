@@ -272,15 +272,23 @@ const JobApplicantsPage = () => {
                                         </div>
                                     )}
 
-                                    {selectedCandidate.user?.skills && selectedCandidate.user.skills.length > 0 && (
+                                    {selectedCandidate.user?.skills && (
                                         <div>
                                             <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-2">Habilidades</h3>
                                             <div className="flex flex-wrap gap-2">
-                                                {selectedCandidate.user.skills.map((skill, index) => (
-                                                    <span key={index} className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium">
-                                                        {skill}
-                                                    </span>
-                                                ))}
+                                                {Array.isArray(selectedCandidate.user.skills) ? (
+                                                    selectedCandidate.user.skills.map((skill, index) => (
+                                                        <span key={index} className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium">
+                                                            {skill}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    selectedCandidate.user.skills.split(',').map((skill, index) => (
+                                                        <span key={index} className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium">
+                                                            {skill.trim()}
+                                                        </span>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     )}
