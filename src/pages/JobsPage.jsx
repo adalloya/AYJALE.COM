@@ -86,8 +86,15 @@ const JobsPage = () => {
                     'Hostelería y Turismo': ['Servicios']
                 };
 
-                const legacyMatches = categoryMapping[filters.category] || [];
-                const allValidCategories = [filters.category, ...legacyMatches];
+                const allValidCategories = [filters.category];
+                if (categoryMapping[filters.category]) {
+                    allValidCategories.push(...categoryMapping[filters.category]);
+                }
+                for (const [key, values] of Object.entries(categoryMapping)) {
+                    if (values.includes(filters.category)) {
+                        allValidCategories.push(key);
+                    }
+                }
 
                 if (!allValidCategories.includes(job.category)) return false;
             }
