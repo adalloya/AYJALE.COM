@@ -19,6 +19,9 @@ const translateAuthError = (message) => {
     if (lowerMessage.includes('invalid email')) {
         return 'Por favor ingresa un correo electrónico válido.';
     }
+    if (lowerMessage.includes('email rate limit exceeded')) {
+        return 'Límite de solicitudes de correo excedido. Por favor, intenta de nuevo en unos minutos.';
+    }
     return message;
 };
 
