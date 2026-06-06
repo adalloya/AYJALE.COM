@@ -77,7 +77,7 @@ const ProfilePage = () => {
 
             // 2. If applying, submit application
             if (jobToApply) {
-                await applyToJob(jobToApply.id, user.id, { ...updatedData, comments });
+                await applyToJob(jobToApply.id, user.id, { comments });
                 setToast({ message: '¡Solicitud enviada con éxito!', type: 'success' });
                 setTimeout(() => {
                     navigate(`/jobs/${jobToApply.id}`);
