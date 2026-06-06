@@ -1,6 +1,27 @@
 import { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 
+const translateAuthError = (message) => {
+    if (!message) return 'Error en la autenticación. Intenta de nuevo.';
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes('invalid login credentials')) {
+        return 'Correo o contraseña incorrectos.';
+    }
+    if (lowerMessage.includes('email not confirmed')) {
+        return 'Por favor confirma tu correo electrónico antes de ingresar.';
+    }
+    if (lowerMessage.includes('user already exists') || lowerMessage.includes('already registered')) {
+        return 'Este correo electrónico ya está registrado.';
+    }
+    if (lowerMessage.includes('password should be at least')) {
+        return 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    if (lowerMessage.includes('invalid email')) {
+        return 'Por favor ingresa un correo electrónico válido.';
+    }
+    return message;
+};
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -99,6 +120,9 @@ export const AuthProvider = ({ children }) => {
             return true;
         } catch (error) {
             setLoading(false); // Only stop loading on error
+            if (error.message) {
+                error.message = translateAuthError(error.message);
+            }
             throw error;
         }
         // On success, leave loading=true. onAuthStateChange will handle it.
@@ -220,6 +244,9 @@ export const AuthProvider = ({ children }) => {
             return true;
         } catch (error) {
             console.error("Error in register function:", error);
+            if (error.message) {
+                error.message = translateAuthError(error.message);
+            }
             throw error;
         } finally {
             setLoading(false);
@@ -235,7 +262,12 @@ export const AuthProvider = ({ children }) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/reset-password',
         });
-        if (error) throw error;
+        if (error) {
+            if (error.message) {
+                error.message = translateAuthError(error.message);
+            }
+            throw error;
+        }
     };
 
     const updateUser = async (updatedData) => {
