@@ -15,8 +15,57 @@ const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(initialMode !== 'register');
     const [userType, setUserType] = useState(initialRole === 'company' ? 'company' : 'candidate');
 
-    const { login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
+    const { user, login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
     const returnUrl = searchParams.get('returnUrl') || '/dashboard';
+
+    if (user) {
+        return (
+            <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 text-center animate-fade-in">
+                    <div className="flex flex-col items-center">
+                        <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
+                        <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mb-6 border border-green-100">
+                            <CheckCircle className="h-10 w-10 text-green-500" />
+                        </div>
+                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                            ¡Registro Exitoso!
+                        </h2>
+                        <p className="text-sm text-slate-600 mb-8">
+                            Hola, <span className="font-semibold text-slate-800">{user.name || 'Candidato'}</span>. Tu cuenta ha sido creada correctamente y ya has iniciado sesión.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        {returnUrl && returnUrl !== '/dashboard' ? (
+                            <button
+                                onClick={() => navigate(returnUrl)}
+                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all shadow-md active:scale-98"
+                            >
+                                Continuar con mi postulación
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </button>
+                        ) : null}
+
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="w-full flex justify-center items-center py-3 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transition-all shadow-md active:scale-98"
+                        >
+                            Completar información de perfil
+                            <User className="ml-2 h-4 w-4" />
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/jobs')}
+                            className="w-full flex justify-center items-center py-3 py-2.5 border border-slate-200 text-sm font-semibold rounded-lg text-slate-700 bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all active:scale-98"
+                        >
+                            Ver vacantes disponibles
+                            <Briefcase className="ml-2 h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const [formData, setFormData] = useState({
         name: '',

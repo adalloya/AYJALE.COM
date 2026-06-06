@@ -1,12 +1,52 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Building2, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase } from 'lucide-react';
+import logo from '../../assets/ayjale_logo_new.png';
 
 const CompanyAuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const navigate = useNavigate();
-    const { login, register, loading } = useAuth();
+    const { user, login, register, loading } = useAuth();
+
+    if (user) {
+        return (
+            <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 text-center animate-fade-in">
+                    <div className="flex flex-col items-center">
+                        <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
+                        <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mb-6 border border-green-100">
+                            <CheckCircle className="h-10 w-10 text-green-500" />
+                        </div>
+                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                            ¡Registro Exitoso!
+                        </h2>
+                        <p className="text-sm text-slate-600 mb-8">
+                            Hola, <span className="font-semibold text-slate-800">{user.name || 'Empresa'}</span>. Has registrado tu cuenta de empresa e iniciado sesión correctamente.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="w-full flex justify-center items-center py-3 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all shadow-md active:scale-98"
+                        >
+                            Ir al Panel de Empresa
+                            <Building2 className="ml-2 h-4 w-4" />
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/post-job')}
+                            className="w-full flex justify-center items-center py-3 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transition-all shadow-md active:scale-98"
+                        >
+                            Publicar Vacante
+                            <Briefcase className="ml-2 h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const [formData, setFormData] = useState({
         name: '',
