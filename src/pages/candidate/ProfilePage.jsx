@@ -21,14 +21,16 @@ const ProfilePage = () => {
         title: '',
         bio: '',
         location: '',
+        municipality: '',
+        zipCode: '',
         skills: '',
-        address: '',
         birthDate: '',
         civilStatus: 'Soltero/a',
         education: 'Secundaria',
         lastJob: '',
         lastPosition: '',
         lastDuration: '',
+        lastActivities: '',
         photo: ''
     });
 
@@ -40,14 +42,16 @@ const ProfilePage = () => {
                 title: user.title || '',
                 bio: user.bio || '',
                 location: user.location || '',
+                municipality: user.municipality || user.municipio || '',
+                zipCode: user.zipCode || user.postal_code || user.codigo_postal || '',
                 skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
-                address: user.address || '',
                 birthDate: user.birthDate || user.birth_date || '',
                 civilStatus: user.civilStatus || 'Soltero/a',
                 education: user.education || 'Secundaria',
                 lastJob: user.lastJob || '',
                 lastPosition: user.lastPosition || '',
                 lastDuration: user.lastDuration || '',
+                lastActivities: user.lastActivities || user.last_activities || '',
                 photo: user.photo || ''
             });
         }
@@ -69,6 +73,9 @@ const ProfilePage = () => {
             ...formData,
             last_name: formData.lastName,
             birth_date: formData.birthDate,
+            municipio: formData.municipality,
+            postal_code: formData.zipCode,
+            last_activities: formData.lastActivities,
             skills: skillsArray.join(', ')
         };
 
@@ -116,21 +123,26 @@ const ProfilePage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex justify-center mb-6">
+                <div className="flex flex-col items-center mb-6">
+                    <p className="text-sm font-medium text-slate-600 mb-3">
+                        Sube una foto clara de tu rostro.
+                    </p>
                     <PhotoCapture
                         initialImage={formData.photo}
                         onCapture={(photoData) => {
                             const newFormData = { ...formData, photo: photoData };
                             setFormData(newFormData);
 
-                            // Auto-save photo to persistence
-                            // Ensure skills is sent as array, not string
                             const dataToSave = {
                                 ...newFormData,
+                                last_name: newFormData.lastName,
+                                birth_date: newFormData.birthDate,
+                                municipio: newFormData.municipality,
+                                postal_code: newFormData.zipCode,
+                                last_activities: newFormData.lastActivities,
                                 skills: newFormData.skills
                                     ? newFormData.skills.split(',').map(s => s.trim()).filter(Boolean)
-                                    : [],
-                                age: newFormData.age ? parseInt(newFormData.age, 10) : null
+                                    : []
                             };
                             updateUser(dataToSave);
 
@@ -163,63 +175,86 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Título Profesional</label>
+                    <label className="block text-sm font-medium text-slate-700">Puesto / Oficio</label>
                     <input
                         type="text"
+                        placeholder="Ej. Chofer de reparto, Almacenista, Vendedor, Guardia"
                         className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={formData.title}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-slate-700">Estado de Residencia</label>
-                    <select
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
-                        value={formData.location}
-                        onChange={e => setFormData({ ...formData, location: e.target.value })}
-                    >
-                        <option value="">Selecciona un estado</option>
-                        <option value="Aguascalientes">Aguascalientes</option>
-                        <option value="Baja California">Baja California</option>
-                        <option value="Baja California Sur">Baja California Sur</option>
-                        <option value="Campeche">Campeche</option>
-                        <option value="Chiapas">Chiapas</option>
-                        <option value="Chihuahua">Chihuahua</option>
-                        <option value="Ciudad de México">Ciudad de México</option>
-                        <option value="Coahuila">Coahuila</option>
-                        <option value="Colima">Colima</option>
-                        <option value="Durango">Durango</option>
-                        <option value="Estado de México">Estado de México</option>
-                        <option value="Guanajuato">Guanajuato</option>
-                        <option value="Guerrero">Guerrero</option>
-                        <option value="Hidalgo">Hidalgo</option>
-                        <option value="Jalisco">Jalisco</option>
-                        <option value="Michoacán">Michoacán</option>
-                        <option value="Morelos">Morelos</option>
-                        <option value="Nayarit">Nayarit</option>
-                        <option value="Nuevo León">Nuevo León</option>
-                        <option value="Oaxaca">Oaxaca</option>
-                        <option value="Puebla">Puebla</option>
-                        <option value="Querétaro">Querétaro</option>
-                        <option value="Quintana Roo">Quintana Roo</option>
-                        <option value="San Luis Potosí">San Luis Potosí</option>
-                        <option value="Sinaloa">Sinaloa</option>
-                        <option value="Sonora">Sonora</option>
-                        <option value="Tabasco">Tabasco</option>
-                        <option value="Tamaulipas">Tamaulipas</option>
-                        <option value="Tlaxcala">Tlaxcala</option>
-                        <option value="Veracruz">Veracruz</option>
-                        <option value="Yucatán">Yucatán</option>
-                        <option value="Zacatecas">Zacatecas</option>
-                    </select>
-
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Estado de Residencia</label>
+                        <select
+                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
+                            value={formData.location}
+                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                        >
+                            <option value="">Selecciona un estado</option>
+                            <option value="Aguascalientes">Aguascalientes</option>
+                            <option value="Baja California">Baja California</option>
+                            <option value="Baja California Sur">Baja California Sur</option>
+                            <option value="Campeche">Campeche</option>
+                            <option value="Chiapas">Chiapas</option>
+                            <option value="Chihuahua">Chihuahua</option>
+                            <option value="Ciudad de México">Ciudad de México</option>
+                            <option value="Coahuila">Coahuila</option>
+                            <option value="Colima">Colima</option>
+                            <option value="Durango">Durango</option>
+                            <option value="Estado de México">Estado de México</option>
+                            <option value="Guanajuato">Guanajuato</option>
+                            <option value="Guerrero">Guerrero</option>
+                            <option value="Hidalgo">Hidalgo</option>
+                            <option value="Jalisco">Jalisco</option>
+                            <option value="Michoacán">Michoacán</option>
+                            <option value="Morelos">Morelos</option>
+                            <option value="Nayarit">Nayarit</option>
+                            <option value="Nuevo León">Nuevo León</option>
+                            <option value="Oaxaca">Oaxaca</option>
+                            <option value="Puebla">Puebla</option>
+                            <option value="Querétaro">Querétaro</option>
+                            <option value="Quintana Roo">Quintana Roo</option>
+                            <option value="San Luis Potosí">San Luis Potosí</option>
+                            <option value="Sinaloa">Sinaloa</option>
+                            <option value="Sonora">Sonora</option>
+                            <option value="Tabasco">Tabasco</option>
+                            <option value="Tamaulipas">Tamaulipas</option>
+                            <option value="Tlaxcala">Tlaxcala</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="Yucatán">Yucatán</option>
+                            <option value="Zacatecas">Zacatecas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Municipio / Alcaldía</label>
+                        <input
+                            type="text"
+                            placeholder="Ej. Naucalpan, Guadalajara"
+                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            value={formData.municipality}
+                            onChange={e => setFormData({ ...formData, municipality: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Código Postal</label>
+                        <input
+                            type="text"
+                            placeholder="Ej. 53100"
+                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            value={formData.zipCode}
+                            onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                        />
+                    </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Bio / Resumen</label>
+                    <label className="block text-sm font-medium text-slate-700">Cuéntanos tu experiencia</label>
                     <textarea
                         rows={4}
+                        placeholder="Ej. Tengo 5 años de experiencia manejando camionetas de 3.5 toneladas, carga y descarga en almacén y atención a clientes."
                         className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={formData.bio}
                         onChange={e => setFormData({ ...formData, bio: e.target.value })}
@@ -227,10 +262,10 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Habilidades (separadas por coma)</label>
+                    <label className="block text-sm font-medium text-slate-700">Habilidades principales</label>
                     <input
                         type="text"
-                        placeholder="React, CSS, Diseño..."
+                        placeholder="Ej. Carga y Descarga, Licencia Federal, Atención al cliente, Manejo de efectivo"
                         className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={formData.skills}
                         onChange={e => setFormData({ ...formData, skills: e.target.value })}
@@ -267,16 +302,7 @@ const ProfilePage = () => {
                             </select>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-slate-700">Dirección / Colonia</label>
-                            <input
-                                type="text"
-                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                                value={formData.address}
-                                onChange={e => setFormData({ ...formData, address: e.target.value })}
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-slate-700">Nivel de Estudios</label>
+                            <label className="block text-sm font-medium text-slate-700">Último grado de estudios</label>
                             <select
                                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
                                 value={formData.education}
@@ -287,16 +313,18 @@ const ProfilePage = () => {
                                 <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato</option>
                                 <option value="Técnico Superior">Técnico Superior</option>
                                 <option value="Licenciatura / Ingeniería">Licenciatura / Ingeniería</option>
+                                <option value="Maestría">Maestría</option>
                             </select>
                         </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-slate-900 mt-6 mb-4">Último Empleo</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mt-6 mb-4">Tu último jale</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-slate-700">Empresa</label>
                             <input
                                 type="text"
+                                placeholder="Ej. Logística Mexicana S.A. de C.V."
                                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                 value={formData.lastJob}
                                 onChange={e => setFormData({ ...formData, lastJob: e.target.value })}
@@ -306,6 +334,7 @@ const ProfilePage = () => {
                             <label className="block text-sm font-medium text-slate-700">Puesto</label>
                             <input
                                 type="text"
+                                placeholder="Ej. Chofer repartidor"
                                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                 value={formData.lastPosition}
                                 onChange={e => setFormData({ ...formData, lastPosition: e.target.value })}
@@ -313,12 +342,26 @@ const ProfilePage = () => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700">Duración</label>
-                            <input
-                                type="text"
-                                placeholder="Ej. 2 años"
-                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            <select
+                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
                                 value={formData.lastDuration}
                                 onChange={e => setFormData({ ...formData, lastDuration: e.target.value })}
+                            >
+                                <option value="">Selecciona duración</option>
+                                <option value="Menos de 6 meses">Menos de 6 meses</option>
+                                <option value="De 6 meses a 1 año">De 6 meses a 1 año</option>
+                                <option value="1 a 3 años">1 a 3 años</option>
+                                <option value="Más de 3 años">Más de 3 años</option>
+                            </select>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-slate-700">Actividades realizadas</label>
+                            <textarea
+                                rows={3}
+                                placeholder="Ej. Manejo de inventarios, surtido de pedidos, atención a clientes, manejo de caja."
+                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                value={formData.lastActivities}
+                                onChange={e => setFormData({ ...formData, lastActivities: e.target.value })}
                             />
                         </div>
                     </div>
@@ -354,8 +397,8 @@ const ProfilePage = () => {
                         {jobToApply ? 'Enviar Solicitud' : 'Guardar Cambios'}
                     </button>
                 </div>
-            </form >
-        </div >
+            </form>
+        </div>
     );
 };
 
