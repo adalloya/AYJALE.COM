@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { Mail, Lock, User, Briefcase, ArrowRight, CheckCircle, Building, Phone } from 'lucide-react';
+import { Mail, Lock, User, Briefcase, ArrowRight, CheckCircle, Building, Phone, Eye, EyeOff } from 'lucide-react';
 import logo from '../assets/ayjale_logo_new.png';
 
 const AuthPage = () => {
@@ -14,6 +14,9 @@ const AuthPage = () => {
 
     const [isLogin, setIsLogin] = useState(initialMode !== 'register');
     const [userType, setUserType] = useState(initialRole === 'company' ? 'company' : 'candidate');
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const { user, login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
     const returnUrl = searchParams.get('returnUrl') || '/dashboard';
@@ -272,11 +275,11 @@ const AuthPage = () => {
                             <div className="relative">
                                 <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     autoComplete={isLogin ? "current-password" : "new-password"}
                                     required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                    className="appearance-none rounded-lg relative block w-full pl-10 pr-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
                                     placeholder={isLogin ? "Contraseña" : "Contraseña *"}
                                     value={formData.password}
                                     onChange={(e) => {
@@ -284,6 +287,14 @@ const AuthPage = () => {
                                         if (passwordError) setPasswordError('');
                                     }}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute top-3.5 right-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                             {!isLogin && (
                                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1 mt-2">
@@ -309,11 +320,11 @@ const AuthPage = () => {
                             <div className="relative">
                                 <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                                 <input
-                                    type="password"
+                                    type={showConfirmPassword ? "text" : "password"}
                                     name="confirmPassword"
                                     autoComplete="new-password"
                                     required
-                                    className={`appearance-none rounded-lg relative block w-full px-10 py-3 border ${passwordError ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'} placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm`}
+                                    className={`appearance-none rounded-lg relative block w-full pl-10 pr-10 py-3 border ${passwordError ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'} placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm`}
                                     placeholder="Repite tu contraseña *"
                                     value={formData.confirmPassword}
                                     onChange={(e) => {
@@ -321,6 +332,14 @@ const AuthPage = () => {
                                         if (passwordError) setPasswordError('');
                                     }}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute top-3.5 right-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         )}
                         {passwordError && (
