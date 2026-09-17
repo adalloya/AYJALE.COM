@@ -305,6 +305,29 @@ export const DataProvider = ({ children }) => {
         }
     }, []);
 
+    const adminDeleteUser = useCallback(async (userId) => {
+        try {
+            await supabase.from('applications').delete().eq('candidate_id', userId);
+            await supabase.from('contact_unlocks').delete().or(`company_id.eq.${userId},candidate_id.eq.${userId}`);
+            await supabase.from('jobs').delete().eq('company_id', userId);
+
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .delete()
+                .eq('id', userId);
+
+            if (profileError) {
+                console.error("Error deleting user profile from DB:", profileError);
+                throw profileError;
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            throw error;
+        }
+    }, []);
+
     const deleteJob = async (id) => {
         const { error } = await supabase
             .from('jobs')
@@ -566,6 +589,7 @@ export const DataProvider = ({ children }) => {
         adminGetUsers,
         adminGetApplications,
         adminRepublishJob,
+        adminDeleteUser,
         incrementJobView,
         unlockCandidateContact,
         fetchCandidateProfile,

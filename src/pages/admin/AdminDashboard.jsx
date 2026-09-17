@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders } from 'lucide-react';
+import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, siteSettings, updateSiteSettings } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, siteSettings, updateSiteSettings } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [allUsers, setAllUsers] = useState([]);
@@ -27,7 +27,6 @@ const AdminDashboard = () => {
             } catch (error) {
                 console.error("Failed to load admin data", error);
                 setLoading(false);
-                // We can add a visible error state here if needed
                 alert("Error cargando datos: " + error.message);
             } finally {
                 setLoading(false);
@@ -46,6 +45,22 @@ const AdminDashboard = () => {
                 alert('Correo enviado exitosamente.');
             } catch (error) {
                 alert('Error al enviar correo: ' + error.message);
+            }
+        }
+    };
+
+    const handleDeleteUser = async (userId, userEmail, userName, role) => {
+        const roleLabel = role === 'company' ? 'a la empresa' : 'al candidato';
+        const confirmMessage = `⚠️ ¿Estás seguro de que deseas ELIMINAR permanentemente ${roleLabel} "${userName || userEmail}" de la base de datos?\n\nEsta acción eliminará su perfil y sus datos de forma irreversible.`;
+
+        if (window.confirm(confirmMessage)) {
+            try {
+                await adminDeleteUser(userId);
+                alert(`Usuario eliminado correctamente de la base de datos.`);
+                setAllUsers(prev => prev.filter(u => u.id !== userId));
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert('Error al eliminar usuario: ' + error.message);
             }
         }
     };
@@ -389,6 +404,13 @@ const AdminDashboard = () => {
                                             >
                                                 <Lock className="w-4 h-4 mr-1" /> Reset
                                             </button>
+                                            <button
+                                                onClick={() => handleDeleteUser(user.id, user.email, user.name, 'candidate')}
+                                                className="text-red-600 hover:text-red-900 flex items-center"
+                                                title="Eliminar Candidato"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" /> Eliminar
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -423,12 +445,22 @@ const AdminDashboard = () => {
                                         <div className="text-xs text-slate-400">{user.address || ''}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => handleResetPassword(user.email)}
-                                            className="text-blue-600 hover:text-blue-900 flex items-center justify-end ml-auto"
-                                        >
-                                            <Lock className="w-4 h-4 mr-1" /> Reset Password
-                                        </button>
+                                        <div className="flex justify-end space-x-3">
+                                            <button
+                                                onClick={() => handleResetPassword(user.email)}
+                                                className="text-blue-600 hover:text-blue-900 flex items-center"
+                                                title="Reset Password"
+                                            >
+                                                <Lock className="w-4 h-4 mr-1" /> Reset
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteUser(user.id, user.email, user.name, 'company')}
+                                                className="text-red-600 hover:text-red-900 flex items-center"
+                                                title="Eliminar Empresa"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" /> Eliminar
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
