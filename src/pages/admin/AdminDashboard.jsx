@@ -243,7 +243,7 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="space-y-4">
-                            {/* Setting Item: Company Carousel */}
+                            {/* Setting Item 1: Company Carousel */}
                             <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
@@ -264,6 +264,56 @@ const AdminDashboard = () => {
                                 >
                                     <span
                                         className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showCompanyCarousel ? 'translate-x-7' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Setting Item 2: Mexico Map */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900">Vacantes por Región (Mapa)</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${siteSettings?.showMexicoMap ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                                            {siteSettings?.showMexicoMap ? 'Visible' : 'Oculto'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600">
+                                        Muestra u oculta la sección interactiva "Explora vacantes por región" en la página de inicio.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => updateSiteSettings({ showMexicoMap: !siteSettings?.showMexicoMap })}
+                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${siteSettings?.showMexicoMap ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                    role="switch"
+                                    aria-checked={siteSettings?.showMexicoMap}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showMexicoMap ? 'translate-x-7' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Setting Item 3: What's New */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900">Sección de Novedades</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${siteSettings?.showWhatsNew ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                                            {siteSettings?.showWhatsNew ? 'Visible' : 'Oculto'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600">
+                                        Muestra u oculta la sección de tarjetas "Novedades" en la página de inicio.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => updateSiteSettings({ showWhatsNew: !siteSettings?.showWhatsNew })}
+                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${siteSettings?.showWhatsNew ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                    role="switch"
+                                    aria-checked={siteSettings?.showWhatsNew}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showWhatsNew ? 'translate-x-7' : 'translate-x-0'}`}
                                     />
                                 </button>
                             </div>
