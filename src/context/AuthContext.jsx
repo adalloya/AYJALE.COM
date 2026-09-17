@@ -187,6 +187,8 @@ export const AuthProvider = ({ children }) => {
                     data: {
                         role: role,
                         name: userData.name,
+                        last_name: userData.lastName || userData.last_name || '',
+                        lastName: userData.lastName || userData.last_name || '',
                         terms_accepted: userData.termsAccepted,
                         terms_accepted_at: new Date().toISOString(),
                         rfc: userData.rfc,
@@ -205,40 +207,38 @@ export const AuthProvider = ({ children }) => {
 
             // 2. If session exists (auto-confirm enabled), set user immediately
             if (data?.session?.user) {
-                // FORCE UPDATE of profile to save extra fields that the SQL trigger ignores
-                // We handle both phone (AuthPage) and phone_number (CompanyAuthPage) to ensure data is captured
                 const phoneToSave = userData.phone || userData.phone_number;
+                const lastNameToSave = userData.lastName || userData.last_name || '';
 
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
-                        phone: phoneToSave, // Save to both for compatibility
+                        name: userData.name,
+                        last_name: lastNameToSave,
+                        lastName: lastNameToSave,
+                        phone: phoneToSave,
                         phone_number: phoneToSave,
                         rfc: userData.rfc,
                         industry: userData.industry,
                         location: userData.location,
                         address: userData.address,
                         recruiter_name: userData.recruiter_name,
-                        // Persist Logo if provided (Base64)
                         logo: userData.logo,
-                        logo_url: userData.logo // Alias for compatibility
+                        logo_url: userData.logo
                     })
                     .eq('id', data.user.id);
 
                 if (profileError) {
                     console.error('Error saving profile details:', profileError);
-                    // We don't throw here to avoid blocking login, but we log it
                 }
-                // Manually construct user object temporarily or fetch profile
-                // Since trigger creates profile, we might need to wait a bit or just set basic info
-                // For now, let's rely on onAuthStateChange but keep loading true for a moment?
-                // Actually, setting user here is safer.
+
                 const userProfile = {
                     id: data.user.id,
                     email: data.user.email,
                     role: role,
                     name: userData.name,
-                    // other fields will be null initially
+                    lastName: lastNameToSave,
+                    last_name: lastNameToSave,
                 };
                 console.log('register setting initial user:', userProfile);
                 setUser(userProfile);

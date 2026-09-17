@@ -72,6 +72,7 @@ const AuthPage = () => {
 
     const [formData, setFormData] = useState({
         name: '',
+        lastName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -133,6 +134,8 @@ const AuthPage = () => {
             } else {
                 await register({
                     name: formData.name,
+                    lastName: formData.lastName,
+                    last_name: formData.lastName,
                     email: formData.email,
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
@@ -207,25 +210,47 @@ const AuthPage = () => {
                             </p>
                         )}
                         {!isLogin && (
-                            <div>
-                                <div className="relative">
-                                    <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                    <input
-                                        type="text"
-                                        name="fullName"
-                                        autoComplete="name"
-                                        required
-                                        className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                        placeholder="Nombre Completo *"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <div className="relative">
+                                        <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                        <input
+                                            type="text"
+                                            name="givenName"
+                                            autoComplete="given-name"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                            placeholder="Nombre *"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    {formData.name.length > 0 && (
+                                        <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                            💡 Ej. Juan Carlos
+                                        </p>
+                                    )}
                                 </div>
-                                {formData.name.length > 0 && (
-                                    <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
-                                        💡 Ej. Juan Carlos Pérez López (Nombre(s) y Apellidos)
-                                    </p>
-                                )}
+                                <div>
+                                    <div className="relative">
+                                        <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                        <input
+                                            type="text"
+                                            name="familyName"
+                                            autoComplete="family-name"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                            placeholder="Apellidos *"
+                                            value={formData.lastName}
+                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                        />
+                                    </div>
+                                    {formData.lastName.length > 0 && (
+                                        <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                            💡 Ej. Pérez López
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         )}
                         <div>

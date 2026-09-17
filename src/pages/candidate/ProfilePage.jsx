@@ -17,12 +17,13 @@ const ProfilePage = () => {
 
     const [formData, setFormData] = useState({
         name: '',
+        lastName: '',
         title: '',
         bio: '',
         location: '',
         skills: '',
         address: '',
-        age: '',
+        birthDate: '',
         civilStatus: 'Soltero/a',
         education: 'Secundaria',
         lastJob: '',
@@ -35,13 +36,13 @@ const ProfilePage = () => {
         if (user) {
             setFormData({
                 name: user.name || '',
+                lastName: user.lastName || user.last_name || '',
                 title: user.title || '',
                 bio: user.bio || '',
                 location: user.location || '',
                 skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
-                // Application Fields
                 address: user.address || '',
-                age: user.age || '',
+                birthDate: user.birthDate || user.birth_date || '',
                 civilStatus: user.civilStatus || 'Soltero/a',
                 education: user.education || 'Secundaria',
                 lastJob: user.lastJob || '',
@@ -66,16 +67,14 @@ const ProfilePage = () => {
 
         const updatedData = {
             ...formData,
-            skills: skillsArray.join(', '), // Convert back to string for TEXT column compatibility
-            age: formData.age ? parseInt(formData.age, 10) : null
+            last_name: formData.lastName,
+            birth_date: formData.birthDate,
+            skills: skillsArray.join(', ')
         };
 
         try {
-            // 1. Update profile
             await updateUser(updatedData);
-            // Removed redundant updateUserProfile call
 
-            // 2. If applying, submit application
             if (jobToApply) {
                 await applyToJob(jobToApply.id, user.id, { comments });
                 setToast({ message: '¡Solicitud enviada con éxito!', type: 'success' });
@@ -140,15 +139,27 @@ const ProfilePage = () => {
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-slate-700">Nombre Completo</label>
-                    <input
-                        type="text"
-                        required
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                        value={formData.name}
-                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Nombre</label>
+                        <input
+                            type="text"
+                            required
+                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">Apellidos</label>
+                        <input
+                            type="text"
+                            required
+                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            value={formData.lastName}
+                            onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                        />
+                    </div>
                 </div>
 
                 <div>
@@ -234,12 +245,12 @@ const ProfilePage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700">Edad</label>
+                            <label className="block text-sm font-medium text-slate-700">Fecha de Nacimiento</label>
                             <input
-                                type="number"
-                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                                value={formData.age}
-                                onChange={e => setFormData({ ...formData, age: e.target.value })}
+                                type="date"
+                                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
+                                value={formData.birthDate}
+                                onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
                             />
                         </div>
                         <div>
