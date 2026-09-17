@@ -91,18 +91,17 @@ export const AuthProvider = ({ children }) => {
 
 
 
-            // Prioritize DB profile role if available, otherwise use session metadata
-            let finalUser = data;
-            if (data?.role) {
-                // Role found in DB
-            } else if (session?.user?.user_metadata?.role) {
-                finalUser = {
-                    ...data,
-                    role: session.user.user_metadata.role
-                };
-            }
+            const metaData = session?.user?.user_metadata || {};
+            let finalUser = {
+                ...metaData,
+                ...data,
+                role: data?.role || metaData.role,
+                name: data?.name || metaData.name || '',
+                lastName: data?.lastName || data?.last_name || metaData.lastName || metaData.last_name || '',
+                last_name: data?.last_name || data?.lastName || metaData.last_name || metaData.lastName || '',
+            };
 
-            console.log('[AuthContext] Setting user:', finalUser?.id);
+            console.log('[AuthContext] Setting user:', finalUser?.id, finalUser);
             setUser(finalUser);
         } catch (error) {
             console.error('Error fetching profile:', error);
