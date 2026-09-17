@@ -67,7 +67,7 @@ const LandingPage = () => {
                     Encuentra tu próximo <span className="text-secondary-500">jale</span>, rápido y seguro.
                 </h1>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Conectamos a choferes, almacenistas y operadores con empresas que contratan hoy mismo.
+                    La bolsa de trabajo operativa donde las mejores empresas buscan talento como tú.
                 </p>
             </section>
 
