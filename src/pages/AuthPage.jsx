@@ -75,19 +75,50 @@ const AuthPage = () => {
         phone: '',
         termsAccepted: false
     });
+    const [phoneDisplay, setPhoneDisplay] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    const passwordCriteria = {
+        length: formData.password.length >= 8,
+        number: /\d/.test(formData.password),
+        symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password),
+        upperLower: /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password)
+    };
+
+    const handlePhoneChange = (inputVal) => {
+        let digits = inputVal.replace(/\D/g, '');
+        if (digits.startsWith('52') && digits.length > 10) {
+            digits = digits.slice(2);
+        }
+        digits = digits.slice(0, 10);
+
+        let formatted = '+52';
+        if (digits.length > 0) {
+            if (digits.length <= 3) {
+                formatted += ` (${digits}`;
+            } else if (digits.length <= 6) {
+                formatted += ` (${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            } else {
+                formatted += ` (${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6)}`;
+            }
+        }
+
+        setPhoneDisplay(formatted);
+        const rawValue = digits ? `+52${digits}` : '';
+        setFormData(prev => ({ ...prev, phone: rawValue }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setPasswordError('');
 
         if (!isLogin) {
-            if (formData.password !== formData.confirmPassword) {
-                setPasswordError('Las contraseñas no coinciden. Por favor verifícalas.');
+            if (!passwordCriteria.length || !passwordCriteria.number || !passwordCriteria.symbol || !passwordCriteria.upperLower) {
+                setPasswordError('La contraseña debe tener al menos 8 caracteres, un número, un símbolo, una letra mayúscula y una minúscula.');
                 return;
             }
-            if (formData.password.length < 6) {
-                setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+            if (formData.password !== formData.confirmPassword) {
+                setPasswordError('Las contraseñas no coinciden. Por favor verifícalas.');
                 return;
             }
         }
@@ -161,7 +192,7 @@ const AuthPage = () => {
                             setPasswordError('');
                         }}
                     >
-                        Crear Cuenta
+                        Registro
                     </button>
                 </div>
 
@@ -173,63 +204,106 @@ const AuthPage = () => {
                             </p>
                         )}
                         {!isLogin && (
-                            <div className="relative">
-                                <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    autoComplete="name"
-                                    required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                    placeholder="Nombre Completo *"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
+                            <div>
+                                <div className="relative">
+                                    <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        autoComplete="name"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                        placeholder="Nombre Completo *"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+                                {formData.name.length > 0 && (
+                                    <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                        💡 Ej. Juan Carlos Pérez López (Nombre(s) y Apellidos)
+                                    </p>
+                                )}
                             </div>
                         )}
-                        <div className="relative">
-                            <Mail className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                            <input
-                                type="email"
-                                name="email"
-                                autoComplete="email"
-                                required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                placeholder={isLogin ? "Correo Electrónico" : "Correo Electrónico *"}
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
+                        <div>
+                            <div className="relative">
+                                <Mail className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    autoComplete="email"
+                                    required
+                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                    placeholder={isLogin ? "Correo Electrónico" : "Correo Electrónico *"}
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                            {!isLogin && formData.email.length > 0 && (
+                                <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                    💡 Ej. tuemail@ejemplo.com
+                                </p>
+                            )}
                         </div>
                         {!isLogin && (
-                            <div className="relative">
-                                <Phone className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    autoComplete="tel"
-                                    required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                    placeholder="Número Telefónico *"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                />
+                            <div>
+                                <div className="relative">
+                                    <Phone className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        autoComplete="tel"
+                                        required
+                                        className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                        placeholder="Número Telefónico *"
+                                        value={phoneDisplay}
+                                        onFocus={() => {
+                                            if (!phoneDisplay) handlePhoneChange('+52');
+                                        }}
+                                        onChange={(e) => handlePhoneChange(e.target.value)}
+                                    />
+                                </div>
+                                <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                    💡 Ej. +52 (999) 123 4567 (10 dígitos)
+                                </p>
                             </div>
                         )}
-                        <div className="relative">
-                            <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                            <input
-                                type="password"
-                                name="password"
-                                autoComplete={isLogin ? "current-password" : "new-password"}
-                                required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                placeholder={isLogin ? "Contraseña" : "Contraseña *"}
-                                value={formData.password}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, password: e.target.value });
-                                    if (passwordError) setPasswordError('');
-                                }}
-                            />
+                        <div>
+                            <div className="relative">
+                                <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                <input
+                                    type="password"
+                                    name="password"
+                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    required
+                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                    placeholder={isLogin ? "Contraseña" : "Contraseña *"}
+                                    value={formData.password}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, password: e.target.value });
+                                        if (passwordError) setPasswordError('');
+                                    }}
+                                />
+                            </div>
+                            {!isLogin && (
+                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1 mt-2">
+                                    <p className="font-semibold text-slate-700 mb-1">Requisitos de la contraseña:</p>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        <span className={`flex items-center gap-1 ${passwordCriteria.length ? 'text-green-600 font-semibold' : 'text-slate-500'}`}>
+                                            {passwordCriteria.length ? '✓' : '•'} Al menos 8 caracteres
+                                        </span>
+                                        <span className={`flex items-center gap-1 ${passwordCriteria.number ? 'text-green-600 font-semibold' : 'text-slate-500'}`}>
+                                            {passwordCriteria.number ? '✓' : '•'} Un número (0-9)
+                                        </span>
+                                        <span className={`flex items-center gap-1 ${passwordCriteria.symbol ? 'text-green-600 font-semibold' : 'text-slate-500'}`}>
+                                            {passwordCriteria.symbol ? '✓' : '•'} Un símbolo (!@#$...)
+                                        </span>
+                                        <span className={`flex items-center gap-1 ${passwordCriteria.upperLower ? 'text-green-600 font-semibold' : 'text-slate-500'}`}>
+                                            {passwordCriteria.upperLower ? '✓' : '•'} Mayúscula y minúscula
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {!isLogin && (
                             <div className="relative">
