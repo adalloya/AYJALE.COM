@@ -42,7 +42,7 @@ const LandingPage = () => {
     return (
         <div className="min-h-screen bg-slate-50">
             <SEO
-                title="Inicio"
+                title="AyJale.com | Bolsa de trabajo"
                 description="La bolsa de trabajo moderna de México. Encuentra empleo rápido con ayuda de Inteligencia Artificial. Vacantes verificadas en Tecnología, Ventas, y más."
                 keywords="bolsa de trabajo méxico, buscar empleo, vacantes 2025, trabajo remoto, inteligencia artificial empleos, reclutamiento ai, ayjale empleos, trabajo en monterrey, trabajo en cdmx, vacantes tecnologia"
                 structuredData={{

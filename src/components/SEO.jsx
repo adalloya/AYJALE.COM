@@ -1,12 +1,12 @@
 import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, image, url, keywords, structuredData }) => {
-    const siteTitle = 'AyJale - Encuentra tu próximo empleo';
+    const siteTitle = 'AyJale.com | Bolsa de trabajo';
     const defaultDescription = 'La mejor plataforma para encontrar empleo en México. Conecta con empresas líderes y postúlate a las mejores vacantes.';
-    const defaultImage = 'https://ayjale.com/og-image.jpg'; // Placeholder, should be replaced with real image
+    const defaultImage = 'https://ayjale.com/logo-icon.png';
     const siteUrl = 'https://ayjale.com';
 
-    const fullTitle = title ? `${title} | AyJale` : siteTitle;
+    const fullTitle = (title && title !== 'Inicio' && title !== 'AyJale.com | Bolsa de trabajo') ? `${title} | AyJale.com` : siteTitle;
 
     return (
         <Helmet>
