@@ -175,7 +175,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Último puesto</label>
+                    <label className="block text-sm font-medium text-slate-700">Puesto / Oficio</label>
                     <input
                         type="text"
                         placeholder="Ej. Chofer de reparto, Almacenista, Vendedor, Guardia"
