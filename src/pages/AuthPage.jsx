@@ -71,30 +71,38 @@ const AuthPage = () => {
         name: '',
         email: '',
         password: '',
+        confirmPassword: '',
         phone: '',
         termsAccepted: false
     });
+    const [passwordError, setPasswordError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('AuthPage: handleSubmit called');
-        console.log('AuthPage: isLogin:', isLogin);
-        console.log('AuthPage: userType:', userType);
-        console.log('AuthPage: formData:', formData);
+        setPasswordError('');
+
+        if (!isLogin) {
+            if (formData.password !== formData.confirmPassword) {
+                setPasswordError('Las contraseñas no coinciden. Por favor verifícalas.');
+                return;
+            }
+            if (formData.password.length < 6) {
+                setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+        }
 
         try {
             if (isLogin) {
                 await login(formData.email, formData.password);
                 navigate(returnUrl);
             } else {
-                console.log('AuthPage: Calling register with role:', userType);
                 await register({
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
-                console.log('AuthPage: Register completed, navigating to onboarding');
                 navigate('/onboarding');
             }
         } catch (error) {
@@ -127,78 +135,125 @@ const AuthPage = () => {
                         <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
                     </Link>
                     <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                        {isLogin ? 'Bienvenido de vuelta' : 'Crea tu cuenta'}
+                        {isLogin ? 'Bienvenido de vuelta' : 'Regístrate para postularte'}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-600">
-                        {isLogin ? 'Ingresa para continuar con tu postulación' : 'Regístrate para postularte a esta vacante'}
-                    </p>
+                    {isLogin && (
+                        <p className="mt-2 text-sm text-slate-600">
+                            Ingresa para continuar con tu postulación
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex border-b border-slate-200 mb-6">
                     <button
                         className={`flex-1 py-2 text-sm font-medium border-b-2 ${isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        onClick={() => setIsLogin(true)}
+                        onClick={() => {
+                            setIsLogin(true);
+                            setPasswordError('');
+                        }}
                     >
                         Iniciar Sesión
                     </button>
                     <button
                         className={`flex-1 py-2 text-sm font-medium border-b-2 ${!isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        onClick={() => setIsLogin(false)}
+                        onClick={() => {
+                            setIsLogin(false);
+                            setPasswordError('');
+                        }}
                     >
                         Crear Cuenta
                     </button>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
                     <div className="space-y-4">
                         {!isLogin && (
+                            <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mb-2">
+                                <span className="text-red-500 font-bold">*</span> Campos obligatorios
+                            </p>
+                        )}
+                        {!isLogin && (
                             <div className="relative">
-                                <User className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                                <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                                 <input
                                     type="text"
+                                    name="fullName"
+                                    autoComplete="name"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                    placeholder="Nombre Completo"
+                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                    placeholder="Nombre Completo *"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
                             </div>
                         )}
                         <div className="relative">
-                            <Mail className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                            <Mail className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                             <input
                                 type="email"
+                                name="email"
+                                autoComplete="email"
                                 required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                placeholder="Correo Electrónico"
+                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                placeholder={isLogin ? "Correo Electrónico" : "Correo Electrónico *"}
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
                         {!isLogin && (
                             <div className="relative">
-                                <Phone className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                                <Phone className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                                 <input
                                     type="tel"
+                                    name="phone"
+                                    autoComplete="tel"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                    placeholder="Número Telefónico"
+                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                    placeholder="Número Telefónico *"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 />
                             </div>
                         )}
                         <div className="relative">
-                            <Lock className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                            <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
                             <input
                                 type="password"
+                                name="password"
+                                autoComplete={isLogin ? "current-password" : "new-password"}
                                 required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                placeholder="Contraseña"
+                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                placeholder={isLogin ? "Contraseña" : "Contraseña *"}
                                 value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, password: e.target.value });
+                                    if (passwordError) setPasswordError('');
+                                }}
                             />
                         </div>
+                        {!isLogin && (
+                            <div className="relative">
+                                <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    autoComplete="new-password"
+                                    required
+                                    className={`appearance-none rounded-lg relative block w-full px-10 py-3 border ${passwordError ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'} placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm`}
+                                    placeholder="Repite tu contraseña *"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, confirmPassword: e.target.value });
+                                        if (passwordError) setPasswordError('');
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {passwordError && (
+                            <p className="text-xs text-red-600 font-semibold bg-red-50 border border-red-200 p-2.5 rounded-lg">
+                                ⚠️ {passwordError}
+                            </p>
+                        )}
                         {/* Role selector hidden as per user request - defaults to candidate */}
                         {!isLogin && !initialRole && (
                             <div className="flex items-center justify-center space-x-4 mt-4">
