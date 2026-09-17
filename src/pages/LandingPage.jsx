@@ -40,7 +40,7 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="bg-slate-50">
             <SEO
                 title="AyJale.com | Bolsa de trabajo"
                 description="La bolsa de trabajo moderna de México. Encuentra empleo rápido con ayuda de Inteligencia Artificial. Vacantes verificadas en Tecnología, Ventas, y más."
@@ -62,7 +62,7 @@ const LandingPage = () => {
 
 
             {/* Hero Section */}
-            <section className="text-center space-y-4 py-12">
+            <section className="text-center space-y-4 pt-8 pb-6 md:pt-12 md:pb-8">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
                     Encuentra tu próximo <span className="text-secondary-500">jale</span>, rápido y seguro.
                 </h1>
@@ -113,7 +113,7 @@ const LandingPage = () => {
             )}
 
             {/* Featured Categories */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 sm:pb-12">
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
                         Categorías Destacadas
