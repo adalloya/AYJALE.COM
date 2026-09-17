@@ -12,7 +12,7 @@ const LandingPage = () => {
     const { siteSettings } = useData();
     const [filters, setFilters] = useState({
         keyword: '',
-        state: 'Ciudad de México',
+        state: '',
         category: ''
     });
 
