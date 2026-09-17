@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../data/mockData';
 import { Search, MapPin, Briefcase, Package, Truck, Shield, Sparkles, ShoppingBag, Hammer, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useData } from '../context/DataContext';
 import CompanyCarousel from '../components/CompanyCarousel';
 import MexicoMap from '../components/MexicoMap';
 import SEO from '../components/SEO';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { siteSettings } = useData();
     const [filters, setFilters] = useState({
         keyword: '',
         state: '',
@@ -104,9 +106,11 @@ const LandingPage = () => {
             </div>
 
             {/* Trusted Companies Carousel */}
-            <div className="mt-16 mb-8">
-                <CompanyCarousel />
-            </div>
+            {siteSettings?.showCompanyCarousel && (
+                <div className="mt-16 mb-8">
+                    <CompanyCarousel />
+                </div>
+            )}
 
             {/* Featured Categories */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

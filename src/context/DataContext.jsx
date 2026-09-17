@@ -16,6 +16,37 @@ export const DataProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [contactUnlocks, setContactUnlocks] = useState([]);
 
+    const [siteSettings, setSiteSettings] = useState(() => {
+        try {
+            const saved = localStorage.getItem('ayjale_site_settings');
+            return saved ? JSON.parse(saved) : { showCompanyCarousel: false };
+        } catch (e) {
+            return { showCompanyCarousel: false };
+        }
+    });
+
+    const updateSiteSettings = useCallback(async (newSettings) => {
+        setSiteSettings(prev => {
+            const updated = { ...prev, ...newSettings };
+            try {
+                localStorage.setItem('ayjale_site_settings', JSON.stringify(updated));
+            } catch (e) {
+                console.error('Error saving site settings to localStorage:', e);
+            }
+            return updated;
+        });
+
+        try {
+            await supabase.from('site_settings').upsert({
+                id: 'global',
+                settings: newSettings,
+                updated_at: new Date().toISOString()
+            });
+        } catch (err) {
+            // Optional DB table fallback
+        }
+    }, []);
+
     const fetchContactUnlocks = useCallback(async () => {
         if (!user) return;
 
@@ -518,6 +549,8 @@ export const DataProvider = ({ children }) => {
         loading,
         notifications,
         contactUnlocks,
+        siteSettings,
+        updateSiteSettings,
         addJob,
         updateJob,
         deleteJob,
@@ -537,7 +570,7 @@ export const DataProvider = ({ children }) => {
         fetchCandidateProfile,
         adminGetContactUnlocks
     }), [
-        jobs, applications, users, loading, notifications, contactUnlocks, user,
+        jobs, applications, users, loading, notifications, contactUnlocks, siteSettings, updateSiteSettings, user,
         adminGetUsers, adminGetApplications, adminGetContactUnlocks, fetchContactUnlocks
     ]);
 

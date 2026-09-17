@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye } from 'lucide-react';
+import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, siteSettings, updateSiteSettings } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [allUsers, setAllUsers] = useState([]);
@@ -207,21 +207,70 @@ const AdminDashboard = () => {
                         >
                             Desbloqueos
                         </button>
+                        <button
+                            onClick={() => setActiveTab('settings')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-1.5 ${activeTab === 'settings' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                        >
+                            <Settings className="w-4 h-4" />
+                            Configuración
+                        </button>
                     </div>
-                    <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                    {activeTab !== 'settings' && (
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
+                            <input
+                                type="text"
+                                placeholder="Buscar..."
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Content */}
-                <div className="overflow-x-auto">
+                {activeTab === 'settings' ? (
+                    <div className="p-6 sm:p-8 max-w-4xl">
+                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+                            <div className="p-3 bg-slate-100 rounded-xl text-slate-800">
+                                <Sliders className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900">Configuración General de la Plataforma</h2>
+                                <p className="text-sm text-slate-500">Gestiona la visibilidad de secciones y opciones globales del sitio.</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Setting Item: Company Carousel */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900">Carrusel de Empresas</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${siteSettings?.showCompanyCarousel ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                                            {siteSettings?.showCompanyCarousel ? 'Visible' : 'Oculto'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600">
+                                        Muestra u oculta la sección "Empresas que confían en nosotros" en la página de inicio.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => updateSiteSettings({ showCompanyCarousel: !siteSettings?.showCompanyCarousel })}
+                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${siteSettings?.showCompanyCarousel ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                    role="switch"
+                                    aria-checked={siteSettings?.showCompanyCarousel}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showCompanyCarousel ? 'translate-x-7' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200">
                         <thead className="bg-slate-50">
                             <tr>
@@ -404,9 +453,10 @@ const AdminDashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            )}
         </div>
-    );
+    </div>
+);
 };
 
 export default AdminDashboard;
