@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Building2, User, MapPin, Briefcase, FileText, CheckCircle, ArrowRight, Star, Rocket } from 'lucide-react';
 
@@ -53,6 +53,9 @@ const OnboardingPage = () => {
     };
 
     if (!user) return null;
+    if (user.role === 'candidate') {
+        return <Navigate to="/profile" replace />;
+    }
 
     // COMPANY WELCOME VIEW
     if (user.role === 'company') {

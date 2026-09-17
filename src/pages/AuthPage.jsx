@@ -137,7 +137,7 @@ const AuthPage = () => {
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
-                navigate('/onboarding');
+                navigate('/profile');
             }
         } catch (error) {
             console.error("Auth error:", error);
