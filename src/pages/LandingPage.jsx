@@ -67,7 +67,7 @@ const LandingPage = () => {
                     Encuentra tu próximo <span className="text-secondary-500">jale</span>, rápido y seguro.
                 </h1>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    La bolsa de trabajo operativa donde las mejores empresas buscan talento como tú.
+                    La bolsa de trabajo donde las mejores empresas buscan talento como tú.
                 </p>
             </section>
 
@@ -116,7 +116,6 @@ const LandingPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
-                        <Briefcase className="w-8 h-8 text-secondary-600" />
                         Categorías Destacadas
                     </h2>
                     <p className="text-slate-600 mt-3 text-lg max-w-2xl mx-auto">
