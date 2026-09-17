@@ -116,13 +116,13 @@ const Navbar = () => {
                             {!user && (
                                 <>
                                     <li>
-                                        <Link to="/company/login" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                        <Link to="/company/login?mode=register" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
                                             Soy Empresa
                                         </Link>
                                     </li>
                                     <li>
                                         <Link to="/auth?mode=register&role=candidate" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
-                                            Soy Candidato
+                                            Regístrate
                                         </Link>
                                     </li>
                                 </>
@@ -313,7 +313,7 @@ const Navbar = () => {
                                     Vacantes
                                 </Link>
                                 <Link
-                                    to="/company/login"
+                                    to="/company/login?mode=register"
                                     onClick={() => setIsMenuOpen(false)}
                                     className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
                                 >
@@ -324,7 +324,7 @@ const Navbar = () => {
                                     onClick={() => setIsMenuOpen(false)}
                                     className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50"
                                 >
-                                    Soy Candidato
+                                    Regístrate
                                 </Link>
                             </>
                         )}

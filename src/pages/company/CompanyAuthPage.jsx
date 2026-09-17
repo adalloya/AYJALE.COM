@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase } from 'lucide-react';
 import logo from '../../assets/ayjale_logo_new.png';
 
 const CompanyAuthPage = () => {
-    const [isLogin, setIsLogin] = useState(true);
+    const [searchParams] = useSearchParams();
+    const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'register');
     const navigate = useNavigate();
     const { user, login, register, loading } = useAuth();
 
