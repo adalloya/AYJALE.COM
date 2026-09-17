@@ -511,19 +511,6 @@ export const DataProvider = ({ children }) => {
     }, [applications, user, contactUnlocks]); // Added contactUnlocks dependency
 
 
-    // Welcome Screen Logic - Only show on Landing Page ('/')
-    const [showWelcome, setShowWelcome] = useState(window.location.pathname === '/');
-
-    useEffect(() => {
-        if (!loading) {
-            // Wait for fade out animation (700ms) then unmount
-            const timer = setTimeout(() => {
-                setShowWelcome(false);
-            }, 800);
-            return () => clearTimeout(timer);
-        }
-    }, [loading]);
-
     const value = useMemo(() => ({
         jobs,
         applications,
@@ -556,17 +543,6 @@ export const DataProvider = ({ children }) => {
 
     return (
         <DataContext.Provider value={value}>
-            {showWelcome && (
-                <div
-                    className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-300 ease-out ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                >
-                    <div className="text-center">
-                        <h1 className="text-5xl md:text-7xl font-bold text-orange-500 tracking-tighter animate-pulse">
-                            Bienvenido
-                        </h1>
-                    </div>
-                </div>
-            )}
             {children}
         </DataContext.Provider>
     );
