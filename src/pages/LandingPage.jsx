@@ -12,7 +12,7 @@ const LandingPage = () => {
     const { siteSettings } = useData();
     const [filters, setFilters] = useState({
         keyword: '',
-        state: '',
+        state: 'Ciudad de México',
         category: ''
     });
 
@@ -78,7 +78,7 @@ const LandingPage = () => {
                         <Search className="absolute left-4 top-3.5 text-slate-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Título del empleo, palabras clave..."
+                            placeholder="Ej. Chofer, Ventas, Almacén"
                             className="w-full pl-12 pr-4 py-3 rounded-xl md:rounded-l-full focus:outline-none focus:bg-slate-50 transition-colors"
                             value={filters.keyword}
                             onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
