@@ -64,10 +64,10 @@ const LandingPage = () => {
             {/* Hero Section */}
             <section className="text-center space-y-4 py-12">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-                    Encuentra tu trabajo ideal en <span className="text-secondary-500">México</span>
+                    Encuentra tu próximo <span className="text-secondary-500">jale</span>, rápido y seguro.
                 </h1>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Conectamos a los mejores candidatos con las empresas líderes del país.
+                    Conectamos a choferes, almacenistas y operadores con empresas que contratan hoy mismo.
                 </p>
             </section>
 
