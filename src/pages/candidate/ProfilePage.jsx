@@ -28,6 +28,8 @@ const ProfilePage = () => {
         location: '',
         municipality: '',
         zipCode: '',
+        address_street: '',
+        colonia: '',
         title: '',
         experience_years: '1 a 3 años',
         skills: '',
@@ -35,6 +37,11 @@ const ProfilePage = () => {
         languages_tools: '',
         education: 'Secundaria',
         education_status: 'Concluido',
+        institution_name: '',
+        english_level: 'Ninguno',
+        certifications: [
+            { type: 'Certificación', title_detail: '' }
+        ],
         work_history: [
             {
                 company: '',
@@ -55,8 +62,9 @@ const ProfilePage = () => {
         travel_availability: 'No'
     });
 
+    // ALL SECTIONS CLOSED BY DEFAULT WHEN ENTERING PROFILE
     const [expandedSections, setExpandedSections] = useState({
-        s1: true,
+        s1: false,
         s2: false,
         s3: false,
         s4: false,
@@ -90,6 +98,11 @@ const ProfilePage = () => {
                 }
             }
 
+            let initialCertifications = user.certifications;
+            if (!Array.isArray(initialCertifications) || initialCertifications.length === 0) {
+                initialCertifications = [{ type: 'Certificación', title_detail: '' }];
+            }
+
             setFormData({
                 name: user.name || '',
                 first_last_name: user.first_last_name || user.lastName || user.last_name || '',
@@ -103,6 +116,8 @@ const ProfilePage = () => {
                 location: user.location || '',
                 municipality: user.municipality || user.municipio || '',
                 zipCode: user.zipCode || user.postal_code || '',
+                address_street: user.address_street || '',
+                colonia: user.colonia || '',
                 title: user.title || '',
                 experience_years: user.experience_years || '1 a 3 años',
                 skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
@@ -110,6 +125,9 @@ const ProfilePage = () => {
                 languages_tools: user.languages_tools || '',
                 education: user.education || 'Secundaria',
                 education_status: user.education_status || 'Concluido',
+                institution_name: user.institution_name || '',
+                english_level: user.english_level || 'Ninguno',
+                certifications: initialCertifications,
                 work_history: initialWorkHistory,
                 ref_name: user.ref_name || '',
                 ref_phone: user.ref_phone || '',
@@ -130,31 +148,78 @@ const ProfilePage = () => {
     const jobToApply = applyingToId ? jobs.find(j => j.id === Number(applyingToId)) : null;
     const [comments, setComments] = useState('');
 
-    const checkSectionStatus = (sectionNum, data = formData) => {
+    // Strict Section Completion Checker:
+    // Returns: 'unstarted' (0 fields filled), 'complete' (ALL fields filled), 'incomplete' (partially filled)
+    const getSectionStatus = (sectionNum, data = formData) => {
+        let total = 0;
+        let filled = 0;
+
+        const checkVal = (v) => {
+            total++;
+            if (v !== undefined && v !== null && String(v).trim() !== '') {
+                filled++;
+            }
+        };
+
         switch (sectionNum) {
-            case 1:
-                return Boolean(data.name && data.first_last_name && data.phone && data.email && data.curp);
-            case 2:
-                return Boolean(data.location && data.municipality && data.zipCode);
-            case 3:
-                return Boolean(data.title && data.skills && data.experience_years);
-            case 4:
-                return Boolean(data.education && data.education_status);
-            case 5:
-                return Boolean(data.work_history && data.work_history.length > 0 && data.work_history[0].company && data.work_history[0].position);
-            case 6:
-                return Boolean(data.ref_name && data.ref_phone);
-            case 7:
-                return Boolean(data.expected_salary && data.start_availability && data.shift_availability);
+            case 1: // Identificación y Contacto
+                checkVal(data.name);
+                checkVal(data.first_last_name);
+                checkVal(data.phone);
+                checkVal(data.email);
+                checkVal(data.curp);
+                break;
+            case 2: // Ubicación
+                checkVal(data.location);
+                checkVal(data.municipality);
+                checkVal(data.zipCode);
+                checkVal(data.address_street);
+                checkVal(data.colonia);
+                break;
+            case 3: // Estudios
+                checkVal(data.education);
+                checkVal(data.education_status);
+                checkVal(data.institution_name);
+                checkVal(data.english_level);
+                break;
+            case 4: // Oficio y Habilidades
+                checkVal(data.title);
+                checkVal(data.experience_years);
+                checkVal(data.skills);
+                checkVal(data.driver_license);
+                break;
+            case 5: // Experiencia Laboral
+                if (data.work_history && data.work_history.length > 0) {
+                    checkVal(data.work_history[0].company);
+                    checkVal(data.work_history[0].position);
+                    checkVal(data.work_history[0].duration);
+                } else {
+                    total += 3;
+                }
+                break;
+            case 6: // Referencias de Confianza
+                checkVal(data.ref_name);
+                checkVal(data.ref_phone);
+                break;
+            case 7: // Disponibilidad y Expectativas
+                checkVal(data.expected_salary);
+                checkVal(data.start_availability);
+                checkVal(data.shift_availability);
+                checkVal(data.travel_availability);
+                break;
             default:
-                return false;
+                break;
         }
+
+        if (filled === 0) return 'unstarted';
+        if (filled === total) return 'complete';
+        return 'incomplete';
     };
 
     const getCompletionPercentage = () => {
         let completedSections = 0;
         for (let i = 1; i <= 7; i++) {
-            if (checkSectionStatus(i)) completedSections++;
+            if (getSectionStatus(i) === 'complete') completedSections++;
         }
         return Math.round((completedSections / 7) * 100);
     };
@@ -168,26 +233,88 @@ const ProfilePage = () => {
         }));
     };
 
+    // Helper for auto-saving form data to Supabase
+    const autoSaveData = (newData) => {
+        const skillsArray = typeof newData.skills === 'string'
+            ? newData.skills.split(',').map(s => s.trim()).filter(Boolean)
+            : newData.skills;
+
+        const updatedData = {
+            ...newData,
+            last_name: newData.first_last_name,
+            birth_date: newData.birthDate,
+            municipio: newData.municipality,
+            postal_code: newData.zipCode,
+            last_activities: newData.work_history[0]?.activities || '',
+            last_job: newData.work_history[0]?.company || '',
+            last_position: newData.work_history[0]?.position || '',
+            last_duration: newData.work_history[0]?.duration || '',
+            skills: skillsArray.join(', ')
+        };
+
+        updateUser(updatedData);
+    };
+
+    const updateFormField = (field, value) => {
+        const updated = { ...formData, [field]: value };
+        setFormData(updated);
+        autoSaveData(updated);
+    };
+
     const handleWorkHistoryChange = (index, field, value) => {
-        const updated = [...formData.work_history];
-        updated[index] = { ...updated[index], [field]: value };
-        setFormData({ ...formData, work_history: updated });
+        const updatedWork = [...formData.work_history];
+        updatedWork[index] = { ...updatedWork[index], [field]: value };
+        const updatedForm = { ...formData, work_history: updatedWork };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
     };
 
     const addWorkExperience = () => {
-        setFormData({
+        const updatedForm = {
             ...formData,
             work_history: [
                 ...formData.work_history,
                 { company: '', position: '', duration: '', activities: '', reason_for_leaving: '', salary: '' }
             ]
-        });
+        };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
     };
 
     const removeWorkExperience = (index) => {
         if (formData.work_history.length === 1) return;
-        const updated = formData.work_history.filter((_, i) => i !== index);
-        setFormData({ ...formData, work_history: updated });
+        const updatedWork = formData.work_history.filter((_, i) => i !== index);
+        const updatedForm = { ...formData, work_history: updatedWork };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
+    };
+
+    const handleCertificationChange = (index, field, value) => {
+        const updatedCerts = [...formData.certifications];
+        updatedCerts[index] = { ...updatedCerts[index], [field]: value };
+        const updatedForm = { ...formData, certifications: updatedCerts };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
+    };
+
+    const addCertification = () => {
+        const updatedForm = {
+            ...formData,
+            certifications: [
+                ...formData.certifications,
+                { type: 'Certificación', title_detail: '' }
+            ]
+        };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
+    };
+
+    const removeCertification = (index) => {
+        if (formData.certifications.length === 1) return;
+        const updatedCerts = formData.certifications.filter((_, i) => i !== index);
+        const updatedForm = { ...formData, certifications: updatedCerts };
+        setFormData(updatedForm);
+        autoSaveData(updatedForm);
     };
 
     const handleFileUpload = (e) => {
@@ -199,10 +326,17 @@ const ProfilePage = () => {
             return;
         }
 
+        if (file.size > 5 * 1024 * 1024) { // 5 MB max
+            setToast({ message: 'El archivo excede el tamaño máximo permitido de 5 MB.', type: 'error' });
+            return;
+        }
+
         const reader = new FileReader();
         reader.onloadend = () => {
-            setFormData({ ...formData, ref_recommendation_pdf: reader.result });
-            setToast({ message: 'Carta de recomendación cargada', type: 'success' });
+            const updatedForm = { ...formData, ref_recommendation_pdf: reader.result };
+            setFormData(updatedForm);
+            autoSaveData(updatedForm);
+            setToast({ message: 'Carta de recomendación cargada y guardada', type: 'success' });
         };
         reader.readAsDataURL(file);
     };
@@ -234,14 +368,12 @@ const ProfilePage = () => {
                 setToast({ message: '¡Solicitud enviada con éxito!', type: 'success' });
                 setTimeout(() => {
                     navigate(`/jobs/${jobToApply.id}`);
-                }, 2000);
+                }, 1500);
             } else {
-                setToast({ message: 'Perfil actualizado correctamente', type: 'success' });
-                if (returnUrl) {
-                    setTimeout(() => {
-                        navigate(returnUrl);
-                    }, 1500);
-                }
+                setToast({ message: 'Perfil guardado correctamente', type: 'success' });
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 800);
             }
         } catch (error) {
             console.error("Error saving profile:", error);
@@ -269,7 +401,7 @@ const ProfilePage = () => {
             ) : (
                 <div className="mb-8 pb-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Mi Perfil de Candidato</h1>
+                        <h1 className="text-2xl font-bold text-slate-900">Mi Perfil</h1>
                         <p className="text-slate-500 text-sm mt-1">Completa tu información para postularte a las mejores vacantes.</p>
                     </div>
 
@@ -311,13 +443,19 @@ const ProfilePage = () => {
                     >
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-slate-900 text-base sm:text-lg">1. Identificación y Contacto</span>
-                            {checkSectionStatus(1) ? (
+                            {getSectionStatus(1) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(1) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(1) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -327,12 +465,11 @@ const ProfilePage = () => {
                     {expandedSections.s1 && (
                         <div className="p-5 sm:p-6 space-y-6 border-t border-slate-200 bg-white">
                             <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p className="text-xs font-semibold text-slate-500 mb-3">Sube tu foto</p>
+                                <p className="text-xs font-semibold text-slate-500 mb-3">Fotografía clara del rostro</p>
                                 <PhotoCapture
                                     initialImage={formData.photo}
                                     onCapture={(photoData) => {
-                                        setFormData(prev => ({ ...prev, photo: photoData }));
-                                        updateUser({ photo: photoData });
+                                        updateFormField('photo', photoData);
                                         setToast({ message: 'Foto actualizada correctamente', type: 'success' });
                                     }}
                                 />
@@ -340,25 +477,23 @@ const ProfilePage = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Nombre *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Nombre</label>
                                     <input
                                         type="text"
-                                        required
                                         placeholder="Ej. Juan"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={e => updateFormField('name', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Primer Apellido *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Primer Apellido</label>
                                     <input
                                         type="text"
-                                        required
                                         placeholder="Ej. Pérez"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.first_last_name}
-                                        onChange={e => setFormData({ ...formData, first_last_name: e.target.value })}
+                                        onChange={e => updateFormField('first_last_name', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -368,25 +503,24 @@ const ProfilePage = () => {
                                         placeholder="Ej. López"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.second_last_name}
-                                        onChange={e => setFormData({ ...formData, second_last_name: e.target.value })}
+                                        onChange={e => updateFormField('second_last_name', e.target.value)}
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Teléfono o WhatsApp de contacto *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Teléfono o WhatsApp de contacto</label>
                                     <input
                                         type="tel"
-                                        required
                                         placeholder="Ej. 9991234567"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={e => updateFormField('phone', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Correo electrónico *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Correo electrónico</label>
                                     <input
                                         type="email"
                                         disabled
@@ -403,13 +537,13 @@ const ProfilePage = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">CURP *</label>
+                                    <label className="block text-sm font-medium text-slate-700">CURP</label>
                                     <input
                                         type="text"
                                         placeholder="Ej. ABCD901234HDFXYZ01"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.curp}
-                                        onChange={e => setFormData({ ...formData, curp: e.target.value.toUpperCase() })}
+                                        onChange={e => updateFormField('curp', e.target.value.toUpperCase())}
                                     />
                                 </div>
                                 <div>
@@ -419,7 +553,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. ABCD901234XYZ"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.rfc}
-                                        onChange={e => setFormData({ ...formData, rfc: e.target.value.toUpperCase() })}
+                                        onChange={e => updateFormField('rfc', e.target.value.toUpperCase())}
                                     />
                                 </div>
                                 <div>
@@ -429,7 +563,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. 12345678901"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.nss}
-                                        onChange={e => setFormData({ ...formData, nss: e.target.value })}
+                                        onChange={e => updateFormField('nss', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -437,7 +571,7 @@ const ProfilePage = () => {
                     )}
                 </div>
 
-                {/* ACCORDION 2: ZONA DE RESIDENCIA */}
+                {/* ACCORDION 2: UBICACIÓN (ZONA DE RESIDENCIA) */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -445,14 +579,20 @@ const ProfilePage = () => {
                         className="w-full bg-slate-50/80 p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <span className="font-bold text-slate-900 text-base sm:text-lg">2. Zona de Residencia</span>
-                            {checkSectionStatus(2) ? (
+                            <span className="font-bold text-slate-900 text-base sm:text-lg">2. Ubicación</span>
+                            {getSectionStatus(2) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(2) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(2) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -463,11 +603,11 @@ const ProfilePage = () => {
                         <div className="p-5 sm:p-6 space-y-4 border-t border-slate-200 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Estado de residencia *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Estado de residencia</label>
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.location}
-                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                        onChange={e => updateFormField('location', e.target.value)}
                                     >
                                         <option value="">Selecciona un Estado...</option>
                                         <option value="Aguascalientes">Aguascalientes</option>
@@ -505,23 +645,46 @@ const ProfilePage = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Municipio o alcaldía *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Municipio o alcaldía</label>
                                     <input
                                         type="text"
                                         placeholder="Ej. Mérida"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.municipality}
-                                        onChange={e => setFormData({ ...formData, municipality: e.target.value })}
+                                        onChange={e => updateFormField('municipality', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Código postal *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Código postal</label>
                                     <input
                                         type="text"
                                         placeholder="Ej. 97100"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.zipCode}
-                                        onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                                        onChange={e => updateFormField('zipCode', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Calle y Número</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej. Av. Reforma 123"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        value={formData.address_street}
+                                        onChange={e => updateFormField('address_street', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Colonia</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej. Centro"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        value={formData.colonia}
+                                        onChange={e => updateFormField('colonia', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -529,7 +692,7 @@ const ProfilePage = () => {
                     )}
                 </div>
 
-                {/* ACCORDION 3: TU OFICIO Y HABILIDADES */}
+                {/* ACCORDION 3: ESTUDIOS (REORDENADO JUSTO DESPUÉS DE UBICACIÓN) */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -537,14 +700,20 @@ const ProfilePage = () => {
                         className="w-full bg-slate-50/80 p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <span className="font-bold text-slate-900 text-base sm:text-lg">3. Tu Oficio y Habilidades</span>
-                            {checkSectionStatus(3) ? (
+                            <span className="font-bold text-slate-900 text-base sm:text-lg">3. Estudios</span>
+                            {getSectionStatus(3) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(3) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(3) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -552,24 +721,171 @@ const ProfilePage = () => {
                     </button>
 
                     {expandedSections.s3 && (
+                        <div className="p-5 sm:p-6 space-y-6 border-t border-slate-200 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Último grado escolar alcanzado</label>
+                                    <select
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
+                                        value={formData.education}
+                                        onChange={e => updateFormField('education', e.target.value)}
+                                    >
+                                        <option value="Primaria">Primaria</option>
+                                        <option value="Secundaria">Secundaria</option>
+                                        <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato</option>
+                                        <option value="Carrera técnica">Carrera técnica</option>
+                                        <option value="Licenciatura">Licenciatura</option>
+                                        <option value="Posgrado">Posgrado</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Estatus</label>
+                                    <select
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
+                                        value={formData.education_status}
+                                        onChange={e => updateFormField('education_status', e.target.value)}
+                                    >
+                                        <option value="Concluido">Concluido</option>
+                                        <option value="Trunco">Trunco</option>
+                                        <option value="En curso">En curso</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Nombre de la institución</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej. Instituto Tecnológico de Mérida"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        value={formData.institution_name}
+                                        onChange={e => updateFormField('institution_name', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700">Nivel de Inglés</label>
+                                    <select
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
+                                        value={formData.english_level}
+                                        onChange={e => updateFormField('english_level', e.target.value)}
+                                    >
+                                        <option value="Ninguno">Ninguno</option>
+                                        <option value="Básico">Básico</option>
+                                        <option value="Intermedio">Intermedio</option>
+                                        <option value="Avanzado">Avanzado</option>
+                                        <option value="Nativo">Nativo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* DINÁMICO DE ACREDITACIONES Y CURSOS */}
+                            <div className="pt-4 border-t border-slate-100 space-y-4">
+                                <label className="block text-sm font-bold text-slate-900">Acreditaciones, Certificaciones o Cursos</label>
+                                {formData.certifications.map((cert, idx) => (
+                                    <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 relative">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-slate-600">Acreditación #{idx + 1}</span>
+                                            {formData.certifications.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeCertification(idx)}
+                                                    className="text-red-600 hover:text-red-800 text-xs font-semibold flex items-center gap-1"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" /> Eliminar
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-slate-700">Tipo</label>
+                                                <select
+                                                    className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2 bg-white"
+                                                    value={cert.type}
+                                                    onChange={e => handleCertificationChange(idx, 'type', e.target.value)}
+                                                >
+                                                    <option value="Certificación">Certificación</option>
+                                                    <option value="Curso">Curso</option>
+                                                    <option value="Diplomado">Diplomado</option>
+                                                    <option value="Capacitación">Capacitación</option>
+                                                    <option value="Taller">Taller</option>
+                                                    <option value="Otro">Otro</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-xs font-medium text-slate-700">Nombre / Detalle del curso o certificación</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ej. Certificación en Manejo Seguro de Montacargas - 40h"
+                                                    className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2"
+                                                    value={cert.title_detail}
+                                                    onChange={e => handleCertificationChange(idx, 'title_detail', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={addCertification}
+                                    className="w-full border border-dashed border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold p-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors text-xs"
+                                >
+                                    <Plus className="w-4 h-4 text-slate-500" /> Agregar otra acreditación
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* ACCORDION 4: OFICIO Y HABILIDADES (SIN "TU") */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                    <button
+                        type="button"
+                        onClick={() => toggleSection('s4')}
+                        className="w-full bg-slate-50/80 p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="font-bold text-slate-900 text-base sm:text-lg">4. Oficio y Habilidades</span>
+                            {getSectionStatus(4) === 'complete' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
+                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
+                                </span>
+                            )}
+                            {getSectionStatus(4) === 'incomplete' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(4) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
+                                </span>
+                            )}
+                        </div>
+                        {expandedSections.s4 ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+                    </button>
+
+                    {expandedSections.s4 && (
                         <div className="p-5 sm:p-6 space-y-4 border-t border-slate-200 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Puesto o oficio principal deseado *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Puesto o oficio principal deseado</label>
                                     <input
                                         type="text"
                                         placeholder="Ej. Chofer de reparto"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.title}
-                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                        onChange={e => updateFormField('title', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Años de experiencia general *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Años de experiencia general</label>
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.experience_years}
-                                        onChange={e => setFormData({ ...formData, experience_years: e.target.value })}
+                                        onChange={e => updateFormField('experience_years', e.target.value)}
                                     >
                                         <option value="Sin experiencia">Sin experiencia</option>
                                         <option value="Menos de 1 año">Menos de 1 año</option>
@@ -581,13 +897,13 @@ const ProfilePage = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700">Habilidades técnicas o destrezas *</label>
+                                <label className="block text-sm font-medium text-slate-700">Habilidades técnicas o destrezas</label>
                                 <input
                                     type="text"
                                     placeholder="Ej. Manejo de montacargas, Control de inventarios"
                                     className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                     value={formData.skills}
-                                    onChange={e => setFormData({ ...formData, skills: e.target.value })}
+                                    onChange={e => updateFormField('skills', e.target.value)}
                                 />
                             </div>
 
@@ -597,7 +913,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.driver_license}
-                                        onChange={e => setFormData({ ...formData, driver_license: e.target.value })}
+                                        onChange={e => updateFormField('driver_license', e.target.value)}
                                     >
                                         <option value="No tengo">No tengo</option>
                                         <option value="Licencia A">Licencia A</option>
@@ -619,7 +935,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. Excel básico, Inglés técnico"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.languages_tools}
-                                        onChange={e => setFormData({ ...formData, languages_tools: e.target.value })}
+                                        onChange={e => updateFormField('languages_tools', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -627,65 +943,7 @@ const ProfilePage = () => {
                     )}
                 </div>
 
-                {/* ACCORDION 4: NIVEL DE ESTUDIOS */}
-                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-                    <button
-                        type="button"
-                        onClick={() => toggleSection('s4')}
-                        className="w-full bg-slate-50/80 p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors"
-                    >
-                        <div className="flex items-center gap-3">
-                            <span className="font-bold text-slate-900 text-base sm:text-lg">4. Nivel de Estudios</span>
-                            {checkSectionStatus(4) ? (
-                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
-                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
-                                </span>
-                            ) : (
-                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
-                                </span>
-                            )}
-                        </div>
-                        {expandedSections.s4 ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                    </button>
-
-                    {expandedSections.s4 && (
-                        <div className="p-5 sm:p-6 space-y-4 border-t border-slate-200 bg-white">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700">Último grado escolar alcanzado *</label>
-                                    <select
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
-                                        value={formData.education}
-                                        onChange={e => setFormData({ ...formData, education: e.target.value })}
-                                    >
-                                        <option value="Primaria">Primaria</option>
-                                        <option value="Secundaria">Secundaria</option>
-                                        <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato</option>
-                                        <option value="Carrera técnica">Carrera técnica</option>
-                                        <option value="Licenciatura">Licenciatura</option>
-                                        <option value="Posgrado">Posgrado</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700">Estatus *</label>
-                                    <select
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
-                                        value={formData.education_status}
-                                        onChange={e => setFormData({ ...formData, education_status: e.target.value })}
-                                    >
-                                        <option value="Concluido">Concluido</option>
-                                        <option value="Trunco">Trunco</option>
-                                        <option value="En curso">En curso</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* ACCORDION 5: TU EXPERIENCIA (DINÁMICA MULTI-EMPLEO) */}
+                {/* ACCORDION 5: EXPERIENCIA LABORAL (SIN "TU") */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -693,14 +951,20 @@ const ProfilePage = () => {
                         className="w-full bg-slate-50/80 p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-100/80 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <span className="font-bold text-slate-900 text-base sm:text-lg">5. Tu Experiencia</span>
-                            {checkSectionStatus(5) ? (
+                            <span className="font-bold text-slate-900 text-base sm:text-lg">5. Experiencia Laboral</span>
+                            {getSectionStatus(5) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(5) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(5) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -728,7 +992,7 @@ const ProfilePage = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-700">Nombre de la empresa anterior o actual *</label>
+                                            <label className="block text-xs font-medium text-slate-700">Nombre de la empresa anterior o actual</label>
                                             <input
                                                 type="text"
                                                 placeholder="Ej. Transportes del Norte"
@@ -738,7 +1002,7 @@ const ProfilePage = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-700">Puesto desempeñado *</label>
+                                            <label className="block text-xs font-medium text-slate-700">Puesto desempeñado</label>
                                             <input
                                                 type="text"
                                                 placeholder="Ej. Ayudante General"
@@ -778,7 +1042,7 @@ const ProfilePage = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-700">Sueldo inicial y final percibido</label>
+                                            <label className="block text-xs font-medium text-slate-700">Sueldo aproximado</label>
                                             <input
                                                 type="text"
                                                 placeholder="Ej. 8000 a 12000"
@@ -822,13 +1086,19 @@ const ProfilePage = () => {
                     >
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-slate-900 text-base sm:text-lg">6. Referencias de Confianza</span>
-                            {checkSectionStatus(6) ? (
+                            {getSectionStatus(6) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(6) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(6) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -839,23 +1109,23 @@ const ProfilePage = () => {
                         <div className="p-5 sm:p-6 space-y-4 border-t border-slate-200 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Nombre completo de la referencia *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Nombre completo de la referencia</label>
                                     <input
                                         type="text"
                                         placeholder="Ej. Juan Pérez"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_name}
-                                        onChange={e => setFormData({ ...formData, ref_name: e.target.value })}
+                                        onChange={e => updateFormField('ref_name', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Teléfono de contacto *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Teléfono de contacto</label>
                                     <input
                                         type="tel"
                                         placeholder="Ej. 9991234567"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_phone}
-                                        onChange={e => setFormData({ ...formData, ref_phone: e.target.value })}
+                                        onChange={e => updateFormField('ref_phone', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -865,13 +1135,14 @@ const ProfilePage = () => {
                                         placeholder="Ej. Gerente de Operaciones"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_position_company}
-                                        onChange={e => setFormData({ ...formData, ref_position_company: e.target.value })}
+                                        onChange={e => updateFormField('ref_position_company', e.target.value)}
                                     />
                                 </div>
                             </div>
 
                             <div className="pt-2">
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Cargar PDF con carta de recomendación</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Cargar PDF con carta de recomendación (Opcional)</label>
+                                <p className="text-xs text-slate-500 mb-2">Formatos permitidos: PDF. Tamaño máximo admitido: 5 MB.</p>
                                 <div className="flex items-center gap-4">
                                     <input
                                         type="file"
@@ -907,13 +1178,19 @@ const ProfilePage = () => {
                     >
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-slate-900 text-base sm:text-lg">7. Disponibilidad y Expectativas</span>
-                            {checkSectionStatus(7) ? (
+                            {getSectionStatus(7) === 'complete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completo
                                 </span>
-                            ) : (
+                            )}
+                            {getSectionStatus(7) === 'incomplete' && (
                                 <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> Incompleto
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1" /> En progreso
+                                </span>
+                            )}
+                            {getSectionStatus(7) === 'unstarted' && (
+                                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Sin comenzar
                                 </span>
                             )}
                         </div>
@@ -924,21 +1201,21 @@ const ProfilePage = () => {
                         <div className="p-5 sm:p-6 space-y-4 border-t border-slate-200 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Expectativa de sueldo mensual deseado ($ MXN) *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Expectativa de sueldo mensual deseado ($ MXN)</label>
                                     <input
                                         type="number"
                                         placeholder="Ej. 10000"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.expected_salary}
-                                        onChange={e => setFormData({ ...formData, expected_salary: e.target.value })}
+                                        onChange={e => updateFormField('expected_salary', e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Fecha o tiempo en que podría iniciar a laborar *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Fecha o tiempo en que podría iniciar a laborar</label>
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.start_availability}
-                                        onChange={e => setFormData({ ...formData, start_availability: e.target.value })}
+                                        onChange={e => updateFormField('start_availability', e.target.value)}
                                     >
                                         <option value="Inmediata">Inmediata</option>
                                         <option value="En 1 semana">En 1 semana</option>
@@ -948,11 +1225,11 @@ const ProfilePage = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Disponibilidad de horario o turnos *</label>
+                                    <label className="block text-sm font-medium text-slate-700">Disponibilidad de horario o turnos</label>
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.shift_availability}
-                                        onChange={e => setFormData({ ...formData, shift_availability: e.target.value })}
+                                        onChange={e => updateFormField('shift_availability', e.target.value)}
                                     >
                                         <option value="Tiempo completo">Tiempo completo</option>
                                         <option value="Medio tiempo">Medio tiempo</option>
@@ -969,7 +1246,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.travel_availability}
-                                        onChange={e => setFormData({ ...formData, travel_availability: e.target.value })}
+                                        onChange={e => updateFormField('travel_availability', e.target.value)}
                                     >
                                         <option value="Sí">Sí</option>
                                         <option value="No">No</option>
@@ -996,7 +1273,7 @@ const ProfilePage = () => {
                     </div>
                 )}
 
-                {/* BOTONES DE ACCIÓN */}
+                {/* BOTÓN PRINCIPAL FINALIZAR */}
                 <div className="flex justify-end pt-6 border-t border-slate-100">
                     <button
                         type="button"
@@ -1007,9 +1284,10 @@ const ProfilePage = () => {
                     </button>
                     <button
                         type="submit"
-                        className="bg-secondary-600 text-white px-7 py-2.5 rounded-xl text-sm font-bold hover:bg-secondary-700 transition-colors shadow-sm"
+                        className="bg-secondary-600 text-white px-8 py-3 rounded-xl text-base font-bold hover:bg-secondary-700 transition-colors shadow-md flex items-center gap-2"
                     >
-                        {jobToApply ? 'Enviar Solicitud' : 'Guardar Cambios'}
+                        <Check className="w-5 h-5" />
+                        {jobToApply ? 'Enviar Solicitud' : 'Finalizar'}
                     </button>
                 </div>
             </form>

@@ -104,6 +104,11 @@ export const AuthProvider = ({ children }) => {
                 rfc: data?.rfc || metaData.rfc || '',
                 birthDate: data?.birthDate || data?.birth_date || metaData.birthDate || metaData.birth_date || '',
                 birth_date: data?.birth_date || data?.birthDate || metaData.birth_date || metaData.birthDate || '',
+                address_street: data?.address_street || metaData.address_street || '',
+                colonia: data?.colonia || metaData.colonia || '',
+                institution_name: data?.institution_name || metaData.institution_name || '',
+                english_level: data?.english_level || metaData.english_level || 'Ninguno',
+                certifications: Array.isArray(data?.certifications) ? data.certifications : (metaData.certifications || []),
                 municipality: data?.municipality || data?.municipio || metaData.municipality || metaData.municipio || '',
                 municipio: data?.municipio || data?.municipality || metaData.municipio || metaData.municipality || '',
                 zipCode: data?.zipCode || data?.postal_code || metaData.zipCode || metaData.postal_code || '',
@@ -301,6 +306,11 @@ export const AuthProvider = ({ children }) => {
         if (updatedData.second_last_name !== undefined) {
             dbPayload.second_last_name = updatedData.second_last_name || '';
         }
+        if (updatedData.address_street !== undefined) dbPayload.address_street = updatedData.address_street || '';
+        if (updatedData.colonia !== undefined) dbPayload.colonia = updatedData.colonia || '';
+        if (updatedData.institution_name !== undefined) dbPayload.institution_name = updatedData.institution_name || '';
+        if (updatedData.english_level !== undefined) dbPayload.english_level = updatedData.english_level || '';
+        if (updatedData.certifications !== undefined) dbPayload.certifications = updatedData.certifications || [];
         if (updatedData.curp !== undefined) dbPayload.curp = updatedData.curp || '';
         if (updatedData.nss !== undefined) dbPayload.nss = updatedData.nss || '';
         if (updatedData.rfc !== undefined) dbPayload.rfc = updatedData.rfc || '';
