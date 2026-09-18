@@ -389,12 +389,15 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Correo electrónico *</label>
                                     <input
                                         type="email"
-                                        required
+                                        disabled
+                                        readOnly
                                         placeholder="Ej. correo@ejemplo.com"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed shadow-2xs text-sm border p-2.5"
                                         value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     />
+                                    <p className="text-[11px] text-slate-400 mt-1">
+                                        🔒 El correo no se puede editar porque es tu identificador de acceso.
+                                    </p>
                                 </div>
                             </div>
 
