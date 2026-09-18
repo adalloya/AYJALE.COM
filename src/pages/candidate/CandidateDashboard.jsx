@@ -93,7 +93,7 @@ const CandidateDashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-bold text-slate-900">Estado de tu Solicitud de Empleo</h3>
+                            <h3 className="text-lg font-bold text-slate-900">Estado de tu Perfil</h3>
                             {completionPercent === 100 ? (
                                 <span className="inline-flex items-center text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-2.5 py-1 rounded-full">
                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 100% Completo
