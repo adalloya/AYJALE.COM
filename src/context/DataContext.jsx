@@ -491,14 +491,14 @@ export const DataProvider = ({ children }) => {
         };
 
         loadData();
-    }, [user]); // Re-fetch when user changes (e.g. login/logout)
+    }, [user?.id]); // Re-fetch only when user ID changes (e.g. login/logout)
 
     // Fetch unlocks on load/user change
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             fetchContactUnlocks();
         }
-    }, [user, fetchContactUnlocks]);
+    }, [user?.id, fetchContactUnlocks]);
 
     // Calculate notifications whenever applications, user, or contactUnlocks changes
     useEffect(() => {

@@ -256,65 +256,83 @@ const ProfilePage = () => {
     };
 
     const updateFormField = (field, value) => {
-        const updated = { ...formData, [field]: value };
-        setFormData(updated);
-        autoSaveData(updated);
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSelectChange = (field, value) => {
+        setFormData(prev => {
+            const updated = { ...prev, [field]: value };
+            autoSaveData(updated);
+            return updated;
+        });
+    };
+
+    const handleBlur = () => {
+        autoSaveData(formData);
     };
 
     const handleWorkHistoryChange = (index, field, value) => {
-        const updatedWork = [...formData.work_history];
-        updatedWork[index] = { ...updatedWork[index], [field]: value };
-        const updatedForm = { ...formData, work_history: updatedWork };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedWork = [...prev.work_history];
+            updatedWork[index] = { ...updatedWork[index], [field]: value };
+            return { ...prev, work_history: updatedWork };
+        });
     };
 
     const addWorkExperience = () => {
-        const updatedForm = {
-            ...formData,
-            work_history: [
-                ...formData.work_history,
-                { company: '', position: '', duration: '', activities: '', reason_for_leaving: '', salary: '' }
-            ]
-        };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedForm = {
+                ...prev,
+                work_history: [
+                    ...prev.work_history,
+                    { company: '', position: '', duration: '', activities: '', reason_for_leaving: '', salary: '' }
+                ]
+            };
+            autoSaveData(updatedForm);
+            return updatedForm;
+        });
     };
 
     const removeWorkExperience = (index) => {
         if (formData.work_history.length === 1) return;
-        const updatedWork = formData.work_history.filter((_, i) => i !== index);
-        const updatedForm = { ...formData, work_history: updatedWork };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedWork = prev.work_history.filter((_, i) => i !== index);
+            const updatedForm = { ...prev, work_history: updatedWork };
+            autoSaveData(updatedForm);
+            return updatedForm;
+        });
     };
 
     const handleCertificationChange = (index, field, value) => {
-        const updatedCerts = [...formData.certifications];
-        updatedCerts[index] = { ...updatedCerts[index], [field]: value };
-        const updatedForm = { ...formData, certifications: updatedCerts };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedCerts = [...prev.certifications];
+            updatedCerts[index] = { ...updatedCerts[index], [field]: value };
+            return { ...prev, certifications: updatedCerts };
+        });
     };
 
     const addCertification = () => {
-        const updatedForm = {
-            ...formData,
-            certifications: [
-                ...formData.certifications,
-                { type: 'Certificación', title_detail: '' }
-            ]
-        };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedForm = {
+                ...prev,
+                certifications: [
+                    ...prev.certifications,
+                    { type: 'Certificación', title_detail: '' }
+                ]
+            };
+            autoSaveData(updatedForm);
+            return updatedForm;
+        });
     };
 
     const removeCertification = (index) => {
         if (formData.certifications.length === 1) return;
-        const updatedCerts = formData.certifications.filter((_, i) => i !== index);
-        const updatedForm = { ...formData, certifications: updatedCerts };
-        setFormData(updatedForm);
-        autoSaveData(updatedForm);
+        setFormData(prev => {
+            const updatedCerts = prev.certifications.filter((_, i) => i !== index);
+            const updatedForm = { ...prev, certifications: updatedCerts };
+            autoSaveData(updatedForm);
+            return updatedForm;
+        });
     };
 
     const handleFileUpload = (e) => {
@@ -484,6 +502,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.name}
                                         onChange={e => updateFormField('name', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -494,6 +513,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.first_last_name}
                                         onChange={e => updateFormField('first_last_name', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -504,6 +524,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.second_last_name}
                                         onChange={e => updateFormField('second_last_name', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -517,6 +538,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.phone}
                                         onChange={e => updateFormField('phone', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -544,6 +566,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.curp}
                                         onChange={e => updateFormField('curp', e.target.value.toUpperCase())}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -554,6 +577,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.rfc}
                                         onChange={e => updateFormField('rfc', e.target.value.toUpperCase())}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -564,6 +588,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.nss}
                                         onChange={e => updateFormField('nss', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -607,7 +632,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.location}
-                                        onChange={e => updateFormField('location', e.target.value)}
+                                        onChange={e => handleSelectChange('location', e.target.value)}
                                     >
                                         <option value="">Selecciona un Estado...</option>
                                         <option value="Aguascalientes">Aguascalientes</option>
@@ -652,6 +677,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.municipality}
                                         onChange={e => updateFormField('municipality', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -662,6 +688,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.zipCode}
                                         onChange={e => updateFormField('zipCode', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -675,6 +702,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.address_street}
                                         onChange={e => updateFormField('address_street', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -685,6 +713,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.colonia}
                                         onChange={e => updateFormField('colonia', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -728,7 +757,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.education}
-                                        onChange={e => updateFormField('education', e.target.value)}
+                                        onChange={e => handleSelectChange('education', e.target.value)}
                                     >
                                         <option value="Primaria">Primaria</option>
                                         <option value="Secundaria">Secundaria</option>
@@ -744,7 +773,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.education_status}
-                                        onChange={e => updateFormField('education_status', e.target.value)}
+                                        onChange={e => handleSelectChange('education_status', e.target.value)}
                                     >
                                         <option value="Concluido">Concluido</option>
                                         <option value="Trunco">Trunco</option>
@@ -762,6 +791,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.institution_name}
                                         onChange={e => updateFormField('institution_name', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -769,7 +799,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.english_level}
-                                        onChange={e => updateFormField('english_level', e.target.value)}
+                                        onChange={e => handleSelectChange('english_level', e.target.value)}
                                     >
                                         <option value="Ninguno">Ninguno</option>
                                         <option value="Básico">Básico</option>
@@ -803,7 +833,10 @@ const ProfilePage = () => {
                                                 <select
                                                     className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2 bg-white"
                                                     value={cert.type}
-                                                    onChange={e => handleCertificationChange(idx, 'type', e.target.value)}
+                                                    onChange={e => {
+                                                        handleCertificationChange(idx, 'type', e.target.value);
+                                                        handleBlur();
+                                                    }}
                                                 >
                                                     <option value="Certificación">Certificación</option>
                                                     <option value="Curso">Curso</option>
@@ -821,6 +854,7 @@ const ProfilePage = () => {
                                                     className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2"
                                                     value={cert.title_detail}
                                                     onChange={e => handleCertificationChange(idx, 'title_detail', e.target.value)}
+                                                    onBlur={handleBlur}
                                                 />
                                             </div>
                                         </div>
@@ -878,6 +912,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.title}
                                         onChange={e => updateFormField('title', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -885,7 +920,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.experience_years}
-                                        onChange={e => updateFormField('experience_years', e.target.value)}
+                                        onChange={e => handleSelectChange('experience_years', e.target.value)}
                                     >
                                         <option value="Sin experiencia">Sin experiencia</option>
                                         <option value="Menos de 1 año">Menos de 1 año</option>
@@ -904,6 +939,7 @@ const ProfilePage = () => {
                                     className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                     value={formData.skills}
                                     onChange={e => updateFormField('skills', e.target.value)}
+                                    onBlur={handleBlur}
                                 />
                             </div>
 
@@ -913,7 +949,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.driver_license}
-                                        onChange={e => updateFormField('driver_license', e.target.value)}
+                                        onChange={e => handleSelectChange('driver_license', e.target.value)}
                                     >
                                         <option value="No tengo">No tengo</option>
                                         <option value="Licencia A">Licencia A</option>
@@ -936,6 +972,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.languages_tools}
                                         onChange={e => updateFormField('languages_tools', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -999,6 +1036,7 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.company}
                                                 onChange={e => handleWorkHistoryChange(index, 'company', e.target.value)}
+                                                onBlur={handleBlur}
                                             />
                                         </div>
                                         <div>
@@ -1009,6 +1047,7 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.position}
                                                 onChange={e => handleWorkHistoryChange(index, 'position', e.target.value)}
+                                                onBlur={handleBlur}
                                             />
                                         </div>
                                         <div>
@@ -1016,7 +1055,10 @@ const ProfilePage = () => {
                                             <select
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                                 value={exp.duration}
-                                                onChange={e => handleWorkHistoryChange(index, 'duration', e.target.value)}
+                                                onChange={e => {
+                                                    handleWorkHistoryChange(index, 'duration', e.target.value);
+                                                    handleBlur();
+                                                }}
                                             >
                                                 <option value="">Selecciona duración</option>
                                                 <option value="Menos de 6 meses">Menos de 6 meses</option>
@@ -1030,7 +1072,10 @@ const ProfilePage = () => {
                                             <select
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                                 value={exp.reason_for_leaving}
-                                                onChange={e => handleWorkHistoryChange(index, 'reason_for_leaving', e.target.value)}
+                                                onChange={e => {
+                                                    handleWorkHistoryChange(index, 'reason_for_leaving', e.target.value);
+                                                    handleBlur();
+                                                }}
                                             >
                                                 <option value="">Selecciona motivo</option>
                                                 <option value="Mejora laboral">Mejora laboral</option>
@@ -1049,6 +1094,7 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.salary}
                                                 onChange={e => handleWorkHistoryChange(index, 'salary', e.target.value)}
+                                                onBlur={handleBlur}
                                             />
                                         </div>
                                     </div>
@@ -1061,6 +1107,7 @@ const ProfilePage = () => {
                                             className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                             value={exp.activities}
                                             onChange={e => handleWorkHistoryChange(index, 'activities', e.target.value)}
+                                            onBlur={handleBlur}
                                         />
                                     </div>
                                 </div>
@@ -1116,6 +1163,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_name}
                                         onChange={e => updateFormField('ref_name', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1126,6 +1174,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_phone}
                                         onChange={e => updateFormField('ref_phone', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1136,6 +1185,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_position_company}
                                         onChange={e => updateFormField('ref_position_company', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -1208,6 +1258,7 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.expected_salary}
                                         onChange={e => updateFormField('expected_salary', e.target.value)}
+                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1215,7 +1266,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.start_availability}
-                                        onChange={e => updateFormField('start_availability', e.target.value)}
+                                        onChange={e => handleSelectChange('start_availability', e.target.value)}
                                     >
                                         <option value="Inmediata">Inmediata</option>
                                         <option value="En 1 semana">En 1 semana</option>
@@ -1229,7 +1280,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.shift_availability}
-                                        onChange={e => updateFormField('shift_availability', e.target.value)}
+                                        onChange={e => handleSelectChange('shift_availability', e.target.value)}
                                     >
                                         <option value="Tiempo completo">Tiempo completo</option>
                                         <option value="Medio tiempo">Medio tiempo</option>
@@ -1246,7 +1297,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.travel_availability}
-                                        onChange={e => updateFormField('travel_availability', e.target.value)}
+                                        onChange={e => handleSelectChange('travel_availability', e.target.value)}
                                     >
                                         <option value="Sí">Sí</option>
                                         <option value="No">No</option>
