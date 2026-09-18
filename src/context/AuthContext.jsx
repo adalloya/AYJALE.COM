@@ -89,8 +89,6 @@ export const AuthProvider = ({ children }) => {
                 throw error;
             }
 
-
-
             const metaData = session?.user?.user_metadata || {};
             let finalUser = {
                 ...metaData,
@@ -99,6 +97,14 @@ export const AuthProvider = ({ children }) => {
                 name: data?.name || metaData.name || '',
                 lastName: data?.lastName || data?.last_name || metaData.lastName || metaData.last_name || '',
                 last_name: data?.last_name || data?.lastName || metaData.last_name || metaData.lastName || '',
+                birthDate: data?.birthDate || data?.birth_date || metaData.birthDate || metaData.birth_date || '',
+                birth_date: data?.birth_date || data?.birthDate || metaData.birth_date || metaData.birthDate || '',
+                municipality: data?.municipality || data?.municipio || metaData.municipality || metaData.municipio || '',
+                municipio: data?.municipio || data?.municipality || metaData.municipio || metaData.municipality || '',
+                zipCode: data?.zipCode || data?.postal_code || metaData.zipCode || metaData.postal_code || '',
+                postal_code: data?.postal_code || data?.zipCode || metaData.postal_code || metaData.zipCode || '',
+                lastActivities: data?.lastActivities || data?.last_activities || metaData.lastActivities || metaData.last_activities || '',
+                last_activities: data?.last_activities || data?.lastActivities || metaData.last_activities || metaData.lastActivities || '',
             };
 
             console.log('[AuthContext] Setting user:', finalUser?.id, finalUser);
@@ -133,45 +139,11 @@ export const AuthProvider = ({ children }) => {
     const loginWithGoogle = async () => {
         alert('El inicio de sesión con Google está temporalmente deshabilitado. Por favor usa tu correo y contraseña.');
         return;
-        /*
-        setLoading(true);
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/dashboard'
-                }
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.error("Google login error:", error);
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-        */
     };
 
     const loginWithApple = async () => {
         alert('El inicio de sesión con Apple está temporalmente deshabilitado. Por favor usa tu correo y contraseña.');
         return;
-        /*
-        setLoading(true);
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'apple',
-                options: {
-                    redirectTo: window.location.origin + '/dashboard'
-                }
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.error("Apple login error:", error);
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-        */
     };
 
     const register = async (userData, password, role = 'candidate') => {
@@ -214,7 +186,6 @@ export const AuthProvider = ({ children }) => {
                     .update({
                         name: userData.name,
                         last_name: lastNameToSave,
-                        lastName: lastNameToSave,
                         phone: phoneToSave,
                         phone_number: phoneToSave,
                         rfc: userData.rfc,
@@ -278,10 +249,56 @@ export const AuthProvider = ({ children }) => {
             console.error('updateUser: No user logged in');
             return;
         }
+
+        // Map frontend camelCase properties to valid Supabase PostgreSQL snake_case columns
+        const dbPayload = {};
+
+        // 1. Direct matching columns
+        if (updatedData.name !== undefined) dbPayload.name = updatedData.name;
+        if (updatedData.title !== undefined) dbPayload.title = updatedData.title;
+        if (updatedData.bio !== undefined) dbPayload.bio = updatedData.bio;
+        if (updatedData.location !== undefined) dbPayload.location = updatedData.location;
+        if (updatedData.skills !== undefined) dbPayload.skills = updatedData.skills;
+        if (updatedData.education !== undefined) dbPayload.education = updatedData.education;
+        if (updatedData.photo !== undefined) dbPayload.photo = updatedData.photo;
+        if (updatedData.phone !== undefined) dbPayload.phone = updatedData.phone;
+        if (updatedData.phone_number !== undefined) dbPayload.phone_number = updatedData.phone_number;
+        if (updatedData.address !== undefined) dbPayload.address = updatedData.address;
+
+        // 2. Snake_case Mappings
+        if (updatedData.lastName !== undefined || updatedData.last_name !== undefined) {
+            dbPayload.last_name = updatedData.lastName || updatedData.last_name || '';
+        }
+        if (updatedData.birthDate !== undefined || updatedData.birth_date !== undefined) {
+            dbPayload.birth_date = updatedData.birthDate || updatedData.birth_date || null;
+            if (dbPayload.birth_date === '') dbPayload.birth_date = null;
+        }
+        if (updatedData.municipality !== undefined || updatedData.municipio !== undefined) {
+            dbPayload.municipio = updatedData.municipality || updatedData.municipio || '';
+        }
+        if (updatedData.zipCode !== undefined || updatedData.postal_code !== undefined) {
+            dbPayload.postal_code = updatedData.zipCode || updatedData.postal_code || '';
+        }
+        if (updatedData.lastActivities !== undefined || updatedData.last_activities !== undefined) {
+            dbPayload.last_activities = updatedData.lastActivities || updatedData.last_activities || '';
+        }
+        if (updatedData.civilStatus !== undefined || updatedData.civil_status !== undefined) {
+            dbPayload.civil_status = updatedData.civilStatus || updatedData.civil_status || '';
+        }
+        if (updatedData.lastJob !== undefined || updatedData.last_job !== undefined) {
+            dbPayload.last_job = updatedData.lastJob || updatedData.last_job || '';
+        }
+        if (updatedData.lastPosition !== undefined || updatedData.last_position !== undefined) {
+            dbPayload.last_position = updatedData.lastPosition || updatedData.last_position || '';
+        }
+        if (updatedData.lastDuration !== undefined || updatedData.last_duration !== undefined) {
+            dbPayload.last_duration = updatedData.lastDuration || updatedData.last_duration || '';
+        }
+
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update(updatedData)
+                .update(dbPayload)
                 .eq('id', user.id);
 
             if (error) {
@@ -291,7 +308,20 @@ export const AuthProvider = ({ children }) => {
 
             console.log('updateUser success, updating local state');
             // Update local state
-            setUser(prev => ({ ...prev, ...updatedData }));
+            setUser(prev => ({
+                ...prev,
+                ...updatedData,
+                lastName: dbPayload.last_name,
+                last_name: dbPayload.last_name,
+                birthDate: dbPayload.birth_date,
+                birth_date: dbPayload.birth_date,
+                municipality: dbPayload.municipio,
+                municipio: dbPayload.municipio,
+                zipCode: dbPayload.postal_code,
+                postal_code: dbPayload.postal_code,
+                lastActivities: dbPayload.last_activities,
+                last_activities: dbPayload.last_activities
+            }));
         } catch (error) {
             console.error("Error updating user:", error);
             throw error;
