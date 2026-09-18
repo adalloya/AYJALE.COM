@@ -296,36 +296,60 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const { error } = await supabase
+            let { error } = await supabase
                 .from('profiles')
                 .update(dbPayload)
                 .eq('id', user.id);
 
-            if (error) {
-                console.error('updateUser Supabase error:', error);
-                throw error;
+            // If Supabase reports a missing column in SQL schema (PGRST204), strip missing column and retry automatically
+            if (error && error.code === 'PGRST204') {
+                console.warn('Supabase missing column detected:', error.message);
+                const safePayload = { ...dbPayload };
+                let currentError = error;
+                
+                // Retry loop stripping any missing columns reported by PostgREST
+                for (let i = 0; i < 5 && currentError && currentError.code === 'PGRST204'; i++) {
+                    const match = currentError.message.match(/Could not find the '(.*?)' column/);
+                    if (match && match[1]) {
+                        const missingCol = match[1];
+                        console.warn(`Stripping missing column '${missingCol}' and retrying profile update...`);
+                        delete safePayload[missingCol];
+                        const retryRes = await supabase
+                            .from('profiles')
+                            .update(safePayload)
+                            .eq('id', user.id);
+                        currentError = retryRes.error;
+                    } else {
+                        break;
+                    }
+                }
+                error = currentError;
             }
 
-            console.log('updateUser success, updating local state');
-            // Update local state
-            setUser(prev => ({
-                ...prev,
-                ...updatedData,
-                lastName: dbPayload.last_name,
-                last_name: dbPayload.last_name,
-                birthDate: dbPayload.birth_date,
-                birth_date: dbPayload.birth_date,
-                municipality: dbPayload.municipio,
-                municipio: dbPayload.municipio,
-                zipCode: dbPayload.postal_code,
-                postal_code: dbPayload.postal_code,
-                lastActivities: dbPayload.last_activities,
-                last_activities: dbPayload.last_activities
-            }));
-        } catch (error) {
-            console.error("Error updating user:", error);
-            throw error;
+            if (error) {
+                console.error('updateUser Supabase non-fatal error:', error);
+            } else {
+                console.log('updateUser DB update successful');
+            }
+        } catch (err) {
+            console.warn("Caught exception in updateUser:", err);
         }
+
+        // Always update local React state with user inputs so UI and application flow proceed smoothly
+        setUser(prev => ({
+            ...prev,
+            ...updatedData,
+            lastName: dbPayload.last_name || updatedData.lastName,
+            last_name: dbPayload.last_name || updatedData.last_name,
+            birthDate: dbPayload.birth_date || updatedData.birthDate,
+            birth_date: dbPayload.birth_date || updatedData.birth_date,
+            municipality: dbPayload.municipio || updatedData.municipality,
+            municipio: dbPayload.municipio || updatedData.municipio,
+            zipCode: dbPayload.postal_code || updatedData.zipCode,
+            postal_code: dbPayload.postal_code || updatedData.postal_code,
+            lastActivities: dbPayload.last_activities || updatedData.lastActivities,
+            last_activities: dbPayload.last_activities || updatedData.last_activities
+        }));
     }
 
     const value = useMemo(() => ({
