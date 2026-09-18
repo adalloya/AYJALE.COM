@@ -79,16 +79,45 @@ const ProfilePage = () => {
         s7: false
     });
 
+    // --- HELPER FORMATTERS AND CAPITALIZERS ---
+    // Converts "VALERIA" or "velardo" or "juan perez" to "Valeria", "Velardo", "Juan Perez"
+    const capitalizeWords = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        const hasTrailingSpace = str.endsWith(' ');
+        const formatted = str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
+
+        return (hasTrailingSpace && !formatted.endsWith(' ')) ? formatted + ' ' : formatted;
+    };
+
+    const capitalizeSentence = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        const lower = str.toLowerCase();
+        return lower.replace(/(^\s*|[.!?]\s+)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+    };
+
+    const formatPhoneNumber = (val) => {
+        if (!val) return '';
+        const digits = val.replace(/\D/g, '');
+        if (digits.length === 0) return '';
+        if (digits.length <= 3) return `(${digits}`;
+        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    };
+
     useEffect(() => {
         if (user) {
             let initialWorkHistory = user.work_history;
             if (!Array.isArray(initialWorkHistory) || initialWorkHistory.length === 0) {
                 if (user.lastJob || user.last_job) {
                     initialWorkHistory = [{
-                        company: user.lastJob || user.last_job || '',
-                        position: user.lastPosition || user.last_position || '',
+                        company: capitalizeWords(user.lastJob || user.last_job || ''),
+                        position: capitalizeWords(user.lastPosition || user.last_position || ''),
                         duration: user.lastDuration || user.last_duration || '',
-                        activities: user.lastActivities || user.last_activities || '',
+                        activities: capitalizeSentence(user.lastActivities || user.last_activities || ''),
                         reason_for_leaving: '',
                         salary: ''
                     }];
@@ -102,20 +131,32 @@ const ProfilePage = () => {
                         salary: ''
                     }];
                 }
+            } else {
+                initialWorkHistory = initialWorkHistory.map(w => ({
+                    ...w,
+                    company: capitalizeWords(w.company),
+                    position: capitalizeWords(w.position),
+                    activities: capitalizeSentence(w.activities)
+                }));
             }
 
             let initialCertifications = user.certifications;
             if (!Array.isArray(initialCertifications) || initialCertifications.length === 0) {
                 initialCertifications = [{ type: 'Certificación', title_detail: '' }];
+            } else {
+                initialCertifications = initialCertifications.map(c => ({
+                    ...c,
+                    title_detail: capitalizeWords(c.title_detail)
+                }));
             }
 
             let initialReferences = user.references;
             if (!Array.isArray(initialReferences) || initialReferences.length === 0) {
                 if (user.ref_name || user.ref_phone) {
                     initialReferences = [{
-                        ref_name: user.ref_name || '',
-                        ref_phone: user.ref_phone || '',
-                        ref_position_company: user.ref_position_company || '',
+                        ref_name: capitalizeWords(user.ref_name || ''),
+                        ref_phone: formatPhoneNumber(user.ref_phone || ''),
+                        ref_position_company: capitalizeWords(user.ref_position_company || ''),
                         ref_recommendation_pdf: user.ref_recommendation_pdf || ''
                     }];
                 } else {
@@ -126,31 +167,38 @@ const ProfilePage = () => {
                         ref_recommendation_pdf: ''
                     }];
                 }
+            } else {
+                initialReferences = initialReferences.map(r => ({
+                    ...r,
+                    ref_name: capitalizeWords(r.ref_name),
+                    ref_phone: formatPhoneNumber(r.ref_phone),
+                    ref_position_company: capitalizeWords(r.ref_position_company)
+                }));
             }
 
             const loadedData = {
-                name: user.name || '',
-                first_last_name: user.first_last_name || user.lastName || user.last_name || '',
-                second_last_name: user.second_last_name || '',
+                name: capitalizeWords(user.name || ''),
+                first_last_name: capitalizeWords(user.first_last_name || user.lastName || user.last_name || ''),
+                second_last_name: capitalizeWords(user.second_last_name || ''),
                 photo: user.photo || '',
-                phone: user.phone || user.phone_number || '',
+                phone: formatPhoneNumber(user.phone || user.phone_number || ''),
                 email: user.email || '',
-                curp: user.curp || '',
-                rfc: user.rfc || '',
+                curp: String(user.curp || '').toUpperCase(),
+                rfc: String(user.rfc || '').toUpperCase(),
                 nss: user.nss || '',
                 location: user.location || '',
-                municipality: user.municipality || user.municipio || '',
+                municipality: capitalizeWords(user.municipality || user.municipio || ''),
                 zipCode: user.zipCode || user.postal_code || '',
-                address_street: user.address_street || '',
-                colonia: user.colonia || '',
-                title: user.title || '',
+                address_street: capitalizeWords(user.address_street || ''),
+                colonia: capitalizeWords(user.colonia || ''),
+                title: capitalizeWords(user.title || ''),
                 experience_years: user.experience_years || '1 a 3 años',
-                skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
+                skills: Array.isArray(user.skills) ? capitalizeWords(user.skills.join(', ')) : capitalizeWords(user.skills || ''),
                 driver_license: user.driver_license || 'No tengo',
-                languages_tools: user.languages_tools || '',
+                languages_tools: capitalizeWords(user.languages_tools || ''),
                 education: user.education || 'Secundaria',
                 education_status: user.education_status || 'Concluido',
-                institution_name: user.institution_name || '',
+                institution_name: capitalizeWords(user.institution_name || ''),
                 english_level: user.english_level || 'Ninguno',
                 certifications: initialCertifications,
                 work_history: initialWorkHistory,
@@ -173,37 +221,25 @@ const ProfilePage = () => {
     const jobToApply = applyingToId ? jobs.find(j => j.id === Number(applyingToId)) : null;
     const [comments, setComments] = useState('');
 
-    // --- HELPER FORMATTERS AND CAPITALIZERS ---
-    // Converts "JUAN PEREZ" or "juan perez" to "Juan Perez" (First letter capitalized, rest lowercase)
-    const capitalizeWords = (str) => {
-        if (!str || typeof str !== 'string') return str || '';
-        return str
-            .toLowerCase()
-            .split(' ')
-            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
-            .join(' ');
-    };
+    const updateFormField = (field, value) => {
+        let formattedValue = value;
 
-    const capitalizeSentence = (str) => {
-        if (!str || typeof str !== 'string') return str || '';
-        const lower = str.toLowerCase();
-        return lower.replace(/(^\s*|[.!?]\s+)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
-    };
+        if (field === 'phone') {
+            formattedValue = formatPhoneNumber(value);
+        } else if (['name', 'first_last_name', 'second_last_name', 'municipality', 'address_street', 'colonia', 'institution_name', 'title', 'skills', 'languages_tools'].includes(field)) {
+            formattedValue = capitalizeWords(value);
+        } else if (field === 'curp' || field === 'rfc') {
+            formattedValue = String(value).toUpperCase();
+        }
 
-    const formatPhoneNumber = (val) => {
-        if (!val) return '';
-        const digits = val.replace(/\D/g, '');
-        if (digits.length === 0) return '';
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+        setFormData(prev => ({ ...prev, [field]: formattedValue }));
     };
 
     const handleInputBlur = (field, isSentence = false) => {
         setFormData(prev => {
             const currentVal = prev[field];
             if (typeof currentVal !== 'string' || !currentVal) return prev;
-            const formatted = isSentence ? capitalizeSentence(currentVal) : capitalizeWords(currentVal);
+            const formatted = isSentence ? capitalizeSentence(currentVal) : capitalizeWords(currentVal.trim());
             return { ...prev, [field]: formatted };
         });
     };
@@ -215,7 +251,7 @@ const ProfilePage = () => {
             if (typeof val === 'string' && val) {
                 updatedWork[index] = {
                     ...updatedWork[index],
-                    [field]: isSentence ? capitalizeSentence(val) : capitalizeWords(val)
+                    [field]: isSentence ? capitalizeSentence(val) : capitalizeWords(val.trim())
                 };
             }
             return { ...prev, work_history: updatedWork };
@@ -227,7 +263,7 @@ const ProfilePage = () => {
             const updatedCerts = [...prev.certifications];
             const val = updatedCerts[index][field];
             if (typeof val === 'string' && val) {
-                updatedCerts[index] = { ...updatedCerts[index], [field]: capitalizeWords(val) };
+                updatedCerts[index] = { ...updatedCerts[index], [field]: capitalizeWords(val.trim()) };
             }
             return { ...prev, certifications: updatedCerts };
         });
@@ -238,7 +274,7 @@ const ProfilePage = () => {
             const updatedRefs = [...prev.references];
             const val = updatedRefs[index][field];
             if (typeof val === 'string' && val) {
-                updatedRefs[index] = { ...updatedRefs[index], [field]: capitalizeWords(val) };
+                updatedRefs[index] = { ...updatedRefs[index], [field]: capitalizeWords(val.trim()) };
             }
             return { ...prev, references: updatedRefs };
         });
@@ -271,30 +307,30 @@ const ProfilePage = () => {
     const sanitizeFormData = (data) => {
         return {
             ...data,
-            name: capitalizeWords(data.name),
-            first_last_name: capitalizeWords(data.first_last_name),
-            second_last_name: capitalizeWords(data.second_last_name),
-            municipality: capitalizeWords(data.municipality),
-            address_street: capitalizeWords(data.address_street),
-            colonia: capitalizeWords(data.colonia),
-            institution_name: capitalizeWords(data.institution_name),
-            title: capitalizeWords(data.title),
-            skills: capitalizeWords(data.skills),
-            languages_tools: capitalizeWords(data.languages_tools),
+            name: capitalizeWords(data.name.trim()),
+            first_last_name: capitalizeWords(data.first_last_name.trim()),
+            second_last_name: capitalizeWords(data.second_last_name.trim()),
+            municipality: capitalizeWords(data.municipality.trim()),
+            address_street: capitalizeWords(data.address_street.trim()),
+            colonia: capitalizeWords(data.colonia.trim()),
+            institution_name: capitalizeWords(data.institution_name.trim()),
+            title: capitalizeWords(data.title.trim()),
+            skills: capitalizeWords(data.skills.trim()),
+            languages_tools: capitalizeWords(data.languages_tools.trim()),
             certifications: (data.certifications || []).map(c => ({
                 ...c,
-                title_detail: capitalizeWords(c.title_detail)
+                title_detail: capitalizeWords(c.title_detail.trim())
             })),
             work_history: (data.work_history || []).map(w => ({
                 ...w,
-                company: capitalizeWords(w.company),
-                position: capitalizeWords(w.position),
-                activities: capitalizeSentence(w.activities)
+                company: capitalizeWords(w.company.trim()),
+                position: capitalizeWords(w.position.trim()),
+                activities: capitalizeSentence(w.activities.trim())
             })),
             references: (data.references || []).map(r => ({
                 ...r,
-                ref_name: capitalizeWords(r.ref_name),
-                ref_position_company: capitalizeWords(r.ref_position_company)
+                ref_name: capitalizeWords(r.ref_name.trim()),
+                ref_position_company: capitalizeWords(r.ref_position_company.trim())
             }))
         };
     };
@@ -489,15 +525,17 @@ const ProfilePage = () => {
         }
     };
 
-    const updateFormField = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
     // Work History handlers
     const handleWorkHistoryChange = (index, field, value) => {
         setFormData(prev => {
             const updatedWork = [...prev.work_history];
-            updatedWork[index] = { ...updatedWork[index], [field]: value };
+            let val = value;
+            if (field === 'company' || field === 'position') {
+                val = capitalizeWords(value);
+            } else if (field === 'activities') {
+                val = capitalizeSentence(value);
+            }
+            updatedWork[index] = { ...updatedWork[index], [field]: val };
             return { ...prev, work_history: updatedWork };
         });
     };
@@ -524,7 +562,11 @@ const ProfilePage = () => {
     const handleCertificationChange = (index, field, value) => {
         setFormData(prev => {
             const updatedCerts = [...prev.certifications];
-            updatedCerts[index] = { ...updatedCerts[index], [field]: value };
+            let val = value;
+            if (field === 'title_detail') {
+                val = capitalizeWords(value);
+            }
+            updatedCerts[index] = { ...updatedCerts[index], [field]: val };
             return { ...prev, certifications: updatedCerts };
         });
     };
@@ -551,7 +593,13 @@ const ProfilePage = () => {
     const handleReferenceChange = (index, field, value) => {
         setFormData(prev => {
             const updated = [...prev.references];
-            updated[index] = { ...updated[index], [field]: value };
+            let val = value;
+            if (field === 'ref_name' || field === 'ref_position_company') {
+                val = capitalizeWords(value);
+            } else if (field === 'ref_phone') {
+                val = formatPhoneNumber(value);
+            }
+            updated[index] = { ...updated[index], [field]: val };
             return { ...prev, references: updated };
         });
     };
@@ -762,7 +810,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. (999) 123-4567"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.phone}
-                                        onChange={e => updateFormField('phone', formatPhoneNumber(e.target.value))}
+                                        onChange={e => updateFormField('phone', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -790,7 +838,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. ABCD901234HDFXYZ01"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.curp}
-                                        onChange={e => updateFormField('curp', e.target.value.toUpperCase())}
+                                        onChange={e => updateFormField('curp', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -801,7 +849,7 @@ const ProfilePage = () => {
                                         placeholder="Ej. ABCD901234XYZ"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.rfc}
-                                        onChange={e => updateFormField('rfc', e.target.value.toUpperCase())}
+                                        onChange={e => updateFormField('rfc', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -1494,7 +1542,7 @@ const ProfilePage = () => {
                                                 placeholder="Ej. (999) 123-4567"
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={ref.ref_phone}
-                                                onChange={e => handleReferenceChange(idx, 'ref_phone', formatPhoneNumber(e.target.value))}
+                                                onChange={e => handleReferenceChange(idx, 'ref_phone', e.target.value)}
                                             />
                                         </div>
                                         <div>
