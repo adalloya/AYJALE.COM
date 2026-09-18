@@ -233,42 +233,38 @@ const ProfilePage = () => {
         }));
     };
 
-    // Helper for auto-saving form data to Supabase
-    const autoSaveData = (newData) => {
-        const skillsArray = typeof newData.skills === 'string'
-            ? newData.skills.split(',').map(s => s.trim()).filter(Boolean)
-            : newData.skills;
+    // Helper for saving profile data to Supabase
+    const saveProfileData = async (dataToSave, sectionName) => {
+        const skillsArray = typeof dataToSave.skills === 'string'
+            ? dataToSave.skills.split(',').map(s => s.trim()).filter(Boolean)
+            : dataToSave.skills;
 
         const updatedData = {
-            ...newData,
-            last_name: newData.first_last_name,
-            birth_date: newData.birthDate,
-            municipio: newData.municipality,
-            postal_code: newData.zipCode,
-            last_activities: newData.work_history[0]?.activities || '',
-            last_job: newData.work_history[0]?.company || '',
-            last_position: newData.work_history[0]?.position || '',
-            last_duration: newData.work_history[0]?.duration || '',
+            ...dataToSave,
+            last_name: dataToSave.first_last_name,
+            birth_date: dataToSave.birthDate,
+            municipio: dataToSave.municipality,
+            postal_code: dataToSave.zipCode,
+            last_activities: dataToSave.work_history[0]?.activities || '',
+            last_job: dataToSave.work_history[0]?.company || '',
+            last_position: dataToSave.work_history[0]?.position || '',
+            last_duration: dataToSave.work_history[0]?.duration || '',
             skills: skillsArray.join(', ')
         };
 
-        updateUser(updatedData);
+        try {
+            await updateUser(updatedData);
+            if (sectionName) {
+                setToast({ message: `✓ ${sectionName} guardada correctamente`, type: 'success' });
+            }
+        } catch (error) {
+            console.error("Error saving section:", error);
+            setToast({ message: 'Error al guardar la sección. Intenta de nuevo.', type: 'error' });
+        }
     };
 
     const updateFormField = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSelectChange = (field, value) => {
-        setFormData(prev => {
-            const updated = { ...prev, [field]: value };
-            autoSaveData(updated);
-            return updated;
-        });
-    };
-
-    const handleBlur = () => {
-        autoSaveData(formData);
     };
 
     const handleWorkHistoryChange = (index, field, value) => {
@@ -280,27 +276,21 @@ const ProfilePage = () => {
     };
 
     const addWorkExperience = () => {
-        setFormData(prev => {
-            const updatedForm = {
-                ...prev,
-                work_history: [
-                    ...prev.work_history,
-                    { company: '', position: '', duration: '', activities: '', reason_for_leaving: '', salary: '' }
-                ]
-            };
-            autoSaveData(updatedForm);
-            return updatedForm;
-        });
+        setFormData(prev => ({
+            ...prev,
+            work_history: [
+                ...prev.work_history,
+                { company: '', position: '', duration: '', activities: '', reason_for_leaving: '', salary: '' }
+            ]
+        }));
     };
 
     const removeWorkExperience = (index) => {
         if (formData.work_history.length === 1) return;
-        setFormData(prev => {
-            const updatedWork = prev.work_history.filter((_, i) => i !== index);
-            const updatedForm = { ...prev, work_history: updatedWork };
-            autoSaveData(updatedForm);
-            return updatedForm;
-        });
+        setFormData(prev => ({
+            ...prev,
+            work_history: prev.work_history.filter((_, i) => i !== index)
+        }));
     };
 
     const handleCertificationChange = (index, field, value) => {
@@ -312,27 +302,21 @@ const ProfilePage = () => {
     };
 
     const addCertification = () => {
-        setFormData(prev => {
-            const updatedForm = {
-                ...prev,
-                certifications: [
-                    ...prev.certifications,
-                    { type: 'Certificación', title_detail: '' }
-                ]
-            };
-            autoSaveData(updatedForm);
-            return updatedForm;
-        });
+        setFormData(prev => ({
+            ...prev,
+            certifications: [
+                ...prev.certifications,
+                { type: 'Certificación', title_detail: '' }
+            ]
+        }));
     };
 
     const removeCertification = (index) => {
         if (formData.certifications.length === 1) return;
-        setFormData(prev => {
-            const updatedCerts = prev.certifications.filter((_, i) => i !== index);
-            const updatedForm = { ...prev, certifications: updatedCerts };
-            autoSaveData(updatedForm);
-            return updatedForm;
-        });
+        setFormData(prev => ({
+            ...prev,
+            certifications: prev.certifications.filter((_, i) => i !== index)
+        }));
     };
 
     const handleFileUpload = (e) => {
@@ -351,35 +335,17 @@ const ProfilePage = () => {
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            const updatedForm = { ...formData, ref_recommendation_pdf: reader.result };
-            setFormData(updatedForm);
-            autoSaveData(updatedForm);
-            setToast({ message: 'Carta de recomendación cargada y guardada', type: 'success' });
+            setFormData(prev => ({ ...prev, ref_recommendation_pdf: reader.result }));
+            setToast({ message: 'Carta de recomendación cargada. Recuerda guardar los cambios de la sección.', type: 'success' });
         };
         reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const skillsArray = typeof formData.skills === 'string'
-            ? formData.skills.split(',').map(s => s.trim()).filter(Boolean)
-            : formData.skills;
-
-        const updatedData = {
-            ...formData,
-            last_name: formData.first_last_name,
-            birth_date: formData.birthDate,
-            municipio: formData.municipality,
-            postal_code: formData.zipCode,
-            last_activities: formData.work_history[0]?.activities || '',
-            last_job: formData.work_history[0]?.company || '',
-            last_position: formData.work_history[0]?.position || '',
-            last_duration: formData.work_history[0]?.duration || '',
-            skills: skillsArray.join(', ')
-        };
 
         try {
-            await updateUser(updatedData);
+            await saveProfileData(formData);
 
             if (jobToApply) {
                 await applyToJob(jobToApply.id, user.id, { comments });
@@ -488,7 +454,7 @@ const ProfilePage = () => {
                                     initialImage={formData.photo}
                                     onCapture={(photoData) => {
                                         updateFormField('photo', photoData);
-                                        setToast({ message: 'Foto actualizada correctamente', type: 'success' });
+                                        setToast({ message: 'Foto cargada. Recuerda guardar la sección.', type: 'success' });
                                     }}
                                 />
                             </div>
@@ -502,7 +468,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.name}
                                         onChange={e => updateFormField('name', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -513,7 +478,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.first_last_name}
                                         onChange={e => updateFormField('first_last_name', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -524,7 +488,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.second_last_name}
                                         onChange={e => updateFormField('second_last_name', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -538,7 +501,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.phone}
                                         onChange={e => updateFormField('phone', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -566,7 +528,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.curp}
                                         onChange={e => updateFormField('curp', e.target.value.toUpperCase())}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -577,7 +538,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.rfc}
                                         onChange={e => updateFormField('rfc', e.target.value.toUpperCase())}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -588,15 +548,24 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.nss}
                                         onChange={e => updateFormField('nss', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Identificación y Contacto')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Identificación y Contacto
+                                </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* ACCORDION 2: UBICACIÓN (ZONA DE RESIDENCIA) */}
+                {/* ACCORDION 2: UBICACIÓN */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -632,7 +601,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.location}
-                                        onChange={e => handleSelectChange('location', e.target.value)}
+                                        onChange={e => updateFormField('location', e.target.value)}
                                     >
                                         <option value="">Selecciona un Estado...</option>
                                         <option value="Aguascalientes">Aguascalientes</option>
@@ -677,7 +646,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.municipality}
                                         onChange={e => updateFormField('municipality', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -688,7 +656,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.zipCode}
                                         onChange={e => updateFormField('zipCode', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -702,7 +669,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.address_street}
                                         onChange={e => updateFormField('address_street', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -713,15 +679,24 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.colonia}
                                         onChange={e => updateFormField('colonia', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Ubicación')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Ubicación
+                                </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* ACCORDION 3: ESTUDIOS (REORDENADO JUSTO DESPUÉS DE UBICACIÓN) */}
+                {/* ACCORDION 3: ESTUDIOS */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -757,7 +732,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.education}
-                                        onChange={e => handleSelectChange('education', e.target.value)}
+                                        onChange={e => updateFormField('education', e.target.value)}
                                     >
                                         <option value="Primaria">Primaria</option>
                                         <option value="Secundaria">Secundaria</option>
@@ -773,7 +748,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.education_status}
-                                        onChange={e => handleSelectChange('education_status', e.target.value)}
+                                        onChange={e => updateFormField('education_status', e.target.value)}
                                     >
                                         <option value="Concluido">Concluido</option>
                                         <option value="Trunco">Trunco</option>
@@ -791,7 +766,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.institution_name}
                                         onChange={e => updateFormField('institution_name', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -799,7 +773,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.english_level}
-                                        onChange={e => handleSelectChange('english_level', e.target.value)}
+                                        onChange={e => updateFormField('english_level', e.target.value)}
                                     >
                                         <option value="Ninguno">Ninguno</option>
                                         <option value="Básico">Básico</option>
@@ -833,10 +807,7 @@ const ProfilePage = () => {
                                                 <select
                                                     className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2 bg-white"
                                                     value={cert.type}
-                                                    onChange={e => {
-                                                        handleCertificationChange(idx, 'type', e.target.value);
-                                                        handleBlur();
-                                                    }}
+                                                    onChange={e => handleCertificationChange(idx, 'type', e.target.value)}
                                                 >
                                                     <option value="Certificación">Certificación</option>
                                                     <option value="Curso">Curso</option>
@@ -854,7 +825,6 @@ const ProfilePage = () => {
                                                     className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2"
                                                     value={cert.title_detail}
                                                     onChange={e => handleCertificationChange(idx, 'title_detail', e.target.value)}
-                                                    onBlur={handleBlur}
                                                 />
                                             </div>
                                         </div>
@@ -869,11 +839,21 @@ const ProfilePage = () => {
                                     <Plus className="w-4 h-4 text-slate-500" /> Agregar otra acreditación
                                 </button>
                             </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Estudios')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Estudios
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
 
-                {/* ACCORDION 4: OFICIO Y HABILIDADES (SIN "TU") */}
+                {/* ACCORDION 4: OFICIO Y HABILIDADES */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -912,7 +892,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.title}
                                         onChange={e => updateFormField('title', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -920,7 +899,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.experience_years}
-                                        onChange={e => handleSelectChange('experience_years', e.target.value)}
+                                        onChange={e => updateFormField('experience_years', e.target.value)}
                                     >
                                         <option value="Sin experiencia">Sin experiencia</option>
                                         <option value="Menos de 1 año">Menos de 1 año</option>
@@ -939,7 +918,6 @@ const ProfilePage = () => {
                                     className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                     value={formData.skills}
                                     onChange={e => updateFormField('skills', e.target.value)}
-                                    onBlur={handleBlur}
                                 />
                             </div>
 
@@ -949,7 +927,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 bg-white"
                                         value={formData.driver_license}
-                                        onChange={e => handleSelectChange('driver_license', e.target.value)}
+                                        onChange={e => updateFormField('driver_license', e.target.value)}
                                     >
                                         <option value="No tengo">No tengo</option>
                                         <option value="Licencia A">Licencia A</option>
@@ -972,15 +950,24 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.languages_tools}
                                         onChange={e => updateFormField('languages_tools', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Oficio y Habilidades')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Oficio y Habilidades
+                                </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* ACCORDION 5: EXPERIENCIA LABORAL (SIN "TU") */}
+                {/* ACCORDION 5: EXPERIENCIA LABORAL */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <button
                         type="button"
@@ -1036,7 +1023,6 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.company}
                                                 onChange={e => handleWorkHistoryChange(index, 'company', e.target.value)}
-                                                onBlur={handleBlur}
                                             />
                                         </div>
                                         <div>
@@ -1047,7 +1033,6 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.position}
                                                 onChange={e => handleWorkHistoryChange(index, 'position', e.target.value)}
-                                                onBlur={handleBlur}
                                             />
                                         </div>
                                         <div>
@@ -1055,10 +1040,7 @@ const ProfilePage = () => {
                                             <select
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                                 value={exp.duration}
-                                                onChange={e => {
-                                                    handleWorkHistoryChange(index, 'duration', e.target.value);
-                                                    handleBlur();
-                                                }}
+                                                onChange={e => handleWorkHistoryChange(index, 'duration', e.target.value)}
                                             >
                                                 <option value="">Selecciona duración</option>
                                                 <option value="Menos de 6 meses">Menos de 6 meses</option>
@@ -1072,10 +1054,7 @@ const ProfilePage = () => {
                                             <select
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                                 value={exp.reason_for_leaving}
-                                                onChange={e => {
-                                                    handleWorkHistoryChange(index, 'reason_for_leaving', e.target.value);
-                                                    handleBlur();
-                                                }}
+                                                onChange={e => handleWorkHistoryChange(index, 'reason_for_leaving', e.target.value)}
                                             >
                                                 <option value="">Selecciona motivo</option>
                                                 <option value="Mejora laboral">Mejora laboral</option>
@@ -1094,7 +1073,6 @@ const ProfilePage = () => {
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.salary}
                                                 onChange={e => handleWorkHistoryChange(index, 'salary', e.target.value)}
-                                                onBlur={handleBlur}
                                             />
                                         </div>
                                     </div>
@@ -1107,7 +1085,6 @@ const ProfilePage = () => {
                                             className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                             value={exp.activities}
                                             onChange={e => handleWorkHistoryChange(index, 'activities', e.target.value)}
-                                            onBlur={handleBlur}
                                         />
                                     </div>
                                 </div>
@@ -1120,6 +1097,16 @@ const ProfilePage = () => {
                             >
                                 <Plus className="w-4 h-4" /> Agregar otro empleo anterior
                             </button>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Experiencia Laboral')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Experiencia Laboral
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -1163,7 +1150,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_name}
                                         onChange={e => updateFormField('ref_name', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1174,7 +1160,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_phone}
                                         onChange={e => updateFormField('ref_phone', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1185,7 +1170,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.ref_position_company}
                                         onChange={e => updateFormField('ref_position_company', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                             </div>
@@ -1214,6 +1198,16 @@ const ProfilePage = () => {
                                         </span>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Referencias de Confianza')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Referencias
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1258,7 +1252,6 @@ const ProfilePage = () => {
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                         value={formData.expected_salary}
                                         onChange={e => updateFormField('expected_salary', e.target.value)}
-                                        onBlur={handleBlur}
                                     />
                                 </div>
                                 <div>
@@ -1266,7 +1259,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.start_availability}
-                                        onChange={e => handleSelectChange('start_availability', e.target.value)}
+                                        onChange={e => updateFormField('start_availability', e.target.value)}
                                     >
                                         <option value="Inmediata">Inmediata</option>
                                         <option value="En 1 semana">En 1 semana</option>
@@ -1280,7 +1273,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.shift_availability}
-                                        onChange={e => handleSelectChange('shift_availability', e.target.value)}
+                                        onChange={e => updateFormField('shift_availability', e.target.value)}
                                     >
                                         <option value="Tiempo completo">Tiempo completo</option>
                                         <option value="Medio tiempo">Medio tiempo</option>
@@ -1297,7 +1290,7 @@ const ProfilePage = () => {
                                     <select
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 bg-white"
                                         value={formData.travel_availability}
-                                        onChange={e => handleSelectChange('travel_availability', e.target.value)}
+                                        onChange={e => updateFormField('travel_availability', e.target.value)}
                                     >
                                         <option value="Sí">Sí</option>
                                         <option value="No">No</option>
@@ -1306,23 +1299,19 @@ const ProfilePage = () => {
                                     </select>
                                 </div>
                             </div>
+
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => saveProfileData(formData, 'Disponibilidad y Expectativas')}
+                                    className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                                >
+                                    <Check className="w-3.5 h-3.5" /> Guardar Disponibilidad
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
-
-                {/* POSTULACIÓN ESPECÍFICA SI VIENE DE VACANTE */}
-                {jobToApply && (
-                    <div className="border-t border-slate-200 pt-6">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">¿Por qué te interesa este puesto?</label>
-                        <textarea
-                            rows={3}
-                            className="w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
-                            value={comments}
-                            onChange={e => setComments(e.target.value)}
-                            placeholder="Cuéntanos brevemente..."
-                        />
-                    </div>
-                )}
 
                 {/* BOTÓN PRINCIPAL FINALIZAR */}
                 <div className="flex justify-end pt-6 border-t border-slate-100">
