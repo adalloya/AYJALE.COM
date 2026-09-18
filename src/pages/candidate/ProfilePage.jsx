@@ -174,22 +174,20 @@ const ProfilePage = () => {
     const [comments, setComments] = useState('');
 
     // --- HELPER FORMATTERS AND CAPITALIZERS ---
-    const toCapitalized = (str) => {
-        if (!str || typeof str !== 'string') return str;
-        const trimmed = str.trim();
-        if (!trimmed) return str;
-        const isAllCaps = trimmed === trimmed.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
-        const target = isAllCaps ? trimmed.toLowerCase() : trimmed;
-        return target.replace(/(?:^|\s|-|\/)[a-záéíóúñ]/g, m => m.toUpperCase());
+    // Converts "JUAN PEREZ" or "juan perez" to "Juan Perez" (First letter capitalized, rest lowercase)
+    const capitalizeWords = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
     };
 
-    const toSentenceCase = (str) => {
-        if (!str || typeof str !== 'string') return str;
-        const trimmed = str.trim();
-        if (!trimmed) return str;
-        const isAllCaps = trimmed === trimmed.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
-        const target = isAllCaps ? trimmed.toLowerCase() : trimmed;
-        return target.replace(/(^\s*|[.!?]\s+)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+    const capitalizeSentence = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        const lower = str.toLowerCase();
+        return lower.replace(/(^\s*|[.!?]\s+)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
     };
 
     const formatPhoneNumber = (val) => {
@@ -205,7 +203,7 @@ const ProfilePage = () => {
         setFormData(prev => {
             const currentVal = prev[field];
             if (typeof currentVal !== 'string' || !currentVal) return prev;
-            const formatted = isSentence ? toSentenceCase(currentVal) : toCapitalized(currentVal);
+            const formatted = isSentence ? capitalizeSentence(currentVal) : capitalizeWords(currentVal);
             return { ...prev, [field]: formatted };
         });
     };
@@ -217,7 +215,7 @@ const ProfilePage = () => {
             if (typeof val === 'string' && val) {
                 updatedWork[index] = {
                     ...updatedWork[index],
-                    [field]: isSentence ? toSentenceCase(val) : toCapitalized(val)
+                    [field]: isSentence ? capitalizeSentence(val) : capitalizeWords(val)
                 };
             }
             return { ...prev, work_history: updatedWork };
@@ -229,7 +227,7 @@ const ProfilePage = () => {
             const updatedCerts = [...prev.certifications];
             const val = updatedCerts[index][field];
             if (typeof val === 'string' && val) {
-                updatedCerts[index] = { ...updatedCerts[index], [field]: toCapitalized(val) };
+                updatedCerts[index] = { ...updatedCerts[index], [field]: capitalizeWords(val) };
             }
             return { ...prev, certifications: updatedCerts };
         });
@@ -240,7 +238,7 @@ const ProfilePage = () => {
             const updatedRefs = [...prev.references];
             const val = updatedRefs[index][field];
             if (typeof val === 'string' && val) {
-                updatedRefs[index] = { ...updatedRefs[index], [field]: toCapitalized(val) };
+                updatedRefs[index] = { ...updatedRefs[index], [field]: capitalizeWords(val) };
             }
             return { ...prev, references: updatedRefs };
         });
@@ -268,6 +266,37 @@ const ProfilePage = () => {
             updatedWork[index] = { ...updatedWork[index], salary: num.toLocaleString('es-MX') };
             return { ...prev, work_history: updatedWork };
         });
+    };
+
+    const sanitizeFormData = (data) => {
+        return {
+            ...data,
+            name: capitalizeWords(data.name),
+            first_last_name: capitalizeWords(data.first_last_name),
+            second_last_name: capitalizeWords(data.second_last_name),
+            municipality: capitalizeWords(data.municipality),
+            address_street: capitalizeWords(data.address_street),
+            colonia: capitalizeWords(data.colonia),
+            institution_name: capitalizeWords(data.institution_name),
+            title: capitalizeWords(data.title),
+            skills: capitalizeWords(data.skills),
+            languages_tools: capitalizeWords(data.languages_tools),
+            certifications: (data.certifications || []).map(c => ({
+                ...c,
+                title_detail: capitalizeWords(c.title_detail)
+            })),
+            work_history: (data.work_history || []).map(w => ({
+                ...w,
+                company: capitalizeWords(w.company),
+                position: capitalizeWords(w.position),
+                activities: capitalizeSentence(w.activities)
+            })),
+            references: (data.references || []).map(r => ({
+                ...r,
+                ref_name: capitalizeWords(r.ref_name),
+                ref_position_company: capitalizeWords(r.ref_position_company)
+            }))
+        };
     };
 
     // --- DIRTY STATE CHECKERS ---
@@ -424,30 +453,33 @@ const ProfilePage = () => {
 
     // Helper for saving profile data to Supabase
     const saveProfileData = async (dataToSave, sectionName) => {
-        const skillsArray = typeof dataToSave.skills === 'string'
-            ? dataToSave.skills.split(',').map(s => s.trim()).filter(Boolean)
-            : dataToSave.skills;
+        const cleanData = sanitizeFormData(dataToSave);
+        setFormData(cleanData);
+
+        const skillsArray = typeof cleanData.skills === 'string'
+            ? cleanData.skills.split(',').map(s => s.trim()).filter(Boolean)
+            : cleanData.skills;
 
         const updatedData = {
-            ...dataToSave,
-            last_name: dataToSave.first_last_name,
-            birth_date: dataToSave.birthDate,
-            municipio: dataToSave.municipality,
-            postal_code: dataToSave.zipCode,
-            last_activities: dataToSave.work_history[0]?.activities || '',
-            last_job: dataToSave.work_history[0]?.company || '',
-            last_position: dataToSave.work_history[0]?.position || '',
-            last_duration: dataToSave.work_history[0]?.duration || '',
+            ...cleanData,
+            last_name: cleanData.first_last_name,
+            birth_date: cleanData.birthDate,
+            municipio: cleanData.municipality,
+            postal_code: cleanData.zipCode,
+            last_activities: cleanData.work_history[0]?.activities || '',
+            last_job: cleanData.work_history[0]?.company || '',
+            last_position: cleanData.work_history[0]?.position || '',
+            last_duration: cleanData.work_history[0]?.duration || '',
             skills: skillsArray.join(', '),
-            ref_name: dataToSave.references[0]?.ref_name || '',
-            ref_phone: dataToSave.references[0]?.ref_phone || '',
-            ref_position_company: dataToSave.references[0]?.ref_position_company || '',
-            ref_recommendation_pdf: dataToSave.references[0]?.ref_recommendation_pdf || ''
+            ref_name: cleanData.references[0]?.ref_name || '',
+            ref_phone: cleanData.references[0]?.ref_phone || '',
+            ref_position_company: cleanData.references[0]?.ref_position_company || '',
+            ref_recommendation_pdf: cleanData.references[0]?.ref_recommendation_pdf || ''
         };
 
         try {
             await updateUser(updatedData);
-            setInitialFormData(JSON.parse(JSON.stringify(dataToSave)));
+            setInitialFormData(JSON.parse(JSON.stringify(cleanData)));
             if (sectionName) {
                 setToast({ message: `✓ ${sectionName} guardada correctamente`, type: 'success' });
             }
@@ -688,8 +720,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Nombre</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Juan"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.name}
                                         onChange={e => updateFormField('name', e.target.value)}
                                         onBlur={() => handleInputBlur('name')}
@@ -699,8 +732,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Primer Apellido</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Pérez"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.first_last_name}
                                         onChange={e => updateFormField('first_last_name', e.target.value)}
                                         onBlur={() => handleInputBlur('first_last_name')}
@@ -710,8 +744,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Segundo Apellido</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. López"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.second_last_name}
                                         onChange={e => updateFormField('second_last_name', e.target.value)}
                                         onBlur={() => handleInputBlur('second_last_name')}
@@ -751,6 +786,7 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">CURP</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="characters"
                                         placeholder="Ej. ABCD901234HDFXYZ01"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.curp}
@@ -761,6 +797,7 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">RFC con homoclave</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="characters"
                                         placeholder="Ej. ABCD901234XYZ"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
                                         value={formData.rfc}
@@ -874,8 +911,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Municipio o alcaldía</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Mérida"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.municipality}
                                         onChange={e => updateFormField('municipality', e.target.value)}
                                         onBlur={() => handleInputBlur('municipality')}
@@ -898,8 +936,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Calle y Número</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Av. Reforma 123"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.address_street}
                                         onChange={e => updateFormField('address_street', e.target.value)}
                                         onBlur={() => handleInputBlur('address_street')}
@@ -909,8 +948,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Colonia</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Centro"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.colonia}
                                         onChange={e => updateFormField('colonia', e.target.value)}
                                         onBlur={() => handleInputBlur('colonia')}
@@ -1002,8 +1042,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Nombre de la institución</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Instituto Tecnológico de Mérida"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.institution_name}
                                         onChange={e => updateFormField('institution_name', e.target.value)}
                                         onBlur={() => handleInputBlur('institution_name')}
@@ -1062,8 +1103,9 @@ const ProfilePage = () => {
                                                 <label className="block text-xs font-medium text-slate-700">Nombre / Detalle del curso o certificación</label>
                                                 <input
                                                     type="text"
+                                                    autoCapitalize="words"
                                                     placeholder="Ej. Certificación en Manejo Seguro de Montacargas - 40h"
-                                                    className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2"
+                                                    className="mt-1 block w-full rounded-lg border-slate-300 text-sm border p-2 capitalize"
                                                     value={cert.title_detail}
                                                     onChange={e => handleCertificationChange(idx, 'title_detail', e.target.value)}
                                                     onBlur={() => handleCertificationBlur(idx, 'title_detail')}
@@ -1135,8 +1177,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Puesto o oficio principal deseado</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Chofer de reparto"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.title}
                                         onChange={e => updateFormField('title', e.target.value)}
                                         onBlur={() => handleInputBlur('title')}
@@ -1162,8 +1205,9 @@ const ProfilePage = () => {
                                 <label className="block text-sm font-medium text-slate-700">Habilidades técnicas o destrezas</label>
                                 <input
                                     type="text"
+                                    autoCapitalize="words"
                                     placeholder="Ej. Manejo de montacargas, Control de inventarios"
-                                    className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                    className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                     value={formData.skills}
                                     onChange={e => updateFormField('skills', e.target.value)}
                                     onBlur={() => handleInputBlur('skills')}
@@ -1195,8 +1239,9 @@ const ProfilePage = () => {
                                     <label className="block text-sm font-medium text-slate-700">Idiomas o herramientas especializadas</label>
                                     <input
                                         type="text"
+                                        autoCapitalize="words"
                                         placeholder="Ej. Excel básico, Inglés técnico"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
+                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 capitalize"
                                         value={formData.languages_tools}
                                         onChange={e => updateFormField('languages_tools', e.target.value)}
                                         onBlur={() => handleInputBlur('languages_tools')}
@@ -1274,19 +1319,21 @@ const ProfilePage = () => {
                                             <label className="block text-xs font-medium text-slate-700">Nombre de la empresa</label>
                                             <input
                                                 type="text"
+                                                autoCapitalize="words"
                                                 placeholder="Ej. Transportes del Norte"
-                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 capitalize"
                                                 value={exp.company}
                                                 onChange={e => handleWorkHistoryChange(index, 'company', e.target.value)}
                                                 onBlur={() => handleWorkHistoryBlur(index, 'company')}
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-700">Puesto desempeñadо</label>
+                                            <label className="block text-xs font-medium text-slate-700">Puesto desempeñado</label>
                                             <input
                                                 type="text"
+                                                autoCapitalize="words"
                                                 placeholder="Ej. Ayudante General"
-                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 capitalize"
                                                 value={exp.position}
                                                 onChange={e => handleWorkHistoryChange(index, 'position', e.target.value)}
                                                 onBlur={() => handleWorkHistoryBlur(index, 'position')}
@@ -1343,6 +1390,7 @@ const ProfilePage = () => {
                                         <label className="block text-xs font-medium text-slate-700">Actividades realizadas o responsabilidades principales</label>
                                         <textarea
                                             rows={2}
+                                            autoCapitalize="sentences"
                                             placeholder="Ej. Carga y descarga de mercancía, entrega a clientes"
                                             className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                             value={exp.activities}
@@ -1431,8 +1479,9 @@ const ProfilePage = () => {
                                             <label className="block text-sm font-medium text-slate-700">Nombre completo de la referencia</label>
                                             <input
                                                 type="text"
+                                                autoCapitalize="words"
                                                 placeholder="Ej. Juan Pérez"
-                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 capitalize"
                                                 value={ref.ref_name}
                                                 onChange={e => handleReferenceChange(idx, 'ref_name', e.target.value)}
                                                 onBlur={() => handleReferenceBlur(idx, 'ref_name')}
@@ -1452,8 +1501,9 @@ const ProfilePage = () => {
                                             <label className="block text-sm font-medium text-slate-700">Puesto y empresa donde colaboraron</label>
                                             <input
                                                 type="text"
+                                                autoCapitalize="words"
                                                 placeholder="Ej. Gerente de Operaciones"
-                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 capitalize"
                                                 value={ref.ref_position_company}
                                                 onChange={e => handleReferenceChange(idx, 'ref_position_company', e.target.value)}
                                                 onBlur={() => handleReferenceBlur(idx, 'ref_position_company')}
@@ -1631,10 +1681,11 @@ const ProfilePage = () => {
                         <label className="block text-sm font-medium text-slate-700 mb-2">¿Por qué te interesa este puesto?</label>
                         <textarea
                             rows={3}
+                            autoCapitalize="sentences"
                             className="w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                             value={comments}
                             onChange={e => setComments(e.target.value)}
-                            onBlur={() => setComments(prev => toSentenceCase(prev))}
+                            onBlur={() => setComments(prev => capitalizeSentence(prev))}
                             placeholder="Cuéntanos brevemente..."
                         />
                     </div>
