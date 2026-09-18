@@ -95,14 +95,34 @@ export const AuthProvider = ({ children }) => {
                 ...data,
                 role: data?.role || metaData.role,
                 name: data?.name || metaData.name || '',
-                lastName: data?.lastName || data?.last_name || metaData.lastName || metaData.last_name || '',
-                last_name: data?.last_name || data?.lastName || metaData.last_name || metaData.lastName || '',
+                first_last_name: data?.first_last_name || data?.lastName || data?.last_name || metaData.first_last_name || metaData.lastName || metaData.last_name || '',
+                second_last_name: data?.second_last_name || metaData.second_last_name || '',
+                lastName: data?.first_last_name || data?.lastName || data?.last_name || metaData.lastName || '',
+                last_name: data?.first_last_name || data?.last_name || data?.lastName || metaData.last_name || '',
+                curp: data?.curp || metaData.curp || '',
+                nss: data?.nss || metaData.nss || '',
+                rfc: data?.rfc || metaData.rfc || '',
                 birthDate: data?.birthDate || data?.birth_date || metaData.birthDate || metaData.birth_date || '',
                 birth_date: data?.birth_date || data?.birthDate || metaData.birth_date || metaData.birthDate || '',
                 municipality: data?.municipality || data?.municipio || metaData.municipality || metaData.municipio || '',
                 municipio: data?.municipio || data?.municipality || metaData.municipio || metaData.municipality || '',
                 zipCode: data?.zipCode || data?.postal_code || metaData.zipCode || metaData.postal_code || '',
                 postal_code: data?.postal_code || data?.zipCode || metaData.postal_code || metaData.zipCode || '',
+                title: data?.title || metaData.title || '',
+                experience_years: data?.experience_years || metaData.experience_years || '',
+                driver_license: data?.driver_license || metaData.driver_license || 'No tengo',
+                languages_tools: data?.languages_tools || metaData.languages_tools || '',
+                education: data?.education || metaData.education || 'Secundaria',
+                education_status: data?.education_status || metaData.education_status || 'Concluido',
+                work_history: Array.isArray(data?.work_history) ? data.work_history : (metaData.work_history || []),
+                ref_name: data?.ref_name || metaData.ref_name || '',
+                ref_phone: data?.ref_phone || metaData.ref_phone || '',
+                ref_position_company: data?.ref_position_company || metaData.ref_position_company || '',
+                ref_recommendation_pdf: data?.ref_recommendation_pdf || metaData.ref_recommendation_pdf || '',
+                expected_salary: data?.expected_salary || metaData.expected_salary || '',
+                start_availability: data?.start_availability || metaData.start_availability || 'Inmediata',
+                shift_availability: data?.shift_availability || metaData.shift_availability || 'Tiempo completo',
+                travel_availability: data?.travel_availability || metaData.travel_availability || 'No',
                 lastActivities: data?.lastActivities || data?.last_activities || metaData.lastActivities || metaData.last_activities || '',
                 last_activities: data?.last_activities || data?.lastActivities || metaData.last_activities || metaData.lastActivities || '',
                 lastJob: data?.lastJob || data?.last_job || metaData.lastJob || metaData.last_job || '',
@@ -274,9 +294,31 @@ export const AuthProvider = ({ children }) => {
         if (updatedData.address !== undefined) dbPayload.address = updatedData.address;
 
         // 2. Snake_case Mappings
-        if (updatedData.lastName !== undefined || updatedData.last_name !== undefined) {
-            dbPayload.last_name = updatedData.lastName || updatedData.last_name || '';
+        if (updatedData.first_last_name !== undefined || updatedData.lastName !== undefined || updatedData.last_name !== undefined) {
+            dbPayload.first_last_name = updatedData.first_last_name || updatedData.lastName || updatedData.last_name || '';
+            dbPayload.last_name = dbPayload.first_last_name;
         }
+        if (updatedData.second_last_name !== undefined) {
+            dbPayload.second_last_name = updatedData.second_last_name || '';
+        }
+        if (updatedData.curp !== undefined) dbPayload.curp = updatedData.curp || '';
+        if (updatedData.nss !== undefined) dbPayload.nss = updatedData.nss || '';
+        if (updatedData.rfc !== undefined) dbPayload.rfc = updatedData.rfc || '';
+        if (updatedData.experience_years !== undefined) dbPayload.experience_years = updatedData.experience_years || '';
+        if (updatedData.driver_license !== undefined) dbPayload.driver_license = updatedData.driver_license || '';
+        if (updatedData.languages_tools !== undefined) dbPayload.languages_tools = updatedData.languages_tools || '';
+        if (updatedData.education_status !== undefined) dbPayload.education_status = updatedData.education_status || '';
+        if (updatedData.work_history !== undefined) dbPayload.work_history = updatedData.work_history || [];
+        if (updatedData.ref_name !== undefined) dbPayload.ref_name = updatedData.ref_name || '';
+        if (updatedData.ref_phone !== undefined) dbPayload.ref_phone = updatedData.ref_phone || '';
+        if (updatedData.ref_position_company !== undefined) dbPayload.ref_position_company = updatedData.ref_position_company || '';
+        if (updatedData.ref_recommendation_pdf !== undefined) dbPayload.ref_recommendation_pdf = updatedData.ref_recommendation_pdf || '';
+        if (updatedData.expected_salary !== undefined) {
+            dbPayload.expected_salary = updatedData.expected_salary ? parseFloat(updatedData.expected_salary) : null;
+        }
+        if (updatedData.start_availability !== undefined) dbPayload.start_availability = updatedData.start_availability || '';
+        if (updatedData.shift_availability !== undefined) dbPayload.shift_availability = updatedData.shift_availability || '';
+        if (updatedData.travel_availability !== undefined) dbPayload.travel_availability = updatedData.travel_availability || '';
         if (updatedData.birthDate !== undefined || updatedData.birth_date !== undefined) {
             dbPayload.birth_date = updatedData.birthDate || updatedData.birth_date || null;
             if (dbPayload.birth_date === '') dbPayload.birth_date = null;

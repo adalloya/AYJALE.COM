@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Briefcase, User, ClipboardCheck, RefreshCw } from 'lucide-react';
+import { Briefcase, User, ClipboardCheck, RefreshCw, CheckCircle2 } from 'lucide-react';
 import TalentProfileCard from '../../components/assessment/TalentProfileCard';
 
 const TalentProfileSection = ({ profile }) => {
@@ -31,6 +31,21 @@ const CandidateDashboard = () => {
     }, [user, fetchCandidateProfile]);
 
     const myApplications = applications.filter(app => app.candidate_id === user.id);
+
+    const calculateCompletion = (u) => {
+        if (!u) return 0;
+        let score = 0;
+        if (u.name && (u.first_last_name || u.lastName || u.last_name) && (u.phone || u.phone_number) && u.email && u.curp) score++;
+        if (u.location && (u.municipality || u.municipio) && (u.zipCode || u.postal_code)) score++;
+        if (u.title && u.skills) score++;
+        if (u.education && u.education_status) score++;
+        if ((u.work_history && u.work_history.length > 0 && u.work_history[0].company) || u.lastJob || u.last_job) score++;
+        if (u.ref_name && u.ref_phone) score++;
+        if (u.expected_salary && u.start_availability) score++;
+        return Math.round((score / 7) * 100);
+    };
+
+    const completionPercent = calculateCompletion(user);
 
     return (
         <div className="space-y-8">
@@ -69,6 +84,44 @@ const CandidateDashboard = () => {
                                 <span className="font-semibold text-indigo-700">Centro de Evaluaciones (Pendiente)</span>
                             </div>
                         )}
+                    </Link>
+                </div>
+            </div>
+
+            {/* BARRA Y CARD DE COMPLETITUD DE PERFIL */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-bold text-slate-900">Estado de tu Solicitud de Empleo</h3>
+                            {completionPercent === 100 ? (
+                                <span className="inline-flex items-center text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-2.5 py-1 rounded-full">
+                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 100% Completo
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center text-xs font-semibold text-amber-800 bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-full">
+                                    {completionPercent}% Completado
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-sm text-slate-600 mb-3">
+                            {completionPercent === 100
+                                ? '¡Felicidades! Tu perfil está 100% completo y optimizado para reclutadores.'
+                                : 'Completa tu perfil para incrementar tus probabilidades de contratación.'}
+                        </p>
+                        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                            <div
+                                className={`h-2.5 rounded-full transition-all duration-500 ${completionPercent === 100 ? 'bg-green-500' : 'bg-secondary-600'}`}
+                                style={{ width: `${completionPercent}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    <Link
+                        to="/profile"
+                        className="bg-secondary-600 hover:bg-secondary-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors text-center shrink-0"
+                    >
+                        {completionPercent === 100 ? 'Ver Mi Perfil' : 'Completar Perfil'}
                     </Link>
                 </div>
             </div>
