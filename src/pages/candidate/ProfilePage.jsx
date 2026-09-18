@@ -46,11 +46,11 @@ const ProfilePage = () => {
                 zipCode: user.zipCode || user.postal_code || user.codigo_postal || '',
                 skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
                 birthDate: user.birthDate || user.birth_date || '',
-                civilStatus: user.civilStatus || 'Soltero/a',
+                civilStatus: user.civilStatus || user.civil_status || 'Soltero/a',
                 education: user.education || 'Secundaria',
-                lastJob: user.lastJob || '',
-                lastPosition: user.lastPosition || '',
-                lastDuration: user.lastDuration || '',
+                lastJob: user.lastJob || user.last_job || '',
+                lastPosition: user.lastPosition || user.last_position || '',
+                lastDuration: user.lastDuration || user.last_duration || '',
                 lastActivities: user.lastActivities || user.last_activities || '',
                 photo: user.photo || ''
             });

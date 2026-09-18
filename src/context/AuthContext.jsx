@@ -105,6 +105,14 @@ export const AuthProvider = ({ children }) => {
                 postal_code: data?.postal_code || data?.zipCode || metaData.postal_code || metaData.zipCode || '',
                 lastActivities: data?.lastActivities || data?.last_activities || metaData.lastActivities || metaData.last_activities || '',
                 last_activities: data?.last_activities || data?.lastActivities || metaData.last_activities || metaData.lastActivities || '',
+                lastJob: data?.lastJob || data?.last_job || metaData.lastJob || metaData.last_job || '',
+                last_job: data?.last_job || data?.lastJob || metaData.last_job || metaData.lastJob || '',
+                lastPosition: data?.lastPosition || data?.last_position || metaData.lastPosition || metaData.last_position || '',
+                last_position: data?.last_position || data?.lastPosition || metaData.last_position || metaData.lastPosition || '',
+                lastDuration: data?.lastDuration || data?.last_duration || metaData.lastDuration || metaData.last_duration || '',
+                last_duration: data?.last_duration || data?.lastDuration || metaData.last_duration || metaData.lastDuration || '',
+                civilStatus: data?.civilStatus || data?.civil_status || metaData.civilStatus || metaData.civil_status || 'Soltero/a',
+                civil_status: data?.civil_status || data?.civilStatus || metaData.civil_status || metaData.civilStatus || 'Soltero/a',
             };
 
             console.log('[AuthContext] Setting user:', finalUser?.id, finalUser);
