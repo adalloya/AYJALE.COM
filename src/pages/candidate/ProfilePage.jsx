@@ -126,8 +126,8 @@ const ProfilePage = () => {
 
                 {/* SECCIÓN 1: DATOS PERSONALES Y FOTO */}
                 <section className="space-y-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-                        👤 Datos Personales
+                    <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
+                        Datos Personales
                     </h2>
 
                     <div className="flex flex-col items-center justify-center p-4 bg-slate-50/70 rounded-xl border border-slate-100">
@@ -206,8 +206,8 @@ const ProfilePage = () => {
 
                 {/* SECCIÓN 2: UBICACIÓN */}
                 <section className="space-y-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-                        📍 Ubicación
+                    <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
+                        Ubicación
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -278,8 +278,8 @@ const ProfilePage = () => {
 
                 {/* SECCIÓN 3: PERFIL PROFESIONAL & HABILIDADES */}
                 <section className="space-y-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-                        💼 Perfil Profesional & Habilidades
+                    <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
+                        Perfil Profesional & Habilidades
                     </h2>
 
                     <div className="space-y-6">
@@ -320,8 +320,8 @@ const ProfilePage = () => {
 
                 {/* SECCIÓN 4: EDUCACIÓN */}
                 <section className="space-y-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-                        🎓 Educación
+                    <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
+                        Educación
                     </h2>
 
                     <div>
@@ -343,8 +343,8 @@ const ProfilePage = () => {
 
                 {/* SECCIÓN 5: EXPERIENCIA LABORAL */}
                 <section className="space-y-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-                        🛠️ Experiencia Laboral
+                    <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
+                        Experiencia Laboral
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
