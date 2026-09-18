@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase } from 'lucide-react';
 import logo from '../../assets/ayjale_logo_new.png';
@@ -15,7 +15,7 @@ const CompanyAuthPage = () => {
             <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 text-center animate-fade-in">
                     <div className="flex flex-col items-center">
-                        <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
+                        <img className="mx-auto h-11 w-auto object-contain mb-4" src={logo} alt="AyJale" />
                         <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mb-6 border border-green-100">
                             <CheckCircle className="h-10 w-10 text-green-500" />
                         </div>
@@ -85,9 +85,9 @@ const CompanyAuthPage = () => {
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                 <div className="text-center">
-                    <div className="mx-auto h-12 w-12 bg-secondary-100 rounded-full flex items-center justify-center mb-4">
-                        <Building2 className="h-6 w-6 text-secondary-600" />
-                    </div>
+                    <Link to="/" className="inline-block mb-3">
+                        <img className="mx-auto h-11 w-auto object-contain transition-transform hover:scale-105" src={logo} alt="AyJale" />
+                    </Link>
                     <h2 className="text-3xl font-extrabold text-slate-900">
                         {isLogin ? 'Acceso para Empresas' : 'Registra tu Empresa'}
                     </h2>

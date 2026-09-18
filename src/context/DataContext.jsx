@@ -17,7 +17,7 @@ export const DataProvider = ({ children }) => {
     const [contactUnlocks, setContactUnlocks] = useState([]);
 
     const [siteSettings, setSiteSettings] = useState(() => {
-        const defaults = { showCompanyCarousel: false, showMexicoMap: false, showWhatsNew: false };
+        const defaults = { showCompanyCarousel: false, showMexicoMap: false, showWhatsNew: false, showAiTalentProfile: false, showChatSystem: false };
         try {
             const saved = localStorage.getItem('ayjale_site_settings');
             return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;

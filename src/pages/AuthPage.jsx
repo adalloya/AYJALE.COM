@@ -26,7 +26,7 @@ const AuthPage = () => {
             <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 text-center animate-fade-in">
                     <div className="flex flex-col items-center">
-                        <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
+                        <img className="mx-auto h-11 w-auto object-contain mb-4" src={logo} alt="AyJale" />
                         <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mb-6 border border-green-100">
                             <CheckCircle className="h-10 w-10 text-green-500" />
                         </div>
@@ -168,8 +168,8 @@ const AuthPage = () => {
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                    <Link to="/">
-                        <img className="mx-auto h-20 w-auto object-contain mb-6" src={logo} alt="AyJale" />
+                    <Link to="/" className="inline-block mb-3">
+                        <img className="mx-auto h-11 w-auto object-contain transition-transform hover:scale-105" src={logo} alt="AyJale" />
                     </Link>
                     <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
                         {isLogin ? 'Bienvenido de vuelta' : 'Regístrate para postularte'}

@@ -15,6 +15,7 @@ import AdminLoginPage from './pages/admin/AdminLoginPage';
 import PostJobPage from './pages/company/PostJobPage';
 import JobDetailsPage from './pages/JobDetailsPage';
 import ProfilePage from './pages/candidate/ProfilePage';
+import ProfileEditPage from './pages/candidate/ProfileEditPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -84,6 +85,12 @@ function App() {
               <Route path="/profile" element={
                 <ProtectedRoute allowedRoles={['candidate']}>
                   <ProfilePage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/profile/edit" element={
+                <ProtectedRoute allowedRoles={['candidate']}>
+                  <ProfileEditPage />
                 </ProtectedRoute>
               } />
 

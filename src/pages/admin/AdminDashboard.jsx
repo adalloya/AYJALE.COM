@@ -332,6 +332,56 @@ const AdminDashboard = () => {
                                     />
                                 </button>
                             </div>
+
+                            {/* Setting Item 4: AI Talent Profile */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900">Perfil de Talento IA y Evaluaciones</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${siteSettings?.showAiTalentProfile ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                                            {siteSettings?.showAiTalentProfile ? 'Visible' : 'Oculto'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600">
+                                        Muestra u oculta la sección "Perfil de Talento IA" y el botón "Centro de Evaluaciones" en el panel de candidatos.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => updateSiteSettings({ showAiTalentProfile: !siteSettings?.showAiTalentProfile })}
+                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${siteSettings?.showAiTalentProfile ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                    role="switch"
+                                    aria-checked={siteSettings?.showAiTalentProfile}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showAiTalentProfile ? 'translate-x-7' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Setting Item 5: Chat System */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900">Sistema de Chat en Postulaciones</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${siteSettings?.showChatSystem ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                                            {siteSettings?.showChatSystem ? 'Visible' : 'Oculto'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600">
+                                        Muestra u oculta la opción de chat en vivo entre candidatos y reclutadores dentro del panel de postulaciones.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => updateSiteSettings({ showChatSystem: !siteSettings?.showChatSystem })}
+                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${siteSettings?.showChatSystem ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                    role="switch"
+                                    aria-checked={siteSettings?.showChatSystem}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${siteSettings?.showChatSystem ? 'translate-x-7' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ) : (

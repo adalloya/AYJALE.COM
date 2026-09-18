@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Briefcase, User, ClipboardCheck, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Briefcase, User, ClipboardCheck, RefreshCw, CheckCircle2, Search } from 'lucide-react';
 import TalentProfileCard from '../../components/assessment/TalentProfileCard';
 
 const TalentProfileSection = ({ profile }) => {
@@ -17,7 +17,7 @@ const TalentProfileSection = ({ profile }) => {
 
 const CandidateDashboard = () => {
     const { user } = useAuth();
-    const { applications, jobs, fetchMessages, sendMessage, fetchCandidateProfile } = useData();
+    const { applications, jobs, fetchMessages, sendMessage, fetchCandidateProfile, siteSettings } = useData();
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
@@ -64,27 +64,29 @@ const CandidateDashboard = () => {
                         <span className="font-semibold text-slate-700">Editar Mi Perfil</span>
                     </Link>
 
-                    <Link to="/evaluation-center" className={`flex items-center justify-center p-4 border rounded-xl transition-colors group sm:col-span-2 ${profile
-                        ? 'bg-green-50 border-green-200 hover:bg-green-100'
-                        : 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
-                        }`}>
-                        {profile ? (
-                            <div className="flex items-center">
-                                <div className="bg-green-100 p-1 rounded-full mr-3">
-                                    <ClipboardCheck className="w-6 h-6 text-green-600" />
+                    {siteSettings?.showAiTalentProfile && (
+                        <Link to="/evaluation-center" className={`flex items-center justify-center p-4 border rounded-xl transition-colors group sm:col-span-2 ${profile
+                            ? 'bg-green-50 border-green-200 hover:bg-green-100'
+                            : 'bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
+                            }`}>
+                            {profile ? (
+                                <div className="flex items-center">
+                                    <div className="bg-green-100 p-1 rounded-full mr-3">
+                                        <ClipboardCheck className="w-6 h-6 text-green-600" />
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="block font-bold text-green-800">Evaluación Completada</span>
+                                        <span className="text-sm text-green-700">Resultados vigentes • Actualizar evaluación</span>
+                                    </div>
                                 </div>
-                                <div className="text-left">
-                                    <span className="block font-bold text-green-800">Evaluación Completada</span>
-                                    <span className="text-sm text-green-700">Resultados vigentes • Actualizar evaluación</span>
+                            ) : (
+                                <div className="flex items-center">
+                                    <ClipboardCheck className="w-6 h-6 text-indigo-600 mr-3 group-hover:scale-110 transition-transform" />
+                                    <span className="font-semibold text-indigo-700">Centro de Evaluaciones (Pendiente)</span>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center">
-                                <ClipboardCheck className="w-6 h-6 text-indigo-600 mr-3 group-hover:scale-110 transition-transform" />
-                                <span className="font-semibold text-indigo-700">Centro de Evaluaciones (Pendiente)</span>
-                            </div>
-                        )}
-                    </Link>
+                            )}
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -127,7 +129,9 @@ const CandidateDashboard = () => {
             </div>
 
             {/* Talent Profile Section */}
-            <TalentProfileSection profile={profile} />
+            {siteSettings?.showAiTalentProfile && (
+                <TalentProfileSection profile={profile} />
+            )}
 
             <h2 className="text-xl font-bold text-slate-900">Mis Postulaciones</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -149,37 +153,48 @@ const CandidateDashboard = () => {
 
 const ApplicationItem = ({ app, job }) => {
     const [showChat, setShowChat] = useState(false);
-
     const navigate = useNavigate();
+    const { siteSettings } = useData();
 
-    // Handle case where job is deleted or inactive
-    if (!job || !job.active) {
+    const effectiveJob = job || app.jobs;
+
+    // Handle case where job is closed or inactive
+    if (!effectiveJob || effectiveJob.active === false) {
+        const jobTitle = effectiveJob?.title || '';
+        const jobLocation = effectiveJob?.location || '';
+        const searchUrl = `/jobs?keyword=${encodeURIComponent(jobTitle)}` + (jobLocation ? `&state=${encodeURIComponent(jobLocation)}` : '');
+
         return (
-            <li className="px-4 py-4 sm:px-6 bg-slate-50 opacity-75">
-                <div className="flex items-center justify-between">
+            <li className="px-4 py-4 sm:px-6 bg-slate-50 opacity-90 border-l-4 border-amber-400">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                        <p className="text-sm font-medium text-slate-500 line-through">
-                            {job?.title || 'Vacante no disponible'}
-                        </p>
-                        <p className="text-xs text-red-500 font-semibold mt-1">
-                            Vacante Cerrada
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-slate-800">
+                                {effectiveJob?.title || 'Vacante no disponible'}
+                            </p>
+                            <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-slate-200 text-slate-600">
+                                Cerrada
+                            </span>
+                        </div>
+                        <p className="text-xs text-amber-800 font-medium mt-1">
+                            ⚠️ Esta vacante ya no está disponible o ha concluido su período de publicación.
                         </p>
                     </div>
-                    <div className="ml-2 flex-shrink-0 flex">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-500">
-                            Cerrada
-                        </span>
+
+                    <div className="text-xs text-slate-500 shrink-0">
+                        Postulado el: {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Fecha previa'}
                     </div>
                 </div>
-                <div className="mt-2">
-                    <p className="text-sm text-slate-500 mb-2">
-                        Esta vacante ya no está disponible. Te invitamos a buscar nuevas oportunidades.
+
+                <div className="mt-3 pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <p className="text-xs text-slate-600">
+                        Te sugerimos explorar otras ofertas disponibles para <span className="font-semibold text-slate-800">{jobTitle || 'puestos similares'}</span>.
                     </p>
                     <button
-                        onClick={() => navigate('/jobs')}
-                        className="text-secondary-600 hover:text-secondary-700 text-sm font-medium flex items-center"
+                        onClick={() => navigate(searchUrl)}
+                        className="bg-secondary-600 hover:bg-secondary-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1 shrink-0 shadow-2xs"
                     >
-                        Ver otras vacantes &rarr;
+                        <Search className="w-3.5 h-3.5" /> Ver vacantes similares
                     </button>
                 </div>
             </li>
@@ -189,7 +204,7 @@ const ApplicationItem = ({ app, job }) => {
     return (
         <li className="px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-primary-600 truncate">{job.title}</p>
+                <p className="text-sm font-semibold text-primary-600 truncate">{effectiveJob?.title || 'Vacante'}</p>
                 <div className="ml-2 flex-shrink-0 flex">
                     <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                       ${{
@@ -220,16 +235,18 @@ const ApplicationItem = ({ app, job }) => {
                         Aplicado el: {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Fecha desconocida'}
                     </p>
                 </div>
-                <div className="mt-2 flex items-center text-sm text-slate-500 sm:mt-0">
-                    <button
-                        onClick={() => setShowChat(!showChat)}
-                        className="text-primary-600 hover:text-primary-900 font-medium"
-                    >
-                        {showChat ? 'Ocultar Chat' : 'Ver Chat'}
-                    </button>
-                </div>
+                {siteSettings?.showChatSystem && (
+                    <div className="mt-2 flex items-center text-sm text-slate-500 sm:mt-0">
+                        <button
+                            onClick={() => setShowChat(!showChat)}
+                            className="text-primary-600 hover:text-primary-900 font-medium"
+                        >
+                            {showChat ? 'Ocultar Chat' : 'Ver Chat'}
+                        </button>
+                    </div>
+                )}
             </div>
-            {showChat && (
+            {siteSettings?.showChatSystem && showChat && (
                 <div className="mt-4 border-t border-slate-200 pt-4">
                     <ChatBox applicationId={app.id} />
                 </div>
