@@ -302,12 +302,9 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             return;
         }
 
-        if (isProfileComplete()) {
-            setShowModal(true);
-        } else {
-            navigate(`/profile?applyingTo=${currentJob.id}`);
-        }
-    }, [user, currentJob, navigate, isProfileComplete]);
+        // Open application modal directly on the job page
+        setShowModal(true);
+    }, [user, currentJob, navigate]);
 
     const handleModalSubmit = async (comments) => {
         setApplying(true);

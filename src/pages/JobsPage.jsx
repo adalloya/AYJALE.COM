@@ -192,11 +192,8 @@ const JobsPage = () => {
             return;
         }
 
-        if (isProfileComplete()) {
-            setShowModal(true);
-        } else {
-            navigate(`/profile?applyingTo=${job.id}`);
-        }
+        // Open application modal directly on the job page
+        setShowModal(true);
     };
 
     const handleModalSubmit = async (comments) => {
@@ -230,6 +227,12 @@ const JobsPage = () => {
         };
 
         let salaryText = 'No mostrado';
+
+        // If company chose to hide salary, show placeholder
+        if (job.hide_salary) {
+            return 'Salario no publicado';
+        }
+
         if (job.salary_min && job.salary_max) salaryText = `$${fmt(job.salary_min)} - $${fmt(job.salary_max)}`;
         else if (job.salary_min) salaryText = `Desde $${fmt(job.salary_min)}`;
         else if (job.salary_max) salaryText = `Hasta $${fmt(job.salary_max)}`;

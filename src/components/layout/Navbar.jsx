@@ -142,14 +142,16 @@ const Navbar = () => {
 
                         {user && user.role === 'company' && (
                             <>
-                                <Link to="/dashboard" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                                    <LayoutDashboard className="w-4 h-4 mr-1" /> Panel Empresa
+                                <Link to="/dashboard" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                    Panel Empresa
                                 </Link>
-                                <Link to="/company/candidates" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                                    <Users className="w-4 h-4 mr-1" /> Buscar Candidatos
-                                </Link>
-                                <Link to="/post-job" className="bg-secondary-100 text-secondary-700 hover:bg-secondary-200 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                                    <PlusCircle className="w-4 h-4 mr-1" /> Publicar Vacante
+                                {(user.can_search_candidates || user.canSearchCandidates) && (
+                                    <Link to="/company/candidates" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                        Buscar Candidatos
+                                    </Link>
+                                )}
+                                <Link to="/post-job" className="bg-secondary-100 text-secondary-700 hover:bg-secondary-200 px-3 py-2 rounded-md text-sm font-medium">
+                                    Publicar Vacante
                                 </Link>
                             </>
                         )}

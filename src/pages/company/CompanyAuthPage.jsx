@@ -1,271 +1,224 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase } from 'lucide-react';
+import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase, Eye, EyeOff, User } from 'lucide-react';
 import logo from '../../assets/ayjale_logo_new.png';
 
 const CompanyAuthPage = () => {
     const [searchParams] = useSearchParams();
     const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'register');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
     const { user, login, register, loading } = useAuth();
 
-    if (user) {
-        return (
-            <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 text-center animate-fade-in">
-                    <div className="flex flex-col items-center">
-                        <img className="mx-auto h-11 w-auto object-contain mb-4" src={logo} alt="AyJale" />
-                        <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mb-6 border border-green-100">
-                            <CheckCircle className="h-10 w-10 text-green-500" />
-                        </div>
-                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                            ¡Registro Exitoso!
-                        </h2>
-                        <p className="text-sm text-slate-600 mb-8">
-                            Hola, <span className="font-semibold text-slate-800">{user.name || 'Empresa'}</span>. Has registrado tu cuenta de empresa e iniciado sesión correctamente.
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            className="w-full flex justify-center items-center py-3 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all shadow-md active:scale-98"
-                        >
-                            Ir al Panel de Empresa
-                            <Building2 className="ml-2 h-4 w-4" />
-                        </button>
-
-                        <button
-                            onClick={() => navigate('/post-job')}
-                            className="w-full flex justify-center items-center py-3 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-secondary-600 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transition-all shadow-md active:scale-98"
-                        >
-                            Publicar Vacante
-                            <Briefcase className="ml-2 h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     const [formData, setFormData] = useState({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
+
+    const capitalizeWords = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        const hasTrailingSpace = str.endsWith(' ');
+        const formatted = str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
+        return (hasTrailingSpace && !formatted.endsWith(' ')) ? formatted + ' ' : formatted;
+    };
+
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setPasswordError('');
+
         try {
             if (isLogin) {
-                await login(formData.email, formData.password);
+                await login(formData.email.trim(), formData.password);
                 navigate('/dashboard');
             } else {
+                // Validate Password Match
+                if (formData.password !== formData.confirmPassword) {
+                    setPasswordError('Las contraseñas no coinciden. Por favor verifícalas.');
+                    return;
+                }
+
+                const recruiterFullName = `${capitalizeWords(formData.first_name.trim())} ${capitalizeWords(formData.last_name.trim())}`.trim();
+
                 await register({
-                    name: formData.name,
-                    email: formData.email,
-                    rfc: formData.rfc,
-                    industry: formData.industry,
-                    location: formData.location,
-                    address: formData.address,
-                    recruiter_name: formData.recruiter_name,
-                    phone_number: formData.phone_number,
+                    name: recruiterFullName,
+                    first_name: capitalizeWords(formData.first_name.trim()),
+                    last_name: capitalizeWords(formData.last_name.trim()),
+                    recruiter_name: recruiterFullName,
+                    email: formData.email.trim(),
                     termsAccepted: true
                 }, formData.password, 'company');
-                navigate('/onboarding');
+
+                navigate('/company/profile');
             }
         } catch (error) {
             console.error("Auth error:", error);
-            alert(error.message || 'Error en la autenticación. Intenta de nuevo.');
+            setPasswordError(error.message || 'Error en la autenticación. Intenta de nuevo.');
         }
     };
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+            <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                 <div className="text-center">
                     <Link to="/" className="inline-block mb-3">
                         <img className="mx-auto h-11 w-auto object-contain transition-transform hover:scale-105" src={logo} alt="AyJale" />
                     </Link>
                     <h2 className="text-3xl font-extrabold text-slate-900">
-                        {isLogin ? 'Acceso para Empresas' : 'Registra tu Empresa'}
+                        {isLogin ? 'Acceso para empresas' : 'Registro de empresa'}
                     </h2>
                     <p className="mt-2 text-sm text-slate-600">
-                        {isLogin ? 'Ingresa para gestionar tus vacantes' : 'Publica tus vacantes y encuentra talento'}
+                        {isLogin ? 'Ingresa para gestionar tus vacantes' : 'Paso 1: Crea tu cuenta de reclutador'}
                     </p>
                 </div>
 
                 <div className="flex border-b border-slate-200 mb-6">
                     <button
-                        className={`flex-1 py-2 text-sm font-medium border-b-2 ${isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        onClick={() => setIsLogin(true)}
+                        type="button"
+                        className={`flex-1 py-2 text-sm font-medium border-b-2 cursor-pointer transition-colors ${isLogin ? 'border-secondary-600 text-secondary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => {
+                            setIsLogin(true);
+                            setPasswordError('');
+                        }}
                     >
                         Iniciar Sesión
                     </button>
                     <button
-                        className={`flex-1 py-2 text-sm font-medium border-b-2 ${!isLogin ? 'border-secondary-600 text-secondary-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        onClick={() => setIsLogin(false)}
+                        type="button"
+                        className={`flex-1 py-2 text-sm font-medium border-b-2 cursor-pointer transition-colors ${!isLogin ? 'border-secondary-600 text-secondary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => {
+                            setIsLogin(false);
+                            setPasswordError('');
+                        }}
                     >
-                        Crear Cuenta
+                        Registro
                     </button>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
-                        {!isLogin && (
+                {passwordError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-semibold text-center">
+                        {passwordError}
+                    </div>
+                )}
+
+                <form className="mt-6 space-y-4" onSubmit={handleSubmit} autoComplete="off">
+                    {!isLogin && (
+                        <>
+                            {/* 1. NOMBRE */}
                             <div className="relative">
-                                <Building2 className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                                <User className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
                                 <input
                                     type="text"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                    placeholder="Nombre de la Empresa"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    autoCapitalize="words"
+                                    className="appearance-none rounded-lg relative block w-full pl-11 pr-3.5 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm capitalize"
+                                    placeholder="Nombre"
+                                    value={formData.first_name}
+                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                    onBlur={() => setFormData(prev => ({ ...prev, first_name: capitalizeWords(prev.first_name.trim()) }))}
                                 />
                             </div>
-                        )}
+
+                            {/* 2. APELLIDOS */}
+                            <div className="relative">
+                                <User className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    required
+                                    autoCapitalize="words"
+                                    className="appearance-none rounded-lg relative block w-full pl-11 pr-3.5 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm capitalize"
+                                    placeholder="Apellidos"
+                                    value={formData.last_name}
+                                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                    onBlur={() => setFormData(prev => ({ ...prev, last_name: capitalizeWords(prev.last_name.trim()) }))}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {/* 3. CORREO ELECTRÓNICO */}
+                    <div className="relative">
+                        <Mail className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
+                        <input
+                            type="email"
+                            required
+                            className="appearance-none rounded-lg relative block w-full pl-11 pr-3.5 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                            placeholder="Correo electrónico"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
+
+                    {/* 4. CONTRASEÑA */}
+                    <div className="relative">
+                        <Lock className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            required
+                            className="appearance-none rounded-lg relative block w-full pl-11 pr-11 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                            placeholder="Contraseña"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        />
+                        <button
+                            type="button"
+                            className="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                    </div>
+
+                    {/* 5. REPETIR CONTRASEÑA */}
+                    {!isLogin && (
                         <div className="relative">
-                            <Mail className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
+                            <Lock className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
                             <input
-                                type="email"
+                                type={showConfirmPassword ? 'text' : 'password'}
                                 required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                placeholder="Correo Corporativo"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="appearance-none rounded-lg relative block w-full pl-11 pr-11 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                placeholder="Repetir contraseña"
+                                value={formData.confirmPassword}
+                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                             />
-                        </div>
-                        <div className="relative">
-                            <Lock className="absolute top-3 left-3 text-slate-400 w-5 h-5" />
-                            <input
-                                type="password"
-                                required
-                                className="appearance-none rounded-lg relative block w-full px-10 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                placeholder="Contraseña"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            />
-                        </div>
-                        {!isLogin && (
-                            <>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            required
-                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                            placeholder="R.F.C."
-                                            value={formData.rfc || ''}
-                                            onChange={(e) => setFormData({ ...formData, rfc: e.target.value })}
-                                        />
-                                    </div>
-                                    <select
-                                        required
-                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm bg-white"
-                                        value={formData.industry || ''}
-                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                    >
-                                        <option value="">Industria / Sector...</option>
-                                        <option value="Tecnología">Tecnología</option>
-                                        <option value="Salud">Salud</option>
-                                        <option value="Educación">Educación</option>
-                                        <option value="Finanzas">Finanzas</option>
-                                        <option value="Manufactura">Manufactura</option>
-                                        <option value="Comercio">Comercio</option>
-                                        <option value="Servicios">Servicios</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        required
-                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                        placeholder="Ubicación (Ciudad, Estado)"
-                                        value={formData.location || ''}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                    />
-                                </div>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        required
-                                        className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                        placeholder="Dirección Completa"
-                                        value={formData.address || ''}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            required
-                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                            placeholder="Nombre del Reclutador"
-                                            value={formData.recruiter_name || ''}
-                                            onChange={(e) => setFormData({ ...formData, recruiter_name: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <input
-                                            type="tel"
-                                            required
-                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 focus:z-10 sm:text-sm"
-                                            placeholder="Teléfono de Contacto"
-                                            value={formData.phone_number || ''}
-                                            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-
-                                {/* Logo Upload Field */}
-                                <div className="relative">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Logotipo de la Empresa</label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="block w-full text-sm text-slate-500
-                                            file:mr-4 file:py-2 file:px-4
-                                            file:rounded-full file:border-0
-                                            file:text-sm file:font-semibold
-                                            file:bg-secondary-50 file:text-secondary-700
-                                            hover:file:bg-secondary-100"
-                                        onChange={(e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onloadend = () => {
-                                                    setFormData({ ...formData, logo: reader.result });
-                                                };
-                                                reader.readAsDataURL(file);
-                                            }
-                                        }}
-                                    />
-                                    <p className="mt-1 text-xs text-slate-500">Formato: PNG, JPG (Max 2MB)</p>
-                                </div>
-                            </>
-                        )}
-
-                        <div>
                             <button
-                                type="submit"
-                                disabled={loading}
-                                className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${loading ? 'bg-secondary-400 cursor-not-allowed' : 'bg-secondary-600 hover:bg-secondary-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500`}
+                                type="button"
+                                className="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
-                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                    {!loading && <ArrowRight className="h-5 w-5 text-secondary-500 group-hover:text-secondary-400" aria-hidden="true" />}
-                                </span>
-                                {loading ? 'Procesando...' : (isLogin ? 'Ingresar al Panel' : 'Registrar Empresa')}
+                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
                         </div>
+                    )}
+
+                    <div className="pt-2">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading ? 'bg-secondary-400 cursor-not-allowed' : 'bg-secondary-600 hover:bg-secondary-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transition-all shadow-md active:scale-98 cursor-pointer`}
+                        >
+                            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                {!loading && <ArrowRight className="h-5 w-5 text-secondary-200 group-hover:text-white" aria-hidden="true" />}
+                            </span>
+                            {loading ? 'Procesando...' : (isLogin ? 'Ingresar al Panel' : 'Continuar al Perfil de Empresa →')}
+                        </button>
                     </div>
                 </form>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
 

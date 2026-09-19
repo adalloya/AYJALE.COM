@@ -90,8 +90,37 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleToggleStatus = async (jobId, currentStatus) => {
-        await toggleJobStatus(jobId, currentStatus);
+    const handleToggleSearchAccess = async (companyId, currentVal) => {
+        const newVal = !currentVal;
+        try {
+            await updateUserProfile(companyId, { can_search_candidates: newVal });
+            setAllUsers(prev => prev.map(u => u.id === companyId ? { ...u, can_search_candidates: newVal } : u));
+        } catch (error) {
+            console.error("Error updating search access:", error);
+            alert("Error al actualizar permiso de búsqueda: " + error.message);
+        }
+    };
+
+    const handleToggleHideSalaryAccess = async (companyId, currentVal) => {
+        const newVal = !currentVal;
+        try {
+            await updateUserProfile(companyId, { can_hide_salary: newVal });
+            setAllUsers(prev => prev.map(u => u.id === companyId ? { ...u, can_hide_salary: newVal } : u));
+        } catch (error) {
+            console.error("Error updating hide salary access:", error);
+            alert("Error al actualizar permiso de ocultar salario: " + error.message);
+        }
+    };
+
+    const handleToggleConfidentialAccess = async (companyId, currentVal) => {
+        const newVal = !currentVal;
+        try {
+            await updateUserProfile(companyId, { can_post_confidential: newVal });
+            setAllUsers(prev => prev.map(u => u.id === companyId ? { ...u, can_post_confidential: newVal } : u));
+        } catch (error) {
+            console.error("Error updating confidential access:", error);
+            alert("Error al actualizar permiso de empresa confidencial: " + error.message);
+        }
     };
 
     const filteredCandidates = candidates.filter(c =>
@@ -403,6 +432,9 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">RFC</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contacto</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Industria/Ubicación</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Buscar Candidatos</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Ocultar Salario</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa Confidencial</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
                                     </>
                                 )}
@@ -489,11 +521,56 @@ const AdminDashboard = () => {
                                         <div className="text-sm text-slate-900">{user.recruiter_name || '-'}</div>
                                         <div className="text-sm text-slate-500">{user.phone_number || '-'}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-slate-900">{user.industry || '-'}</div>
-                                        <div className="text-sm text-slate-500">{user.location || '-'}</div>
-                                        <div className="text-xs text-slate-400">{user.address || ''}</div>
-                                    </td>
+                                     <td className="px-6 py-4 whitespace-nowrap">
+                                         <div className="text-sm text-slate-900">{user.industry || '-'}</div>
+                                         <div className="text-sm text-slate-500">{user.location || '-'}</div>
+                                         <div className="text-xs text-slate-400">{user.address || ''}</div>
+                                     </td>
+                                     <td className="px-6 py-4 whitespace-nowrap text-center">
+                                         <button
+                                             onClick={() => handleToggleSearchAccess(user.id, user.can_search_candidates || user.canSearchCandidates)}
+                                             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user.can_search_candidates || user.canSearchCandidates ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                             role="switch"
+                                             title="Activar / Desactivar Búsqueda de Candidatos"
+                                         >
+                                             <span
+                                                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${(user.can_search_candidates || user.canSearchCandidates) ? 'translate-x-5' : 'translate-x-0'}`}
+                                             />
+                                         </button>
+                                         <span className="block text-[11px] font-bold mt-1 text-slate-600">
+                                             {(user.can_search_candidates || user.canSearchCandidates) ? 'Permitido' : 'Desactivado'}
+                                         </span>
+                                     </td>
+                                     <td className="px-6 py-4 whitespace-nowrap text-center">
+                                         <button
+                                             onClick={() => handleToggleHideSalaryAccess(user.id, user.can_hide_salary || user.canHideSalary)}
+                                             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user.can_hide_salary || user.canHideSalary ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                             role="switch"
+                                             title="Activar / Desactivar Ocultar Salario"
+                                         >
+                                             <span
+                                                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${(user.can_hide_salary || user.canHideSalary) ? 'translate-x-5' : 'translate-x-0'}`}
+                                             />
+                                         </button>
+                                         <span className="block text-[11px] font-bold mt-1 text-slate-600">
+                                             {(user.can_hide_salary || user.canHideSalary) ? 'Permitido' : 'Desactivado'}
+                                         </span>
+                                     </td>
+                                     <td className="px-6 py-4 whitespace-nowrap text-center">
+                                         <button
+                                             onClick={() => handleToggleConfidentialAccess(user.id, user.can_post_confidential || user.canPostConfidential)}
+                                             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user.can_post_confidential || user.canPostConfidential ? 'bg-secondary-600' : 'bg-slate-300'}`}
+                                             role="switch"
+                                             title="Activar / Desactivar Empresa Confidencial"
+                                         >
+                                             <span
+                                                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${(user.can_post_confidential || user.canPostConfidential) ? 'translate-x-5' : 'translate-x-0'}`}
+                                             />
+                                         </button>
+                                         <span className="block text-[11px] font-bold mt-1 text-slate-600">
+                                             {(user.can_post_confidential || user.canPostConfidential) ? 'Permitido' : 'Desactivado'}
+                                         </span>
+                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end space-x-3">
                                             <button

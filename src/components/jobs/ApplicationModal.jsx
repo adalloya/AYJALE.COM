@@ -50,21 +50,25 @@ const ApplicationModal = ({ isOpen, onClose, onSubmit, jobTitle, loading, succes
                                         Postularse a <span className="font-bold text-secondary-600">{jobTitle}</span>
                                     </h3>
                                     <div className="mt-2">
-                                        <p className="text-sm text-gray-500 mb-4">
-                                            Tu perfil está completo. Solo cuéntanos brevemente por qué te interesa este puesto.
+                                        <p className="text-sm text-slate-600 mb-4">
+                                            Se enviará tu perfil oficial al reclutador. Si lo deseas, puedes agregar un mensaje breve explicando por qué eres el candidato ideal.
                                         </p>
                                         <form onSubmit={handleSubmit}>
-                                            <label htmlFor="comments" className="block text-sm font-medium text-gray-700 mb-1">
-                                                ¿Por qué te interesa este puesto?
-                                            </label>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label htmlFor="comments" className="block text-sm font-bold text-slate-800">
+                                                    ¿Por qué eres el candidato ideal para esta vacante?
+                                                </label>
+                                                <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                                                    Opcional
+                                                </span>
+                                            </div>
                                             <textarea
                                                 id="comments"
                                                 rows={4}
-                                                className="shadow-sm focus:ring-secondary-500 focus:border-secondary-500 block w-full sm:text-sm border-gray-300 rounded-md border p-2"
-                                                placeholder="Me gustaría trabajar aquí porque..."
+                                                className="shadow-2xs focus:ring-secondary-500 focus:border-secondary-500 block w-full sm:text-sm border-slate-300 rounded-lg border p-3 text-slate-900 placeholder-slate-400"
+                                                placeholder="Ej. Cuento con 3 años de experiencia en puestos similares y disponibilidad de inicio inmediato (opcional)..."
                                                 value={comments}
                                                 onChange={(e) => setComments(e.target.value)}
-                                                required
                                             />
                                             <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                                                 <button

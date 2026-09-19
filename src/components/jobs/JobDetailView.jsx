@@ -32,6 +32,9 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     const formatSalary = (job) => {
         if (!job) return 'No mostrado';
 
+        // If company chose to hide salary, show placeholder
+        if (job.hide_salary) return 'Salario no publicado';
+
         let salaryText = 'No mostrado';
 
         // Helper to format number

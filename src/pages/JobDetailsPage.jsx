@@ -93,11 +93,8 @@ const JobDetailsPage = () => {
             return;
         }
 
-        if (isProfileComplete()) {
-            setShowModal(true);
-        } else {
-            navigate(`/profile?applyingTo=${job.id}`);
-        }
+        // Open application modal directly on the job page
+        setShowModal(true);
     };
 
     const handleModalSubmit = async (comments) => {
