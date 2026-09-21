@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
             let finalUser = {
                 ...metaData,
                 ...data,
-                role: data?.role || metaData.role,
+                role: data?.role || metaData?.role || 'candidate',
                 name: data?.name || metaData.name || '',
                 first_last_name: data?.first_last_name || data?.lastName || data?.last_name || metaData.first_last_name || metaData.lastName || metaData.last_name || '',
                 second_last_name: data?.second_last_name || metaData.second_last_name || '',
@@ -217,6 +217,7 @@ export const AuthProvider = ({ children }) => {
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
+                        role: role,
                         name: userData.name,
                         last_name: lastNameToSave,
                         phone: phoneToSave,

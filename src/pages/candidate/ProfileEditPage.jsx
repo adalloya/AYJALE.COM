@@ -1764,29 +1764,16 @@ const ProfileEditPage = () => {
                     <button
                         type="button"
                         onClick={() => navigate(jobToApply ? `/jobs/${jobToApply.id}` : '/profile')}
-                        className="w-full sm:w-auto bg-white text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium border border-slate-300 hover:bg-slate-50 transition-colors"
+                        className="w-full sm:w-auto bg-white text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium border border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                         Cancelar
                     </button>
 
                     <button
-                        type="button"
-                        disabled={!isAnySectionDirty()}
-                        onClick={() => saveProfileData(formData, 'Perfil')}
-                        className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
-                            isAnySectionDirty()
-                                ? 'bg-secondary-600 hover:bg-secondary-700 text-white cursor-pointer shadow-md'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                        }`}
-                    >
-                        Guardar cambios
-                    </button>
-
-                    <button
                         type="submit"
-                        className="w-full sm:w-auto bg-primary-600 text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-primary-700 transition-colors shadow-md"
+                        className="w-full sm:w-auto bg-secondary-600 hover:bg-secondary-700 text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-md cursor-pointer"
                     >
-                        {jobToApply ? 'Enviar Solicitud' : 'Completar'}
+                        {jobToApply ? 'Enviar Postulación' : 'Guardar Cambios'}
                     </button>
                 </div>
             </form>

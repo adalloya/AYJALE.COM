@@ -95,7 +95,7 @@ const AuthPage = () => {
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
-                navigate('/profile');
+                navigate(returnUrl || (userType === 'company' ? '/dashboard' : '/jobs'));
             }
         } catch (error) {
             console.error("Auth error:", error);
