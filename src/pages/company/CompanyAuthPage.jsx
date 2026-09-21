@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../supabaseClient';
 import { Building2, Mail, Lock, ArrowRight, CheckCircle, Briefcase, Eye, EyeOff, User } from 'lucide-react';
 import logo from '../../assets/ayjale_logo_new.png';
 
@@ -30,6 +31,22 @@ const CompanyAuthPage = () => {
             .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
             .join(' ');
         return (hasTrailingSpace && !formatted.endsWith(' ')) ? formatted + ' ' : formatted;
+    };
+
+    const handleForgotPassword = async () => {
+        if (!formData.email) {
+            alert("Por favor ingresa tu correo electrónico en el campo correspondiente primero.");
+            return;
+        }
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(formData.email.trim(), {
+                redirectTo: window.location.origin + '/reset-password',
+            });
+            if (error) throw error;
+            alert("Se ha enviado un correo con instrucciones para restablecer tu contraseña. Revisa tu bandeja de entrada.");
+        } catch (error) {
+            alert("Error al enviar el correo de recuperación: " + error.message);
+        }
     };
 
     if (user) {
@@ -163,23 +180,37 @@ const CompanyAuthPage = () => {
                     </div>
 
                     {/* 4. CONTRASEÑA */}
-                    <div className="relative">
-                        <Lock className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            className="appearance-none rounded-lg relative block w-full pl-11 pr-11 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                            placeholder="Contraseña"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        />
-                        <button
-                            type="button"
-                            className="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
+                    <div className="space-y-1">
+                        <div className="relative">
+                            <Lock className="absolute top-3.5 left-3.5 text-slate-400 w-5 h-5 pointer-events-none" />
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                className="appearance-none rounded-lg relative block w-full pl-11 pr-11 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                placeholder="Contraseña"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            />
+                            <button
+                                type="button"
+                                className="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
+
+                        {isLogin && (
+                            <div className="flex justify-end pt-1">
+                                <button
+                                    type="button"
+                                    onClick={handleForgotPassword}
+                                    className="text-xs font-semibold text-secondary-600 hover:text-secondary-700 hover:underline cursor-pointer"
+                                >
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* 5. REPETIR CONTRASEÑA */}

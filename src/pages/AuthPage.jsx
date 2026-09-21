@@ -21,12 +21,10 @@ const AuthPage = () => {
     const { user, login, register, loading, loginWithGoogle, loginWithApple } = useAuth();
     const returnUrl = searchParams.get('returnUrl') || '/dashboard';
 
-    if (user) {
-        return <Navigate to={returnUrl || '/dashboard'} replace />;
-    }
-
     const [formData, setFormData] = useState({
         name: '',
+        first_last_name: '',
+        second_last_name: '',
         lastName: '',
         email: '',
         password: '',
@@ -36,6 +34,10 @@ const AuthPage = () => {
     });
     const [phoneDisplay, setPhoneDisplay] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    if (user) {
+        return <Navigate to={returnUrl || '/dashboard'} replace />;
+    }
 
     const passwordCriteria = {
         length: formData.password.length >= 8,
@@ -87,15 +89,21 @@ const AuthPage = () => {
                 await login(formData.email, formData.password);
                 navigate(returnUrl);
             } else {
+                const firstLastName = formData.first_last_name || formData.lastName;
                 await register({
                     name: formData.name,
-                    lastName: formData.lastName,
-                    last_name: formData.lastName,
+                    first_last_name: firstLastName,
+                    second_last_name: formData.second_last_name,
+                    lastName: firstLastName,
+                    last_name: firstLastName,
                     email: formData.email,
                     phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
-                navigate(returnUrl || (userType === 'company' ? '/dashboard' : '/jobs'));
+                
+                // If returnUrl was specified (e.g. from a job application), go there; otherwise go directly to edit profile
+                const defaultTarget = userType === 'company' ? '/dashboard' : '/profile/edit';
+                navigate(returnUrl && returnUrl !== '/dashboard' ? returnUrl : defaultTarget);
             }
         } catch (error) {
             console.error("Auth error:", error);
@@ -186,25 +194,48 @@ const AuthPage = () => {
                                         </p>
                                     )}
                                 </div>
-                                <div>
-                                    <div className="relative">
-                                        <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="text"
-                                            name="familyName"
-                                            autoComplete="family-name"
-                                            required
-                                            className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                            placeholder="Apellidos *"
-                                            value={formData.lastName}
-                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                        />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <div className="relative">
+                                            <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                            <input
+                                                type="text"
+                                                name="first_last_name"
+                                                autoComplete="family-name"
+                                                required
+                                                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                                placeholder="Primer Apellido *"
+                                                value={formData.first_last_name}
+                                                onChange={(e) => setFormData({ ...formData, first_last_name: e.target.value, lastName: e.target.value })}
+                                            />
+                                        </div>
+                                        {formData.first_last_name.length > 0 && (
+                                            <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                                💡 Ej. Pérez
+                                            </p>
+                                        )}
                                     </div>
-                                    {formData.lastName.length > 0 && (
-                                        <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
-                                            💡 Ej. Pérez López
-                                        </p>
-                                    )}
+
+                                    <div>
+                                        <div className="relative">
+                                            <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                            <input
+                                                type="text"
+                                                name="second_last_name"
+                                                autoComplete="additional-name"
+                                                required
+                                                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                                placeholder="Segundo Apellido *"
+                                                value={formData.second_last_name}
+                                                onChange={(e) => setFormData({ ...formData, second_last_name: e.target.value })}
+                                            />
+                                        </div>
+                                        {formData.second_last_name.length > 0 && (
+                                            <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                                💡 Ej. López
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -275,6 +306,17 @@ const AuthPage = () => {
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
+                            {isLogin && (
+                                <div className="flex justify-end mt-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPassword}
+                                        className="text-xs font-semibold text-secondary-600 hover:text-secondary-700 hover:underline cursor-pointer"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </button>
+                                </div>
+                            )}
                             {!isLogin && (
                                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1 mt-2">
                                     <p className="font-semibold text-slate-700 mb-1">Requisitos de la contraseña:</p>

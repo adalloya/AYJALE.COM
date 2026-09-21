@@ -121,8 +121,13 @@ const Navbar = () => {
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link to="/auth?mode=register&role=candidate" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
-                                            Regístrate
+                                        <Link to="/auth?mode=register&role=candidate" className="text-slate-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
+                                            Soy Candidato
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/login" className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700 transition-colors">
+                                            Iniciar Sesión
                                         </Link>
                                     </li>
                                 </>
@@ -324,9 +329,16 @@ const Navbar = () => {
                                 <Link
                                     to="/auth?mode=register&role=candidate"
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-slate-50"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50"
                                 >
-                                    Regístrate
+                                    Soy Candidato
+                                </Link>
+                                <Link
+                                    to="/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-3 py-2 rounded-md text-base font-bold text-white bg-secondary-600 hover:bg-secondary-700 rounded-xl text-center mt-2"
+                                >
+                                    Iniciar Sesión
                                 </Link>
                             </>
                         )}

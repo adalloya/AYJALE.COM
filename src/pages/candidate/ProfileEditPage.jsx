@@ -91,6 +91,28 @@ const ProfileEditPage = () => {
         return (hasTrailingSpace && !formatted.endsWith(' ')) ? formatted + ' ' : formatted;
     };
 
+    const capitalizeCompanyName = (str) => {
+        if (!str || typeof str !== 'string') return str || '';
+        const trimmed = str.trim();
+        if (!trimmed) return str;
+
+        // If user typed ALL UPPERCASE (e.g. OXXO, CFE, PEMEX, IBM, BBVA), preserve ALL UPPERCASE!
+        if (trimmed === trimmed.toUpperCase() && trimmed !== trimmed.toLowerCase() && trimmed.length > 1) {
+            return str;
+        }
+
+        // If user typed ALL LOWERCASE (e.g. oxxo, bimbo), capitalize first letter of each word!
+        if (trimmed === trimmed.toLowerCase()) {
+            return str
+                .split(' ')
+                .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+                .join(' ');
+        }
+
+        // Otherwise (user typed mixed case like Grupo Bimbo), preserve user's exact casing!
+        return str;
+    };
+
     const capitalizeSentence = (str) => {
         if (!str || typeof str !== 'string') return str || '';
         const lower = str.toLowerCase();
@@ -112,7 +134,7 @@ const ProfileEditPage = () => {
             if (!Array.isArray(initialWorkHistory) || initialWorkHistory.length === 0) {
                 if (user.lastJob || user.last_job) {
                     initialWorkHistory = [{
-                        company: capitalizeWords(user.lastJob || user.last_job || ''),
+                        company: capitalizeCompanyName(user.lastJob || user.last_job || ''),
                         position: capitalizeWords(user.lastPosition || user.last_position || ''),
                         duration: user.lastDuration || user.last_duration || '',
                         activities: capitalizeSentence(user.lastActivities || user.last_activities || ''),
@@ -132,7 +154,7 @@ const ProfileEditPage = () => {
             } else {
                 initialWorkHistory = initialWorkHistory.map(w => ({
                     ...w,
-                    company: capitalizeWords(w.company),
+                    company: capitalizeCompanyName(w.company),
                     position: capitalizeWords(w.position),
                     activities: capitalizeSentence(w.activities)
                 }));
@@ -154,7 +176,7 @@ const ProfileEditPage = () => {
                     initialReferences = [{
                         ref_name: capitalizeWords(user.ref_name || ''),
                         ref_phone: formatPhoneNumber(user.ref_phone || ''),
-                        ref_position_company: capitalizeWords(user.ref_position_company || ''),
+                        ref_position_company: capitalizeCompanyName(user.ref_position_company || ''),
                         ref_recommendation_pdf: user.ref_recommendation_pdf || ''
                     }];
                 } else {
@@ -170,7 +192,7 @@ const ProfileEditPage = () => {
                     ...r,
                     ref_name: capitalizeWords(r.ref_name),
                     ref_phone: formatPhoneNumber(r.ref_phone),
-                    ref_position_company: capitalizeWords(r.ref_position_company)
+                    ref_position_company: capitalizeCompanyName(r.ref_position_company)
                 }));
             }
 
@@ -290,9 +312,13 @@ const ProfileEditPage = () => {
             const updatedWork = [...prev.work_history];
             const val = updatedWork[index][field];
             if (typeof val === 'string' && val) {
+                const formatted = field === 'company'
+                    ? capitalizeCompanyName(val)
+                    : (isSentence ? capitalizeSentence(val) : capitalizeWords(val.trim()));
+
                 updatedWork[index] = {
                     ...updatedWork[index],
-                    [field]: isSentence ? capitalizeSentence(val) : capitalizeWords(val.trim())
+                    [field]: formatted
                 };
             }
             return { ...prev, work_history: updatedWork };
@@ -315,7 +341,11 @@ const ProfileEditPage = () => {
             const updatedRefs = [...prev.references];
             const val = updatedRefs[index][field];
             if (typeof val === 'string' && val) {
-                updatedRefs[index] = { ...updatedRefs[index], [field]: capitalizeWords(val.trim()) };
+                const formatted = field === 'ref_position_company'
+                    ? capitalizeCompanyName(val)
+                    : capitalizeWords(val.trim());
+
+                updatedRefs[index] = { ...updatedRefs[index], [field]: formatted };
             }
             return { ...prev, references: updatedRefs };
         });
@@ -1388,8 +1418,8 @@ const ProfileEditPage = () => {
                                             <input
                                                 type="text"
                                                 autoCapitalize="words"
-                                                placeholder="Ej. Transportes del Norte"
-                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5 capitalize"
+                                                placeholder="Ej. Transportes del Norte, OXXO, CFE"
+                                                className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={exp.company}
                                                 onChange={e => handleWorkHistoryChange(index, 'company', e.target.value)}
                                                 onBlur={() => handleWorkHistoryBlur(index, 'company')}

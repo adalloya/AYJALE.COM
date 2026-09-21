@@ -191,8 +191,10 @@ export const AuthProvider = ({ children }) => {
                     data: {
                         role: role,
                         name: userData.name,
-                        last_name: userData.lastName || userData.last_name || '',
-                        lastName: userData.lastName || userData.last_name || '',
+                        first_last_name: userData.first_last_name || userData.lastName || userData.last_name || '',
+                        second_last_name: userData.second_last_name || '',
+                        last_name: userData.first_last_name || userData.lastName || userData.last_name || '',
+                        lastName: userData.first_last_name || userData.lastName || userData.last_name || '',
                         terms_accepted: userData.termsAccepted,
                         terms_accepted_at: new Date().toISOString(),
                         rfc: userData.rfc,
@@ -212,14 +214,17 @@ export const AuthProvider = ({ children }) => {
             // 2. If session exists (auto-confirm enabled), set user immediately
             if (data?.session?.user) {
                 const phoneToSave = userData.phone || userData.phone_number;
-                const lastNameToSave = userData.lastName || userData.last_name || '';
+                const firstLastNameToSave = userData.first_last_name || userData.lastName || userData.last_name || '';
+                const secondLastNameToSave = userData.second_last_name || '';
 
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
                         role: role,
                         name: userData.name,
-                        last_name: lastNameToSave,
+                        first_last_name: firstLastNameToSave,
+                        second_last_name: secondLastNameToSave,
+                        last_name: firstLastNameToSave,
                         phone: phoneToSave,
                         phone_number: phoneToSave,
                         rfc: userData.rfc,
@@ -241,8 +246,10 @@ export const AuthProvider = ({ children }) => {
                     email: data.user.email,
                     role: role,
                     name: userData.name,
-                    lastName: lastNameToSave,
-                    last_name: lastNameToSave,
+                    first_last_name: firstLastNameToSave,
+                    second_last_name: secondLastNameToSave,
+                    lastName: firstLastNameToSave,
+                    last_name: firstLastNameToSave,
                 };
                 console.log('register setting initial user:', userProfile);
                 setUser(userProfile);
