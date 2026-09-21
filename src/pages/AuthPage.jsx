@@ -173,7 +173,7 @@ const AuthPage = () => {
                             </p>
                         )}
                         {!isLogin && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <>
                                 <div>
                                     <div className="relative">
                                         <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
@@ -194,50 +194,49 @@ const AuthPage = () => {
                                         </p>
                                     )}
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="relative">
-                                            <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                            <input
-                                                type="text"
-                                                name="first_last_name"
-                                                autoComplete="family-name"
-                                                required
-                                                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                                placeholder="Primer Apellido *"
-                                                value={formData.first_last_name}
-                                                onChange={(e) => setFormData({ ...formData, first_last_name: e.target.value, lastName: e.target.value })}
-                                            />
-                                        </div>
-                                        {formData.first_last_name.length > 0 && (
-                                            <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
-                                                💡 Ej. Pérez
-                                            </p>
-                                        )}
-                                    </div>
 
-                                    <div>
-                                        <div className="relative">
-                                            <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
-                                            <input
-                                                type="text"
-                                                name="second_last_name"
-                                                autoComplete="additional-name"
-                                                required
-                                                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                                placeholder="Segundo Apellido *"
-                                                value={formData.second_last_name}
-                                                onChange={(e) => setFormData({ ...formData, second_last_name: e.target.value })}
-                                            />
-                                        </div>
-                                        {formData.second_last_name.length > 0 && (
-                                            <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
-                                                💡 Ej. López
-                                            </p>
-                                        )}
+                                <div>
+                                    <div className="relative">
+                                        <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                        <input
+                                            type="text"
+                                            name="first_last_name"
+                                            autoComplete="family-name"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                            placeholder="Primer Apellido *"
+                                            value={formData.first_last_name}
+                                            onChange={(e) => setFormData({ ...formData, first_last_name: e.target.value, lastName: e.target.value })}
+                                        />
                                     </div>
+                                    {formData.first_last_name.length > 0 && (
+                                        <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                            💡 Ej. Pérez
+                                        </p>
+                                    )}
                                 </div>
-                            </div>
+
+                                <div>
+                                    <div className="relative">
+                                        <User className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />
+                                        <input
+                                            type="text"
+                                            name="second_last_name"
+                                            autoComplete="additional-name"
+                                            required
+                                            className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
+                                            placeholder="Segundo Apellido *"
+                                            value={formData.second_last_name}
+                                            onChange={(e) => setFormData({ ...formData, second_last_name: e.target.value })}
+                                        />
+                                    </div>
+                                    {formData.second_last_name.length > 0 && (
+                                        <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
+                                            💡 Ej. López
+                                        </p>
+                                    )}
+                                </div>
+                            </>
                         )}
                         <div>
                             <div className="relative">
