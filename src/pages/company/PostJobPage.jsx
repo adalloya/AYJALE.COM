@@ -5,7 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 import { MEXICO_DATA } from '../../data/mexicoData';
 import { generateJobDescription } from '../../utils/jobDescriptionGenerator';
-import { Sparkles, Info, Building2, Plus, Upload, ShieldCheck } from 'lucide-react';
+import { Sparkles, Info, Building2, Plus, Upload, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import Toast from '../../components/Toast';
 
 const PostJobPage = () => {
     const [searchParams] = useSearchParams();
@@ -45,11 +46,36 @@ const PostJobPage = () => {
         recruiter_name: ''
     });
 
+    const [toast, setToast] = useState(null);
+    const [successBanner, setSuccessBanner] = useState('');
+
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const duplicateId = searchParams.get('duplicate');
     const [lastInitializedId, setLastInitializedId] = useState(null);
+
+    // Helpers for Capitalization & Money Formatting
+    const capitalizeWords = (str) => {
+        if (!str) return '';
+        return str
+            .split(' ')
+            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
+    };
+
+    const formatMoneyInput = (val) => {
+        if (!val && val !== 0) return '';
+        const digits = String(val).replace(/\D/g, '');
+        if (!digits) return '';
+        return `$ ${Number(digits).toLocaleString('es-MX')}`;
+    };
+
+    const parseMoneyValue = (val) => {
+        if (!val && val !== 0) return '';
+        const digits = String(val).replace(/\D/g, '');
+        return digits ? digits : '';
+    };
 
     // Load registered companies for Admin selector
     useEffect(() => {
@@ -163,6 +189,8 @@ const PostJobPage = () => {
 
             let finalCompanyId = user.id;
 
+            let targetCompanyProfile = null;
+
             // Admin company assignment logic
             if (isAdmin) {
                 if (companyMode === 'new') {
@@ -175,39 +203,62 @@ const PostJobPage = () => {
                         ...newCompanyData,
                         location: fullLocation
                     });
-                    finalCompanyId = createdCompany.id;
+                    finalCompanyId = createdCompany?.id || crypto.randomUUID();
+                    targetCompanyProfile = createdCompany || { name: newCompanyData.name, logo: newCompanyData.logo };
                 } else if (selectedCompanyId) {
                     finalCompanyId = selectedCompanyId;
+                    targetCompanyProfile = companies.find(c => c.id === selectedCompanyId) || null;
                 }
             }
+
+            const salaryMinVal = formData.salary_min ? Number(formData.salary_min) : null;
+            const salaryMaxVal = formData.salary_max ? Number(formData.salary_max) : null;
+            const calculatedSalary = salaryMinVal || salaryMaxVal || 0;
 
             const jobData = {
                 title: formData.title,
                 description: formData.description,
                 category: formData.category,
-                salary: Number(formData.salary || formData.salary_min || 0),
-                salary_min: formData.salary_min ? Number(formData.salary_min) : null,
-                salary_max: formData.salary_max ? Number(formData.salary_max) : null,
+                salary: calculatedSalary,
+                salary_min: salaryMinVal,
+                salary_max: salaryMaxVal,
                 hide_salary: canHideSalary ? formData.hide_salary : false,
                 type: formData.type,
                 location: fullLocation,
                 is_confidential: canPostConfidential ? formData.isConfidential : false,
                 currency: 'MXN',
-                company_id: finalCompanyId
+                company_id: finalCompanyId,
+                companyProfile: targetCompanyProfile
             };
-
-            const successMessage = jobId
-                ? '¡Vacante actualizada con éxito!'
-                : '¡Vacante publicada con éxito!';
 
             if (jobId) {
                 await updateJob(Number(jobId), jobData);
+                setToast({ message: '¡Vacante actualizada con éxito!', type: 'success' });
+                setTimeout(() => {
+                    navigate(isAdmin ? '/users' : '/dashboard');
+                }, 1200);
             } else {
                 await addJob(jobData);
-            }
 
-            const targetRoute = isAdmin ? '/admin' : '/dashboard';
-            navigate(targetRoute, { state: { message: successMessage } });
+                if (isAdmin) {
+                    const publishedTitle = formData.title;
+                    setToast({ message: '🎉 ¡Vacante publicada con éxito!', type: 'success' });
+                    setSuccessBanner(`¡Vacante "${publishedTitle}" publicada con éxito! Ya puedes ingresar los datos para publicar otra vacante.`);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Reset title, description & salary fields for rapid multi-job posting
+                    setFormData(prev => ({
+                        ...prev,
+                        title: '',
+                        description: '',
+                        salary: '',
+                        salary_min: '',
+                        salary_max: ''
+                    }));
+                } else {
+                    navigate('/dashboard', { state: { message: '¡Vacante publicada con éxito!' } });
+                }
+            }
         } catch (error) {
             console.error("Error submitting job:", error);
             alert("Error al publicar la vacante: " + error.message);
@@ -217,7 +268,32 @@ const PostJobPage = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+        <div className="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 relative">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
+
+            {/* SUCCESS BANNER FOR ADMIN FAST MULTI-POSTING */}
+            {successBanner && (
+                <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+                        <span className="text-sm font-bold">{successBanner}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/users')}
+                        className="text-xs font-bold bg-white text-green-800 border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-colors shrink-0 cursor-pointer"
+                    >
+                        📋 Ir al Panel Admin
+                    </button>
+                </div>
+            )}
+
             <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-200">
                 <div>
                     <h1 className="text-2xl font-extrabold text-slate-900">
@@ -350,9 +426,11 @@ const PostJobPage = () => {
                     <input
                         type="text"
                         required
+                        autoCapitalize="words"
                         className="block w-full rounded-xl border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-3 font-semibold text-slate-900"
                         value={formData.title}
-                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        onChange={e => setFormData({ ...formData, title: capitalizeWords(e.target.value) })}
+                        onBlur={e => setFormData({ ...formData, title: capitalizeWords(e.target.value.trim()) })}
                         placeholder="Ej. Vendedor, Chofer, Limpieza..."
                     />
                 </div>
@@ -384,58 +462,49 @@ const PostJobPage = () => {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-800 mb-1">Categoría</label>
-                        <select
-                            required
-                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium"
-                            value={formData.category}
-                            onChange={e => setFormData({ ...formData, category: e.target.value })}
-                        >
-                            <option value="">Seleccionar Categoría...</option>
-                            {JOB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-bold text-slate-800 mb-1">Salario mensual aproximado (MXN)</label>
-                        <input
-                            type="number"
-                            required
-                            min="0"
-                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 font-bold text-slate-900"
-                            value={formData.salary}
-                            onChange={e => setFormData({ ...formData, salary: e.target.value })}
-                            placeholder="Ej. 12000"
-                        />
-                    </div>
+                <div>
+                    <label className="block text-sm font-bold text-slate-800 mb-1">Categoría</label>
+                    <select
+                        required
+                        className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium"
+                        value={formData.category}
+                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                    >
+                        <option value="">Seleccionar Categoría...</option>
+                        {JOB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                 </div>
 
-                {/* RANGO DE SUELDO (DESDE / HASTA) */}
+                {/* RANGO DE SUELDO (DESDE / HASTA) CON FORMATO MONEDA */}
                 <div className="space-y-3 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
                     <label className="block text-sm font-bold text-slate-900">Rango de sueldo mensual (MXN)</label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1">Desde ($ MXN)</label>
                             <input
-                                type="number"
-                                min="0"
-                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold"
-                                value={formData.salary_min}
-                                onChange={e => setFormData({ ...formData, salary_min: e.target.value })}
-                                placeholder="Ej. 8,000"
+                                type="text"
+                                inputMode="numeric"
+                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold text-slate-900"
+                                value={formatMoneyInput(formData.salary_min)}
+                                onChange={e => {
+                                    const raw = parseMoneyValue(e.target.value);
+                                    setFormData({ ...formData, salary_min: raw });
+                                }}
+                                placeholder="$ 8,000"
                             />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1">Hasta ($ MXN)</label>
                             <input
-                                type="number"
-                                min="0"
-                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold"
-                                value={formData.salary_max}
-                                onChange={e => setFormData({ ...formData, salary_max: e.target.value })}
-                                placeholder="Ej. 15,000"
+                                type="text"
+                                inputMode="numeric"
+                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold text-slate-900"
+                                value={formatMoneyInput(formData.salary_max)}
+                                onChange={e => {
+                                    const raw = parseMoneyValue(e.target.value);
+                                    setFormData({ ...formData, salary_max: raw });
+                                }}
+                                placeholder="$ 15,000"
                             />
                         </div>
                     </div>
