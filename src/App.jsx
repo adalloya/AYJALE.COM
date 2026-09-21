@@ -78,7 +78,7 @@ function App() {
               } />
 
               <Route path="/post-job" element={
-                <ProtectedRoute allowedRoles={['company']}>
+                <ProtectedRoute allowedRoles={['company', 'admin']}>
                   <PostJobPage />
                 </ProtectedRoute>
               } />

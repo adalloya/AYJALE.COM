@@ -5,17 +5,18 @@ import { useAuth } from '../../context/AuthContext';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 import { MEXICO_DATA } from '../../data/mexicoData';
 import { generateJobDescription } from '../../utils/jobDescriptionGenerator';
-import { Sparkles, Info } from 'lucide-react';
+import { Sparkles, Info, Building2, Plus, Upload, ShieldCheck } from 'lucide-react';
 
 const PostJobPage = () => {
     const [searchParams] = useSearchParams();
     const jobId = searchParams.get('id');
-    const { jobs, addJob, updateJob } = useData();
+    const { jobs, addJob, updateJob, adminGetUsers, adminCreateCompanyProfile } = useData();
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const canHideSalary = user?.role === 'admin' || Boolean(user?.can_hide_salary || user?.canHideSalary);
-    const canPostConfidential = user?.role === 'admin' || Boolean(user?.can_post_confidential || user?.canPostConfidential);
+    const isAdmin = user?.role === 'admin';
+    const canHideSalary = isAdmin || Boolean(user?.can_hide_salary || user?.canHideSalary);
+    const canPostConfidential = isAdmin || Boolean(user?.can_post_confidential || user?.canPostConfidential);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -31,10 +32,37 @@ const PostJobPage = () => {
         isConfidential: false
     });
 
+    // Admin Multi-Company Publishing State
+    const [companies, setCompanies] = useState([]);
+    const [companyMode, setCompanyMode] = useState('existing'); // 'existing' | 'new'
+    const [selectedCompanyId, setSelectedCompanyId] = useState('');
+    const [newCompanyData, setNewCompanyData] = useState({
+        name: '',
+        logo: '',
+        rfc: '',
+        industry: '',
+        phone: '',
+        recruiter_name: ''
+    });
+
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const duplicateId = searchParams.get('duplicate');
     const [lastInitializedId, setLastInitializedId] = useState(null);
+
+    // Load registered companies for Admin selector
+    useEffect(() => {
+        if (isAdmin && adminGetUsers) {
+            adminGetUsers().then(usersData => {
+                const companyList = (usersData || []).filter(u => u.role === 'company');
+                setCompanies(companyList);
+                if (companyList.length > 0 && !selectedCompanyId) {
+                    setSelectedCompanyId(companyList[0].id);
+                }
+            }).catch(err => console.error("Error loading companies for admin:", err));
+        }
+    }, [isAdmin, adminGetUsers]);
 
     useEffect(() => {
         const targetId = jobId || duplicateId;
@@ -45,7 +73,7 @@ const PostJobPage = () => {
 
         const jobToEdit = jobs.find(j => j.id === Number(targetId));
         if (jobToEdit) {
-            if (jobToEdit.company_id !== user.id && user.role !== 'admin') {
+            if (jobToEdit.company_id !== user.id && !isAdmin) {
                 navigate('/dashboard');
                 return;
             }
@@ -78,13 +106,17 @@ const PostJobPage = () => {
                 isConfidential: jobToEdit.is_confidential
             });
 
+            if (isAdmin && jobToEdit.company_id) {
+                setSelectedCompanyId(jobToEdit.company_id);
+            }
+
             setLastInitializedId(targetId);
         }
-    }, [jobId, duplicateId, jobs, user, navigate, lastInitializedId]);
+    }, [jobId, duplicateId, jobs, user, isAdmin, navigate, lastInitializedId]);
 
     const handleGenerateDescription = () => {
         if (!formData.title) {
-            alert('Por favor escribe un título para el puesto primero.');
+            alert('Por favor escribe un título de la vacante primero.');
             return;
         }
 
@@ -94,7 +126,9 @@ const PostJobPage = () => {
             ? `${formData.city}, ${formData.location}`
             : formData.location || 'México';
 
-        const companyName = user.name || 'Nuestra Empresa';
+        const companyName = isAdmin
+            ? (companyMode === 'new' ? (newCompanyData.name || 'Empresa') : (companies.find(c => c.id === selectedCompanyId)?.name || 'Empresa'))
+            : (user.name || 'Nuestra Empresa');
 
         setTimeout(() => {
             const generatedDesc = generateJobDescription(formData.title, companyName, fullLocation);
@@ -103,52 +137,220 @@ const PostJobPage = () => {
         }, 800);
     };
 
+    const handleLogoUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("La imagen es muy pesada. Sube un archivo menor a 2MB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewCompanyData(prev => ({ ...prev, logo: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
-        const fullLocation = formData.city
-            ? `${formData.city}, ${formData.location}`
-            : formData.location;
+        try {
+            const fullLocation = formData.city
+                ? `${formData.city}, ${formData.location}`
+                : formData.location;
 
-        const jobData = {
-            title: formData.title,
-            description: formData.description,
-            category: formData.category,
-            salary: Number(formData.salary),
-            salary_min: formData.salary_min ? Number(formData.salary_min) : null,
-            salary_max: formData.salary_max ? Number(formData.salary_max) : null,
-            hide_salary: canHideSalary ? formData.hide_salary : false,
-            type: formData.type,
-            location: fullLocation,
-            is_confidential: canPostConfidential ? formData.isConfidential : false,
-            currency: 'MXN'
-        };
+            let finalCompanyId = user.id;
 
-        const successMessage = jobId
-            ? '¡Vacante actualizada con éxito!'
-            : '¡Vacante publicada con éxito!';
+            // Admin company assignment logic
+            if (isAdmin) {
+                if (companyMode === 'new') {
+                    if (!newCompanyData.name.trim()) {
+                        alert('Por favor ingresa el nombre de la nueva empresa.');
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    const createdCompany = await adminCreateCompanyProfile({
+                        ...newCompanyData,
+                        location: fullLocation
+                    });
+                    finalCompanyId = createdCompany.id;
+                } else if (selectedCompanyId) {
+                    finalCompanyId = selectedCompanyId;
+                }
+            }
 
-        if (jobId) {
-            await updateJob(Number(jobId), jobData);
-        } else {
-            await addJob(jobData);
+            const jobData = {
+                title: formData.title,
+                description: formData.description,
+                category: formData.category,
+                salary: Number(formData.salary || formData.salary_min || 0),
+                salary_min: formData.salary_min ? Number(formData.salary_min) : null,
+                salary_max: formData.salary_max ? Number(formData.salary_max) : null,
+                hide_salary: canHideSalary ? formData.hide_salary : false,
+                type: formData.type,
+                location: fullLocation,
+                is_confidential: canPostConfidential ? formData.isConfidential : false,
+                currency: 'MXN',
+                company_id: finalCompanyId
+            };
+
+            const successMessage = jobId
+                ? '¡Vacante actualizada con éxito!'
+                : '¡Vacante publicada con éxito!';
+
+            if (jobId) {
+                await updateJob(Number(jobId), jobData);
+            } else {
+                await addJob(jobData);
+            }
+
+            const targetRoute = isAdmin ? '/admin' : '/dashboard';
+            navigate(targetRoute, { state: { message: successMessage } });
+        } catch (error) {
+            console.error("Error submitting job:", error);
+            alert("Error al publicar la vacante: " + error.message);
+        } finally {
+            setIsSubmitting(false);
         }
-
-        const targetRoute = user.role === 'admin' ? '/admin' : '/dashboard';
-        navigate(targetRoute, { state: { message: successMessage } });
     };
 
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h1 className="text-2xl font-bold text-slate-900 mb-6">{jobId ? 'Editar Vacante' : (duplicateId ? 'Duplicar Vacante' : 'Publicar Nueva Vacante')}</h1>
+        <div className="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-200">
+                <div>
+                    <h1 className="text-2xl font-extrabold text-slate-900">
+                        {jobId ? 'Editar Vacante' : (duplicateId ? 'Duplicar Vacante' : 'Publicar Vacante')}
+                    </h1>
+                    {isAdmin && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full mt-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-amber-600" /> Herramienta Administrador
+                        </span>
+                    )}
+                </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* ADMIN COMPANY SELECTOR & CREATOR SECTION */}
+                {isAdmin && (
+                    <div className="p-5 rounded-2xl border border-secondary-200 bg-secondary-50/50 space-y-4">
+                        <div className="flex items-center gap-2 pb-3 border-b border-secondary-200">
+                            <Building2 className="w-5 h-5 text-secondary-600" />
+                            <h3 className="font-bold text-slate-900 text-sm">Empresa Publicadora de la Vacante</h3>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setCompanyMode('existing')}
+                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${companyMode === 'existing' ? 'bg-secondary-600 text-white border-secondary-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            >
+                                🏢 Seleccionar Empresa Registrada
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCompanyMode('new')}
+                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${companyMode === 'new' ? 'bg-secondary-600 text-white border-secondary-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            >
+                                ➕ Crear Nueva Empresa
+                            </button>
+                        </div>
+
+                        {companyMode === 'existing' ? (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Empresa Destino</label>
+                                <select
+                                    required={isAdmin && companyMode === 'existing'}
+                                    className="w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-medium"
+                                    value={selectedCompanyId}
+                                    onChange={e => setSelectedCompanyId(e.target.value)}
+                                >
+                                    <option value="">Selecciona una empresa...</option>
+                                    {companies.map(c => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name} ({c.email}) {c.rfc ? `• RFC: ${c.rfc}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 pt-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-1">Nombre de la Empresa *</label>
+                                        <input
+                                            type="text"
+                                            required={isAdmin && companyMode === 'new'}
+                                            placeholder="Ej. OXXO, Coppel, Ternium, Grupo Bimbo..."
+                                            className="w-full rounded-xl border border-slate-300 p-2.5 text-sm font-medium"
+                                            value={newCompanyData.name}
+                                            onChange={e => setNewCompanyData({ ...newCompanyData, name: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-1">RFC (Opcional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Ej. BIM901020ABC"
+                                            className="w-full rounded-xl border border-slate-300 p-2.5 text-sm uppercase font-mono"
+                                            value={newCompanyData.rfc}
+                                            onChange={e => setNewCompanyData({ ...newCompanyData, rfc: e.target.value.toUpperCase() })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-1">Reclutador / Contacto (Opcional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Ej. Lic. Carlos Mendoza"
+                                            className="w-full rounded-xl border border-slate-300 p-2.5 text-sm"
+                                            value={newCompanyData.recruiter_name}
+                                            onChange={e => setNewCompanyData({ ...newCompanyData, recruiter_name: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-1">Teléfono / LADA (Opcional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Ej. 8112345678"
+                                            className="w-full rounded-xl border border-slate-300 p-2.5 text-sm"
+                                            value={newCompanyData.phone}
+                                            onChange={e => setNewCompanyData({ ...newCompanyData, phone: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Logo de la Empresa (Opcional)</label>
+                                    <div className="flex items-center gap-4">
+                                        {newCompanyData.logo && (
+                                            <img src={newCompanyData.logo} alt="Logo Previsto" className="w-12 h-12 object-contain rounded-xl border p-1 bg-white" />
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleLogoUpload}
+                                            className="text-xs text-slate-600 cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div>
-                    <label className="block text-sm font-medium text-slate-700">Título de la vacante</label>
+                    <label className="block text-sm font-bold text-slate-800 mb-1">Título de la vacante</label>
                     <input
                         type="text"
                         required
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="block w-full rounded-xl border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-3 font-semibold text-slate-900"
                         value={formData.title}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                         placeholder="Ej. Vendedor, Chofer, Limpieza..."
@@ -157,25 +359,25 @@ const PostJobPage = () => {
 
                 <div>
                     <div className="flex justify-between items-center mb-1">
-                        <label className="block text-sm font-medium text-slate-700">Descripción</label>
+                        <label className="block text-sm font-bold text-slate-800">Descripción completa</label>
                         <button
                             type="button"
                             onClick={handleGenerateDescription}
                             disabled={isGenerating || !formData.title}
-                            className={`flex items-center text-xs font-medium px-3 py-1.5 rounded-full transition-colors
+                            className={`flex items-center text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer
                                 ${!formData.title
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
                                 }`}
                         >
-                            <Sparkles className={`w-3 h-3 mr-1.5 ${isGenerating ? 'animate-spin' : ''}`} />
+                            <Sparkles className={`w-3.5 h-3.5 mr-1.5 ${isGenerating ? 'animate-spin' : ''}`} />
                             {isGenerating ? 'Generando...' : 'Generar con IA'}
                         </button>
                     </div>
                     <textarea
                         required
-                        rows={12}
-                        className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 font-sans"
+                        rows={10}
+                        className="block w-full rounded-xl border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-3 font-sans leading-relaxed text-slate-800"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Describe las responsabilidades, requisitos y beneficios del puesto..."
@@ -184,25 +386,25 @@ const PostJobPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700">Categoría</label>
+                        <label className="block text-sm font-bold text-slate-800 mb-1">Categoría</label>
                         <select
                             required
-                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
+                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium"
                             value={formData.category}
                             onChange={e => setFormData({ ...formData, category: e.target.value })}
                         >
-                            <option value="">Seleccionar...</option>
+                            <option value="">Seleccionar Categoría...</option>
                             {JOB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-slate-700">Salario mensual aproximado (MXN)</label>
+                        <label className="block text-sm font-bold text-slate-800 mb-1">Salario mensual aproximado (MXN)</label>
                         <input
                             type="number"
                             required
                             min="0"
-                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 font-bold text-slate-900"
                             value={formData.salary}
                             onChange={e => setFormData({ ...formData, salary: e.target.value })}
                             placeholder="Ej. 12000"
@@ -211,26 +413,26 @@ const PostJobPage = () => {
                 </div>
 
                 {/* RANGO DE SUELDO (DESDE / HASTA) */}
-                <div className="space-y-3">
-                    <label className="block text-sm font-medium text-slate-700">Rango de sueldo mensual (MXN)</label>
+                <div className="space-y-3 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+                    <label className="block text-sm font-bold text-slate-900">Rango de sueldo mensual (MXN)</label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1">Desde</label>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Desde ($ MXN)</label>
                             <input
                                 type="number"
                                 min="0"
-                                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold"
                                 value={formData.salary_min}
                                 onChange={e => setFormData({ ...formData, salary_min: e.target.value })}
                                 placeholder="Ej. 8,000"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-500 mb-1">Hasta</label>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Hasta ($ MXN)</label>
                             <input
                                 type="number"
                                 min="0"
-                                className="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-2.5 bg-white font-bold"
                                 value={formData.salary_max}
                                 onChange={e => setFormData({ ...formData, salary_max: e.target.value })}
                                 placeholder="Ej. 15,000"
@@ -238,26 +440,26 @@ const PostJobPage = () => {
                         </div>
                     </div>
 
-                    {/* NOTA PARA EL RECLUTADOR */}
-                    <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+                    {/* NOTA RECLUTADOR */}
+                    <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900">
                         <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                         <p>
                             <strong>Tip para mejores resultados:</strong> Publicar el rango de sueldo real aumenta significativamente la cantidad y calidad de los candidatos que se postulan a tu vacante.
                         </p>
                     </div>
 
-                    {/* OCULTAR SALARIO - SOLO SI EMPRESA TIENE PERMISO */}
+                    {/* OCULTAR SALARIO */}
                     {canHideSalary && (
                         <div className="flex items-center pt-1">
                             <input
                                 id="hide_salary"
                                 type="checkbox"
-                                className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-slate-300 rounded"
+                                className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-slate-300 rounded cursor-pointer"
                                 checked={formData.hide_salary}
                                 onChange={e => setFormData({ ...formData, hide_salary: e.target.checked })}
                             />
-                            <label htmlFor="hide_salary" className="ml-2 block text-sm text-slate-900">
-                                Ocultar salario en el listado de vacantes
+                            <label htmlFor="hide_salary" className="ml-2 block text-sm font-semibold text-slate-800 cursor-pointer">
+                                Ocultar salario a los candidatos en el listado de vacantes
                             </label>
                         </div>
                     )}
@@ -265,10 +467,10 @@ const PostJobPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700">Modalidad</label>
+                        <label className="block text-sm font-bold text-slate-800 mb-1">Modalidad</label>
                         <select
                             required
-                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
+                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium"
                             value={formData.type}
                             onChange={e => setFormData({ ...formData, type: e.target.value })}
                         >
@@ -279,10 +481,10 @@ const PostJobPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-slate-700">Estado</label>
+                        <label className="block text-sm font-bold text-slate-800 mb-1">Estado</label>
                         <select
                             required
-                            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white"
+                            className="block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium"
                             value={formData.location}
                             onChange={e => setFormData({ ...formData, location: e.target.value, city: '' })}
                         >
@@ -291,16 +493,16 @@ const PostJobPage = () => {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700">Ciudad / Municipio</label>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">Ciudad / Municipio</label>
                         <select
                             required
                             disabled={!formData.location}
-                            className={`mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2 bg-white ${!formData.location ? 'bg-slate-100 text-slate-400' : ''}`}
+                            className={`block w-full rounded-xl border-slate-300 shadow-2xs text-sm border p-3 bg-white font-medium ${!formData.location ? 'bg-slate-100 text-slate-400' : ''}`}
                             value={formData.city}
                             onChange={e => setFormData({ ...formData, city: e.target.value })}
                         >
-                            <option value="">Seleccionar Ciudad...</option>
+                            <option value="">Seleccionar Ciudad / Municipio...</option>
                             {formData.location && MEXICO_DATA[formData.location]?.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -308,35 +510,36 @@ const PostJobPage = () => {
                     </div>
                 </div>
 
-                {/* EMPRESA CONFIDENCIAL - SOLO SI EMPRESA TIENE PERMISO */}
+                {/* EMPRESA CONFIDENCIAL */}
                 {canPostConfidential && (
-                    <div className="flex items-center">
+                    <div className="flex items-center p-3 rounded-xl border border-slate-200 bg-slate-50">
                         <input
                             id="confidential"
                             type="checkbox"
-                            className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-slate-300 rounded"
+                            className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-slate-300 rounded cursor-pointer"
                             checked={formData.isConfidential}
                             onChange={e => setFormData({ ...formData, isConfidential: e.target.checked })}
                         />
-                        <label htmlFor="confidential" className="ml-2 block text-sm text-slate-900">
+                        <label htmlFor="confidential" className="ml-2 block text-sm font-semibold text-slate-800 cursor-pointer">
                             Publicar como Empresa Confidencial (Ocultar nombre y logo)
                         </label>
                     </div>
                 )}
 
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end pt-4 border-t border-slate-100">
                     <button
                         type="button"
-                        onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
-                        className="bg-white text-slate-700 px-4 py-2 rounded-md text-sm font-medium border border-slate-300 hover:bg-slate-50 mr-3"
+                        onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
+                        className="bg-white text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold border border-slate-300 hover:bg-slate-50 mr-3 transition-colors cursor-pointer"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        className="bg-secondary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-700"
+                        disabled={isSubmitting}
+                        className="bg-secondary-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-secondary-700 transition-all shadow-md active:scale-98 disabled:opacity-50 cursor-pointer"
                     >
-                        {jobId ? 'Guardar Cambios' : 'Publicar Vacante'}
+                        {isSubmitting ? 'Publicando...' : (jobId ? 'Guardar Cambios' : 'Publicar Vacante')}
                     </button>
                 </div>
             </form>

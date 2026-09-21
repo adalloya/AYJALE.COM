@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2 } from 'lucide-react';
+import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2, Plus } from 'lucide-react';
 
 const AdminDashboard = () => {
     const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, siteSettings, updateSiteSettings } = useData();
@@ -155,7 +156,16 @@ const AdminDashboard = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-8">Panel de Administración</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <h1 className="text-3xl font-bold text-slate-900">Panel de Administración</h1>
+                <Link
+                    to="/post-job"
+                    className="inline-flex items-center justify-center gap-2 bg-secondary-600 hover:bg-secondary-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-98 shrink-0 cursor-pointer"
+                >
+                    <Plus className="w-4 h-4" />
+                    Publicar Vacantes
+                </Link>
+            </div>
 
             {/* Metrics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -604,7 +614,16 @@ const AdminDashboard = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(job.created_at)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div className="flex justify-end space-x-3">
+                                        <div className="flex justify-end items-center space-x-3">
+                                            <Link
+                                                to={`/job/${job.id}/applicants`}
+                                                className="text-secondary-600 hover:text-secondary-900 flex items-center font-bold text-xs bg-secondary-50 border border-secondary-200 px-2.5 py-1 rounded-lg"
+                                                title="Ver Candidatos Postulados"
+                                            >
+                                                <Users className="w-3.5 h-3.5 mr-1" />
+                                                Postulados ({allApplications.filter(a => a.job_id === job.id).length})
+                                            </Link>
+
                                             <button
                                                 onClick={() => window.location.href = `/post-job?id=${job.id}`}
                                                 className="text-indigo-600 hover:text-indigo-900"

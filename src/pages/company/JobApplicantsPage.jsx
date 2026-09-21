@@ -23,8 +23,8 @@ const JobApplicantsPage = () => {
 
     const job = jobs.find(j => j.id === Number(id));
 
-    // Security check: Ensure the job belongs to the current company
-    const isAccessDenied = !job || (currentUser.role === 'company' && job.company_id !== currentUser.id);
+    // Security check: Ensure the job belongs to the current company or user is admin
+    const isAccessDenied = !job || (currentUser.role !== 'admin' && job.company_id !== currentUser.id);
 
     const jobApplications = applications.filter(a => a.job_id === Number(id));
 

@@ -86,9 +86,9 @@ export const DataProvider = ({ children }) => {
                     .gt('expires_at', new Date().toISOString());
             }
 
-            // 5 Second Timeout Race
+            // 15 Second Timeout Race for resilient network queries
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Database Request Timed Out (5s)')), 5000)
+                setTimeout(() => reject(new Error('Database Request Timed Out (15s)')), 15000)
             );
 
             const { data, error } = await Promise.race([
@@ -324,6 +324,40 @@ export const DataProvider = ({ children }) => {
             return true;
         } catch (error) {
             console.error("Error deleting user:", error);
+            throw error;
+        }
+    }, []);
+
+    const adminCreateCompanyProfile = useCallback(async (companyData) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .insert([{
+                    role: 'company',
+                    name: companyData.name,
+                    logo: companyData.logo || null,
+                    logo_url: companyData.logo || null,
+                    rfc: companyData.rfc || null,
+                    industry: companyData.industry || null,
+                    location: companyData.location || null,
+                    address: companyData.address || null,
+                    recruiter_name: companyData.recruiter_name || null,
+                    phone: companyData.phone || companyData.phone_number || null,
+                    phone_number: companyData.phone_number || companyData.phone || null,
+                    can_search_candidates: true,
+                    can_hide_salary: true,
+                    can_post_confidential: true
+                }])
+                .select('*');
+
+            if (error) {
+                console.error("Error creating company profile:", error);
+                throw error;
+            }
+
+            return data[0];
+        } catch (error) {
+            console.error("Error creating company profile:", error);
             throw error;
         }
     }, []);
@@ -590,6 +624,7 @@ export const DataProvider = ({ children }) => {
         adminGetApplications,
         adminRepublishJob,
         adminDeleteUser,
+        adminCreateCompanyProfile,
         incrementJobView,
         unlockCandidateContact,
         fetchCandidateProfile,
