@@ -4,12 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
+import { getJobCompany } from '../../utils/jobUtils';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
     if (!job) return <div className="p-8 text-center text-slate-500">Selecciona una vacante para ver los detalles.</div>;
+
+    const companyInfo = getJobCompany(job);
 
     const handleShare = () => {
         const url = `${window.location.origin}/jobs?jobId=${job.id}`;
@@ -81,9 +84,9 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                     {/* Background Logo Banner */}
                     <div className="absolute inset-0 overflow-hidden z-0">
                         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white z-10" />
-                        {!job.is_confidential && company?.logo ? (
+                        {!job.is_confidential && companyInfo.logo ? (
                             <img
-                                src={company.logo}
+                                src={companyInfo.logo}
                                 alt=""
                                 className="w-full h-full object-cover opacity-50 blur-sm scale-110"
                             />
@@ -96,10 +99,10 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                     <div className="relative z-20 flex flex-col items-center text-center">
                         {/* Company Logo (Floating) */}
                         <div className="mb-4 shadow-lg rounded-2xl bg-white p-2">
-                            {!job.is_confidential && company?.logo ? (
+                            {!job.is_confidential && companyInfo.logo ? (
                                 <img
-                                    src={company.logo}
-                                    alt={company.name}
+                                    src={companyInfo.logo}
+                                    alt={companyInfo.name}
                                     className="w-16 h-16 object-contain rounded-xl"
                                 />
                             ) : (
@@ -111,7 +114,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
                         <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
                         <p className="text-slate-600 font-medium mb-4">
-                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                            {companyInfo.name}
                         </p>
 
                         <div className="flex flex-wrap justify-center gap-2 mb-6">

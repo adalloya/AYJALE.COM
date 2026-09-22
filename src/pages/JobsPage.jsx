@@ -9,6 +9,7 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 import { Building, MapPin, DollarSign, Tag, Briefcase } from 'lucide-react';
 
 import { formatFriendlyDate } from '../utils/dateUtils';
+import { getJobCompany } from '../utils/jobUtils';
 
 const JobsPage = () => {
     const { jobs, users, applications, applyToJob } = useData();
@@ -288,7 +289,7 @@ const JobsPage = () => {
                 {/* Left Column: Job List */}
                 <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
                     {filteredJobs.map((job, index) => {
-                        const company = job.profiles;
+                        const companyInfo = getJobCompany(job);
                         const isSelected = job.id === selectedJobId;
 
                         return (
@@ -324,10 +325,10 @@ const JobsPage = () => {
 
                                     <div className="flex items-center mb-3">
                                         <div className="flex-shrink-0 mr-3">
-                                            {!job.is_confidential && company?.logo ? (
+                                            {!job.is_confidential && companyInfo.logo ? (
                                                 <img
-                                                    src={company.logo}
-                                                    alt={company.name}
+                                                    src={companyInfo.logo}
+                                                    alt={companyInfo.name}
                                                     className="w-8 h-8 object-contain"
                                                 />
                                             ) : (
@@ -337,7 +338,7 @@ const JobsPage = () => {
                                             )}
                                         </div>
                                         <div className="text-sm text-slate-600 font-medium line-clamp-1">
-                                            {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                                            {companyInfo.name}
                                         </div>
                                     </div>
 

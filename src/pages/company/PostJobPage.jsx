@@ -215,6 +215,10 @@ const PostJobPage = () => {
             const salaryMaxVal = formData.salary_max ? Number(formData.salary_max) : null;
             const calculatedSalary = salaryMinVal || salaryMaxVal || 0;
 
+            const selectedComp = companies.find(c => c.id === selectedCompanyId);
+            const resolvedCompanyName = targetCompanyProfile?.name || selectedComp?.name || (companyMode === 'new' ? newCompanyData.name : null);
+            const resolvedCompanyLogo = targetCompanyProfile?.logo || targetCompanyProfile?.logo_url || selectedComp?.logo || (companyMode === 'new' ? newCompanyData.logo : null);
+
             const jobData = {
                 title: formData.title,
                 description: formData.description,
@@ -228,7 +232,9 @@ const PostJobPage = () => {
                 is_confidential: canPostConfidential ? formData.isConfidential : false,
                 currency: 'MXN',
                 company_id: finalCompanyId,
-                companyProfile: targetCompanyProfile
+                company_name: resolvedCompanyName,
+                company_logo: resolvedCompanyLogo,
+                companyProfile: targetCompanyProfile || (resolvedCompanyName ? { name: resolvedCompanyName, logo: resolvedCompanyLogo } : null)
             };
 
             if (jobId) {
