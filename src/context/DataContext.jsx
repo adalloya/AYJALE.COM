@@ -66,14 +66,34 @@ export const DataProvider = ({ children }) => {
         else setContactUnlocks(data || []);
     }, [user]);
 
+    const getJobCompanyCache = () => {
+        try {
+            return JSON.parse(localStorage.getItem('ayjale_admin_job_companies') || '{}');
+        } catch (e) {
+            return {};
+        }
+    };
+
+    const saveJobCompanyCache = (jobId, companyData) => {
+        if (!jobId || !companyData) return;
+        try {
+            const cache = getJobCompanyCache();
+            const nameToSave = companyData.name || companyData.company_name;
+            const logoToSave = companyData.logo || companyData.company_logo || companyData.logo_url;
+            if (nameToSave) {
+                cache[String(jobId)] = { name: nameToSave, logo: logoToSave };
+                localStorage.setItem('ayjale_admin_job_companies', JSON.stringify(cache));
+            }
+        } catch (e) {}
+    };
+
     const fetchJobs = async () => {
         console.log('[DataContext] Starting fetchJobs...');
         const startTime = Date.now();
         try {
-            // SIMPLIFIED QUERY TO REDUCE CPU LOAD
             let query = supabase
                 .from('jobs')
-                .select('id, title, company_id, location, salary, salary_min, salary_max, salary_period, type, created_at, active, expires_at, description, profiles:company_id(name, logo)')
+                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
                 .order('created_at', { ascending: false })
                 .limit(50);
 
@@ -98,11 +118,50 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            console.log(`[DataContext] fetchJobs success in ${Date.now() - startTime}ms. Items: ${data?.length}`);
-            setJobs(data || []);
+            const companyCache = getJobCompanyCache();
+
+            const enrichedData = (data || []).map(job => {
+                const cached = companyCache[String(job.id)];
+                const isConfidential = job.is_confidential;
+                const profile = job.profiles;
+
+                let compName = cached?.name || job.company_name;
+                let compLogo = cached?.logo || job.company_logo;
+
+                if (!compName && profile) {
+                    if (profile.role === 'admin' || (profile.name && (profile.name.toLowerCase().includes('admin') || profile.name.toLowerCase().includes('adal')))) {
+                        compName = 'Empresa Registrada';
+                    } else {
+                        compName = profile.name;
+                    }
+                    compLogo = compLogo || profile.logo || profile.logo_url || null;
+                }
+
+                if (isConfidential) {
+                    compName = 'Empresa Confidencial';
+                    compLogo = null;
+                }
+
+                const resolvedName = compName || 'Empresa';
+                const resolvedLogo = compLogo || profile?.logo || null;
+
+                return {
+                    ...job,
+                    company_name: resolvedName,
+                    company_logo: resolvedLogo,
+                    companyProfile: { name: resolvedName, logo: resolvedLogo },
+                    profiles: {
+                        ...profile,
+                        name: resolvedName,
+                        logo: resolvedLogo
+                    }
+                };
+            });
+
+            console.log(`[DataContext] fetchJobs success in ${Date.now() - startTime}ms. Items: ${enrichedData.length}`);
+            setJobs(enrichedData);
         } catch (error) {
             console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
-            // Optional: Set empty jobs or error state here so UI stops loading
             setJobs([]);
         }
     };
@@ -157,10 +216,15 @@ export const DataProvider = ({ children }) => {
     const addJob = async (jobData) => {
         if (!user) return;
 
-        // Extract custom companyProfile if provided (Admin multi-company publishing)
+        // Extract non-DB metadata properties before inserting into Supabase
         const customProfile = jobData.companyProfile || null;
+        const customCompanyName = jobData.company_name || customProfile?.name || null;
+        const customCompanyLogo = jobData.company_logo || customProfile?.logo || null;
+
         const jobPayloadData = { ...jobData };
-        delete jobPayloadData.companyProfile; // Remove non-DB column property
+        delete jobPayloadData.companyProfile; // Remove non-DB column properties
+        delete jobPayloadData.company_name;
+        delete jobPayloadData.company_logo;
 
         const targetCompanyId = jobPayloadData.company_id || user.id;
 
@@ -195,27 +259,42 @@ export const DataProvider = ({ children }) => {
                 error = res.error;
             }
 
-            // If missing column error occurs in DB schema (e.g. hide_salary)
-            if (error && error.message?.includes('column of \'jobs\' in the schema cache')) {
+            // Loop to handle ANY missing column errors dynamically (e.g. hide_salary)
+            let maxRetries = 5;
+            while (error && error.message?.includes('column of \'jobs\' in the schema cache') && maxRetries > 0) {
+                maxRetries--;
                 const match = error.message.match(/Could not find the '([^']+)' column/);
                 const missingCol = match ? match[1] : null;
 
                 if (missingCol && payload.hasOwnProperty(missingCol)) {
-                    console.warn(`[DataContext] Column '${missingCol}' missing in jobs table. Stripping and retrying...`);
+                    console.warn(`[DataContext] Column '${missingCol}' missing in jobs table. Stripping and retrying insert...`);
                     delete payload[missingCol];
                     payload.company_id = user.id;
                     const res = await executeInsert(payload);
                     data = res.data;
                     error = res.error;
+                } else {
+                    break;
                 }
             }
 
             if (error) throw error;
 
+            const resolvedComp = customProfile || { name: customCompanyName, logo: customCompanyLogo } || data[0].profiles;
+
             const finalJob = {
                 ...data[0],
-                profiles: customProfile || data[0].profiles
+                company_name: customCompanyName || resolvedComp?.name || data[0].profiles?.name,
+                company_logo: customCompanyLogo || resolvedComp?.logo || data[0].profiles?.logo,
+                companyProfile: resolvedComp,
+                profiles: {
+                    ...data[0].profiles,
+                    name: customCompanyName || resolvedComp?.name || data[0].profiles?.name,
+                    logo: customCompanyLogo || resolvedComp?.logo || data[0].profiles?.logo
+                }
             };
+
+            saveJobCompanyCache(finalJob.id, { name: customCompanyName || resolvedComp?.name, logo: customCompanyLogo || resolvedComp?.logo });
 
             setJobs(prev => [finalJob, ...prev]);
             return finalJob;

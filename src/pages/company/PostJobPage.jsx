@@ -85,6 +85,8 @@ const PostJobPage = () => {
                 setCompanies(companyList);
                 if (companyList.length > 0 && !selectedCompanyId) {
                     setSelectedCompanyId(companyList[0].id);
+                } else if (companyList.length === 0) {
+                    setCompanyMode('new');
                 }
             }).catch(err => console.error("Error loading companies for admin:", err));
         }
@@ -205,7 +207,12 @@ const PostJobPage = () => {
                     });
                     finalCompanyId = createdCompany?.id || crypto.randomUUID();
                     targetCompanyProfile = createdCompany || { name: newCompanyData.name, logo: newCompanyData.logo };
-                } else if (selectedCompanyId) {
+                } else if (companyMode === 'existing') {
+                    if (!selectedCompanyId) {
+                        alert('Por favor selecciona una empresa de la lista o elige "Crear Nueva Empresa".');
+                        setIsSubmitting(false);
+                        return;
+                    }
                     finalCompanyId = selectedCompanyId;
                     targetCompanyProfile = companies.find(c => c.id === selectedCompanyId) || null;
                 }
