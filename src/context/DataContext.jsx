@@ -340,12 +340,14 @@ export const DataProvider = ({ children }) => {
 
     const toggleJobStatus = async (jobId, currentStatus) => {
         try {
+            const nextStatus = !currentStatus;
             const { error } = await supabase
                 .from('jobs')
-                .update({ active: !currentStatus })
+                .update({ active: nextStatus })
                 .eq('id', jobId);
 
             if (error) throw error;
+            setJobs(prev => prev.map(j => j.id === jobId ? { ...j, active: nextStatus } : j));
             fetchJobs(); // Refresh list
         } catch (error) {
             console.error("Error toggling job status:", error);

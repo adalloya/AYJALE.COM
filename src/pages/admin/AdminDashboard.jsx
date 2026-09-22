@@ -91,6 +91,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleToggleStatus = async (jobId, currentStatus) => {
+        const actionText = currentStatus ? 'desactivar' : 'activar';
+        if (window.confirm(`¿Estás seguro de que deseas ${actionText} esta vacante?`)) {
+            try {
+                await toggleJobStatus(jobId, currentStatus);
+            } catch (error) {
+                console.error("Error toggling job status:", error);
+                alert("Error al cambiar estatus de la vacante: " + error.message);
+            }
+        }
+    };
+
     const handleToggleSearchAccess = async (companyId, currentVal) => {
         const newVal = !currentVal;
         try {
