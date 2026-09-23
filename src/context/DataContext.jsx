@@ -137,9 +137,37 @@ export const DataProvider = ({ children }) => {
                 setTotalJobCount(prev => Math.max(prev, count));
             }
 
+            // Fetch parallel range chunks if count > 1000 so ALL jobs across all states are loaded
+            let rawData = data || [];
+            if (typeof count === 'number' && count > 1000) {
+                const totalTarget = Math.min(count, 10000);
+                const chunkPromises = [];
+                for (let offset = 1000; offset < totalTarget; offset += 1000) {
+                    let subQuery = supabase
+                        .from('jobs')
+                        .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
+                        .order('created_at', { ascending: false })
+                        .range(offset, offset + 999);
+
+                    if (!user || (!isCompany && !isAdmin)) {
+                        subQuery = subQuery.neq('active', false);
+                    }
+                    chunkPromises.push(subQuery);
+                }
+
+                try {
+                    const subResults = await Promise.all(chunkPromises);
+                    subResults.forEach(res => {
+                        if (res.data) rawData = rawData.concat(res.data);
+                    });
+                } catch (chunkErr) {
+                    console.error('[DataContext] Error fetching parallel range chunks:', chunkErr);
+                }
+            }
+
             const companyCache = getJobCompanyCache();
 
-            const enrichedData = (data || []).map(job => {
+            const enrichedData = rawData.map(job => {
                 const cached = companyCache[String(job.id)];
                 const isConfidential = job.is_confidential;
                 const profile = job.profiles;

@@ -56,31 +56,82 @@ export const normalizeText = (text = '') => {
 };
 
 export const STATE_ALIASES = {
-    "Nuevo León": ["nuevo leon", "nl", "n.l.", "monterrey"],
-    "Ciudad de México": ["ciudad de mexico", "cdmx", "df", "distrito federal"],
-    "México": ["estado de mexico", "edomex", "edo. de mex.", "edo mex", "mexico"],
-    "Coahuila": ["coahuila", "coahuila de zaragoza", "saltillo", "torreon"],
-    "Michoacán": ["michoacan", "michoacan de ocampo"],
-    "Veracruz": ["veracruz", "veracruz de ignacio de la llave"],
-    "Querétaro": ["queretaro", "qro", "qro."],
-    "San Luis Potosí": ["san luis potosi", "slp", "s.l.p."],
-    "Yucatán": ["yucatan", "merida"],
-    "Jalisco": ["jalisco", "guadalajara", "gdl"],
-    "Baja California": ["baja california", "bc", "b.c.", "tijuana", "mexicali"],
-    "Baja California Sur": ["baja california sur", "bcs", "b.c.s."],
-    "Quintana Roo": ["quintana roo", "cancun", "playa del carmen", "q. roo"],
-    "Tamaulipas": ["tamaulipas", "tamps"],
-    "Guanajuato": ["guanajuato", "gto"],
-    "Chihuahua": ["chihuahua", "chih"],
-    "Chiapas": ["chiapas", "chis"],
-    "Guerrero": ["guerrero", "gro"],
-    "Hidalgo": ["hidalgo", "hgo"],
-    "Puebla": ["puebla", "pue"],
-    "Sonora": ["sonora", "son"],
-    "Sinaloa": ["sinaloa", "sin"],
-    "Tabasco": ["tabasco", "tab"],
-    "Tlaxcala": ["tlaxcala", "tlax"],
-    "Zacatecas": ["zacatecas", "zac"]
+    "Ciudad de México": [
+        "ciudad de mexico", "cdmx", "c.d.m.x.", "df", "distrito federal", "mexico df",
+        "cuauhtemoc", "miguel hidalgo", "iztapalapa", "coyoacan", "benito juarez",
+        "alvaro obregon", "gustavo a madero", "gustavo a. madero", "venustiano carranza",
+        "tlalpan", "azcapotzalco", "magdalena contreras", "cuajimalpa", "milpa alta", "tlahuac", "xochimilco"
+    ],
+    "México": [
+        "estado de mexico", "edomex", "edo. de mex.", "edo mex", "mexico",
+        "toluca", "naucalpan", "ecatepec", "tlalnepantla", "nezahualcoyotl",
+        "cuautitlan", "huixquilucan", "atizapan", "chimalhuacan", "chalco",
+        "tecamac", "metepec", "coacalco", "ixtapaluca", "texcoco", "tultitlan", "los reyes la paz"
+    ],
+    "Nuevo León": [
+        "nuevo leon", "nl", "n.l.", "monterrey", "apodaca", "san pedro", "guadalupe",
+        "escobedo", "san nicolas", "santa catarina", "juarez", "pesqueria", "cadereyta", "garcia"
+    ],
+    "Querétaro": [
+        "queretaro", "qro", "qro.", "santiago de queretaro", "el marques", "corregidora", "san juan del rio", "tequisquiapan"
+    ],
+    "Jalisco": [
+        "jalisco", "gdl", "guadalajara", "zapopan", "tlaquepaque", "tonala", "tlajomulco", "puerto vallarta", "el salto"
+    ],
+    "Guanajuato": [
+        "guanajuato", "gto", "gto.", "leon", "irapuato", "celaya", "silao", "san miguel de allende", "salamanca"
+    ],
+    "Coahuila": [
+        "coahuila", "coahuila de zaragoza", "saltillo", "torreon", "ramos arizpe", "monclova", "piedras negras"
+    ],
+    "Chihuahua": [
+        "chihuahua", "chih", "chih.", "juarez", "ciudad juarez", "delicias", "parral"
+    ],
+    "Puebla": [
+        "puebla", "pue", "pue.", "san andres cholula", "tehuacan", "san pedro cholula"
+    ],
+    "Veracruz": [
+        "veracruz", "veracruz de ignacio de la llave", "xalapa", "coatzacoalcos", "poza rica", "cordoba", "orizaba"
+    ],
+    "Sonora": [
+        "sonora", "son", "son.", "hermosillo", "ciudad obregon", "nogales", "guaymas"
+    ],
+    "Sinaloa": [
+        "sinaloa", "sin", "sin.", "culiacan", "mazatlan", "los mochis"
+    ],
+    "Baja California": [
+        "baja california", "bc", "b.c.", "tijuana", "mexicali", "ensenada", "rosarito", "tecate"
+    ],
+    "Baja California Sur": [
+        "baja california sur", "bcs", "b.c.s.", "la paz", "los cabos", "cabo san lucas", "san jose del cabo"
+    ],
+    "Quintana Roo": [
+        "quintana roo", "cancun", "playa del carmen", "q. roo", "chetumal", "cozumel", "tulum"
+    ],
+    "San Luis Potosí": [
+        "san luis potosi", "slp", "s.l.p.", "soledad de graciano sanchez"
+    ],
+    "Yucatán": [
+        "yucatan", "merida", "kanasin", "uman"
+    ],
+    "Michoacán": [
+        "michoacan", "michoacan de ocampo", "morelia", "uruapan", "zamora"
+    ],
+    "Tamaulipas": [
+        "tamaulipas", "tamps", "tamps.", "reynosa", "matamoros", "nuevo laredo", "tampico", "ciudad victoria"
+    ],
+    "Aguascalientes": ["aguascalientes", "ags", "ags."],
+    "Durango": ["durango", "dgo", "gomez palacio"],
+    "Zacatecas": ["zacatecas", "zac", "fresnillo"],
+    "Morelos": ["morelos", "cuernavaca", "jiutepec", "cuautla"],
+    "Nayarit": ["nayarit", "tepic", "bahia de banderas"],
+    "Oaxaca": ["oaxaca", "oaxaca de juarez", "salina cruz", "tuxtepec"],
+    "Tabasco": ["tabasco", "tab", "villahermosa"],
+    "Campeche": ["campeche", "ciudad del carmen"],
+    "Colima": ["colima", "manzanillo", "tecoman"],
+    "Guerrero": ["guerrero", "gro", "acapulco", "chilpancingo"],
+    "Hidalgo": ["hidalgo", "hgo", "pachuca", "tula"],
+    "Tlaxcala": ["tlaxcala", "tlax", "apizaco"]
 };
 
 export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
