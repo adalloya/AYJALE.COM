@@ -46,3 +46,58 @@ export const getJobCompany = (job) => {
         logo: resolvedLogo
     };
 };
+
+export const normalizeText = (text = '') => {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+};
+
+export const STATE_ALIASES = {
+    "Nuevo León": ["nuevo leon", "nl", "n.l.", "monterrey"],
+    "Ciudad de México": ["ciudad de mexico", "cdmx", "df", "distrito federal"],
+    "México": ["estado de mexico", "edomex", "edo. de mex.", "edo mex", "mexico"],
+    "Coahuila": ["coahuila", "coahuila de zaragoza", "saltillo", "torreon"],
+    "Michoacán": ["michoacan", "michoacan de ocampo"],
+    "Veracruz": ["veracruz", "veracruz de ignacio de la llave"],
+    "Querétaro": ["queretaro", "qro", "qro."],
+    "San Luis Potosí": ["san luis potosi", "slp", "s.l.p."],
+    "Yucatán": ["yucatan", "merida"],
+    "Jalisco": ["jalisco", "guadalajara", "gdl"],
+    "Baja California": ["baja california", "bc", "b.c.", "tijuana", "mexicali"],
+    "Baja California Sur": ["baja california sur", "bcs", "b.c.s."],
+    "Quintana Roo": ["quintana roo", "cancun", "playa del carmen", "q. roo"],
+    "Tamaulipas": ["tamaulipas", "tamps"],
+    "Guanajuato": ["guanajuato", "gto"],
+    "Chihuahua": ["chihuahua", "chih"],
+    "Chiapas": ["chiapas", "chis"],
+    "Guerrero": ["guerrero", "gro"],
+    "Hidalgo": ["hidalgo", "hgo"],
+    "Puebla": ["puebla", "pue"],
+    "Sonora": ["sonora", "son"],
+    "Sinaloa": ["sinaloa", "sin"],
+    "Tabasco": ["tabasco", "tab"],
+    "Tlaxcala": ["tlaxcala", "tlax"],
+    "Zacatecas": ["zacatecas", "zac"]
+};
+
+export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
+    if (!selectedState) return true;
+    if (!jobLocation) return false;
+
+    const normLoc = normalizeText(jobLocation);
+    const normSelected = normalizeText(selectedState);
+
+    // Direct accent-free substring match
+    if (normLoc.includes(normSelected)) return true;
+
+    // Check aliases if defined for this state
+    const aliases = STATE_ALIASES[selectedState];
+    if (aliases) {
+        return aliases.some(alias => normLoc.includes(normalizeText(alias)));
+    }
+
+    return false;
+};

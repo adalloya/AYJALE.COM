@@ -9,7 +9,7 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 import { Building, MapPin, DollarSign, Tag, Briefcase } from 'lucide-react';
 
 import { formatFriendlyDate } from '../utils/dateUtils';
-import { getJobCompany } from '../utils/jobUtils';
+import { getJobCompany, matchesStateFilter } from '../utils/jobUtils';
 
 const JobsPage = () => {
     const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob } = useData();
@@ -73,8 +73,8 @@ const JobsPage = () => {
                 if (!matchesKeyword) return false;
             }
 
-            // State Filter
-            if (filters.state && !job.location.includes(filters.state)) return false;
+            // State Filter (Accent & Alias Insensitive)
+            if (filters.state && !matchesStateFilter(job.location, filters.state)) return false;
 
             // Category Filter (with Legacy Mapping)
             if (filters.category) {
