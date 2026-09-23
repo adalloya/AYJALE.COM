@@ -96,7 +96,7 @@ export const DataProvider = ({ children }) => {
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
-                .range(0, 999);
+                .range(0, 999999);
 
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
@@ -177,7 +177,7 @@ export const DataProvider = ({ children }) => {
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
                 .order('created_at', { ascending: false })
-                .range(offset, offset + 499);
+                .range(offset, offset + 999999);
 
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
