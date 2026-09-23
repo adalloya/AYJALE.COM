@@ -102,9 +102,7 @@ export const DataProvider = ({ children }) => {
             const isAdmin = user?.role === 'admin';
 
             if (!user || (!isCompany && !isAdmin)) {
-                query = query
-                    .eq('active', true)
-                    .gt('expires_at', new Date().toISOString());
+                query = query.neq('active', false);
             }
 
             // 15 Second Timeout Race for resilient network queries
@@ -183,9 +181,7 @@ export const DataProvider = ({ children }) => {
             const isAdmin = user?.role === 'admin';
 
             if (!user || (!isCompany && !isAdmin)) {
-                query = query
-                    .eq('active', true)
-                    .gt('expires_at', new Date().toISOString());
+                query = query.neq('active', false);
             }
 
             const { data, error } = await query;
