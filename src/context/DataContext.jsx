@@ -9,6 +9,7 @@ export const useData = () => useContext(DataContext);
 export const DataProvider = ({ children }) => {
     const { user } = useAuth();
     const [jobs, setJobs] = useState([]);
+    const [totalJobCount, setTotalJobCount] = useState(0);
     const [applications, setApplications] = useState([]);
     const [users, setUsers] = useState([]); // Kept for compatibility, but mainly fetched via Supabase now
 
@@ -93,9 +94,9 @@ export const DataProvider = ({ children }) => {
         try {
             let query = supabase
                 .from('jobs')
-                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
+                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
-                .limit(1000);
+                .range(0, 999);
 
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
@@ -111,12 +112,16 @@ export const DataProvider = ({ children }) => {
                 setTimeout(() => reject(new Error('Database Request Timed Out (15s)')), 15000)
             );
 
-            const { data, error } = await Promise.race([
+            const { data, count, error } = await Promise.race([
                 query,
                 timeoutPromise
             ]);
 
             if (error) throw error;
+
+            if (typeof count === 'number') {
+                setTotalJobCount(count);
+            }
 
             const companyCache = getJobCompanyCache();
 
@@ -163,6 +168,75 @@ export const DataProvider = ({ children }) => {
         } catch (error) {
             console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
             setJobs([]);
+        }
+    };
+
+    const fetchMoreJobs = async (offset) => {
+        try {
+            let query = supabase
+                .from('jobs')
+                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
+                .order('created_at', { ascending: false })
+                .range(offset, offset + 499);
+
+            const isCompany = user?.role === 'company';
+            const isAdmin = user?.role === 'admin';
+
+            if (!user || (!isCompany && !isAdmin)) {
+                query = query
+                    .eq('active', true)
+                    .gt('expires_at', new Date().toISOString());
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+
+            const companyCache = getJobCompanyCache();
+            const enrichedData = (data || []).map(job => {
+                const cached = companyCache[String(job.id)];
+                const isConfidential = job.is_confidential;
+                const profile = job.profiles;
+
+                let compName = job.empresa_override || job.company_name || cached?.name || job.company?.name || null;
+                let compLogo = job.logo_override || job.company_logo || cached?.logo || job.company?.logo_url || null;
+
+                if (!compName && profile) {
+                    if (profile.role !== 'admin' && profile.name && !profile.name.toLowerCase().includes('admin') && !profile.name.toLowerCase().includes('adal')) {
+                        compName = profile.name;
+                    }
+                    compLogo = compLogo || profile.logo || profile.logo_url || null;
+                }
+
+                if (isConfidential) {
+                    compName = 'Empresa Confidencial';
+                    compLogo = null;
+                }
+
+                const resolvedName = compName || 'Confidencial';
+                const resolvedLogo = compLogo || profile?.logo || null;
+
+                return {
+                    ...job,
+                    empresa_override: job.empresa_override || null,
+                    logo_override: job.logo_override || null,
+                    company_name: resolvedName,
+                    company_logo: resolvedLogo,
+                    companyProfile: { name: resolvedName, logo: resolvedLogo },
+                    profiles: {
+                        ...profile,
+                        name: resolvedName,
+                        logo: resolvedLogo
+                    }
+                };
+            });
+
+            setJobs(prev => {
+                const existingIds = new Set(prev.map(j => j.id));
+                const newJobs = enrichedData.filter(j => !existingIds.has(j.id));
+                return [...prev, ...newJobs];
+            });
+        } catch (error) {
+            console.error('[DataContext] Error fetching more jobs:', error);
         }
     };
 
@@ -833,6 +907,8 @@ export const DataProvider = ({ children }) => {
 
     const value = useMemo(() => ({
         jobs,
+        totalJobCount,
+        fetchMoreJobs,
         applications,
         users,
         loading,

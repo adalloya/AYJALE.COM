@@ -12,7 +12,7 @@ import { formatFriendlyDate } from '../utils/dateUtils';
 import { getJobCompany } from '../utils/jobUtils';
 
 const JobsPage = () => {
-    const { jobs, users, applications, applyToJob } = useData();
+    const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob } = useData();
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -369,14 +369,20 @@ const JobsPage = () => {
                     })}
 
                     {/* PROGRESSIVE LOAD MORE BUTTON */}
-                    {visibleCount < filteredJobs.length && (
+                    {(visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
                         <div className="pt-2 text-center">
                             <button
                                 type="button"
-                                onClick={() => setVisibleCount(prev => prev + 20)}
+                                onClick={() => {
+                                    const nextCount = visibleCount + 20;
+                                    setVisibleCount(nextCount);
+                                    if (nextCount >= jobs.length && jobs.length < totalJobCount) {
+                                        fetchMoreJobs(jobs.length);
+                                    }
+                                }}
                                 className="w-full bg-white hover:bg-slate-50 text-secondary-600 font-extrabold py-3 px-4 rounded-xl border border-secondary-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-sm"
                             >
-                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length)} de {filteredJobs.length})
+                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length)} de {Math.max(filteredJobs.length, totalJobCount)})
                             </button>
                         </div>
                     )}
