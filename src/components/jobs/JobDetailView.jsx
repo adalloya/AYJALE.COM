@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
 import { getJobCompany } from '../../utils/jobUtils';
+import { FormattedDescription } from '../../utils/textFormatter';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
@@ -97,20 +98,16 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
                     {/* Content Overlay */}
                     <div className="relative z-20 flex flex-col items-center text-center">
-                        {/* Company Logo (Floating) */}
-                        <div className="mb-4 shadow-lg rounded-2xl bg-white p-2">
-                            {!job.is_confidential && companyInfo.logo ? (
+                        {/* Company Logo (Floating) - Only render if logo exists */}
+                        {!job.is_confidential && companyInfo.logo && (
+                            <div className="mb-4 shadow-lg rounded-2xl bg-white p-2">
                                 <img
                                     src={companyInfo.logo}
                                     alt={companyInfo.name}
                                     className="w-16 h-16 object-contain rounded-xl"
                                 />
-                            ) : (
-                                <div className="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center">
-                                    <Building className="w-8 h-8 text-slate-300" />
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
                         <p className="text-slate-600 font-medium mb-4">
@@ -192,25 +189,21 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
             {/* Header */}
             <div className="p-6 border-b border-slate-100">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
-                    {/* Logo */}
-                    <div className="flex-shrink-0 flex flex-col items-center gap-3">
-                        {!job.is_confidential && company?.logo ? (
+                    {/* Logo - Only render if logo exists */}
+                    {!job.is_confidential && companyInfo.logo && (
+                        <div className="flex-shrink-0 flex flex-col items-center gap-3">
                             <img
-                                src={company.logo}
-                                alt={company.name}
+                                src={companyInfo.logo}
+                                alt={companyInfo.name}
                                 className="w-20 h-20 object-contain bg-white rounded-xl border border-slate-100 p-2"
                             />
-                        ) : (
-                            <div className="w-20 h-20 bg-orange-50 rounded-xl border border-orange-100 flex items-center justify-center">
-                                <Building className="w-10 h-10 text-orange-400" />
-                            </div>
-                        )}
-                        {job.is_external && (
-                            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-bold border border-blue-100 uppercase tracking-wide">
-                                Externa
-                            </span>
-                        )}
-                    </div>
+                            {job.is_external && (
+                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-bold border border-blue-100 uppercase tracking-wide">
+                                    Externa
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {/* Main Info */}
                     <div className="flex-1 min-w-0">
@@ -274,9 +267,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                 <div className="space-y-8">
                     <section>
                         <h2 className="text-lg font-bold text-slate-900 mb-4">Descripción completa del empleo</h2>
-                        <div className="text-slate-600 whitespace-pre-line leading-relaxed text-sm">
-                            {job.description}
-                        </div>
+                        <FormattedDescription text={job.description} />
                     </section>
 
                     <div className="pt-8 border-t border-slate-100 flex justify-between items-center">

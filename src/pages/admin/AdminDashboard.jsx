@@ -5,9 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2, Plus } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, siteSettings, updateSiteSettings } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, adminBulkDisableScraperJobs, adminBulkDeleteScraperJobs, siteSettings, updateSiteSettings } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
+    const [jobSourceFilter, setJobSourceFilter] = useState('all'); // 'all' | 'organico' | 'scraper_sne'
     const [allUsers, setAllUsers] = useState([]);
     const [allApplications, setAllApplications] = useState([]);
     const [allUnlocks, setAllUnlocks] = useState([]);
@@ -136,6 +137,28 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleBulkDisableScraper = async () => {
+        if (window.confirm('⚠️ ¿Estás seguro de que deseas DESACTIVAR masivamente todas las vacantes importadas del Scraper SNE?\n\n(UPDATE jobs SET active = false WHERE source = "scraper_sne")')) {
+            try {
+                await adminBulkDisableScraperJobs();
+                alert('Todas las vacantes del Scraper SNE han sido desactivadas correctamente.');
+            } catch (e) {
+                alert('Error al desactivar vacantes del scraper: ' + e.message);
+            }
+        }
+    };
+
+    const handleBulkDeleteScraper = async () => {
+        if (window.confirm('🔴 ALERTA CRÍTICA: ¿Estás seguro de que deseas ELIMINAR PERMANENTEMENTE todas las vacantes importadas del Scraper SNE de la base de datos?\n\n(DELETE FROM jobs WHERE source = "scraper_sne")')) {
+            try {
+                await adminBulkDeleteScraperJobs();
+                alert('Todas las vacantes del Scraper SNE han sido eliminadas permanentemente de la base de datos.');
+            } catch (e) {
+                alert('Error al eliminar vacantes del scraper: ' + e.message);
+            }
+        }
+    };
+
     const filteredCandidates = candidates.filter(c =>
         (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -146,9 +169,15 @@ const AdminDashboard = () => {
         (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const filteredJobs = jobs.filter(j =>
-        (j.title || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredJobs = jobs.filter(j => {
+        const matchesSearch = (j.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (j.company_name || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+        const jSource = j.source || (j.is_external ? 'scraper_sne' : 'organico');
+        if (jobSourceFilter === 'organico') return matchesSearch && jSource === 'organico';
+        if (jobSourceFilter === 'scraper_sne') return matchesSearch && jSource === 'scraper_sne';
+        return matchesSearch;
+    });
 
     const filteredApplications = allApplications.filter(a =>
         (a.profiles?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -294,6 +323,55 @@ const AdminDashboard = () => {
                         </div>
                     )}
                 </div>
+
+                {/* JOB SOURCE FILTERS & BULK ACTIONS BAR */}
+                {activeTab === 'jobs' && (
+                    <div className="bg-slate-50 p-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 overflow-x-auto">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">Fuente:</span>
+                            <button
+                                type="button"
+                                onClick={() => setJobSourceFilter('all')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${jobSourceFilter === 'all' ? 'bg-slate-900 text-white shadow-2xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'}`}
+                            >
+                                Todas ({jobs.length})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setJobSourceFilter('organico')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${jobSourceFilter === 'organico' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'}`}
+                            >
+                                Orgánicas ({jobs.filter(j => (j.source || (j.is_external ? 'scraper_sne' : 'organico')) === 'organico').length})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setJobSourceFilter('scraper_sne')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${jobSourceFilter === 'scraper_sne' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'}`}
+                            >
+                                🤖 Scraper SNE ({jobs.filter(j => (j.source || (j.is_external ? 'scraper_sne' : 'organico')) === 'scraper_sne').length})
+                            </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={handleBulkDisableScraper}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                                title="UPDATE jobs SET active = false WHERE source = 'scraper_sne'"
+                            >
+                                ⏸️ Desactivar SNE
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBulkDeleteScraper}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                                title="DELETE FROM jobs WHERE source = 'scraper_sne'"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> Eliminar SNE
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Content */}
                 {activeTab === 'settings' ? (
@@ -464,6 +542,7 @@ const AdminDashboard = () => {
                                     <>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Título</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Empresa</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Fuente</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Estado</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Publicada</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
@@ -613,54 +692,70 @@ const AdminDashboard = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {activeTab === 'jobs' && filteredJobs.map(job => (
-                                <tr key={job.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{job.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {allUsers.find(u => u.id === job.company_id)?.name || 'Desconocido'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${job.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {job.active ? 'Activa' : 'Inactiva'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(job.created_at)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div className="flex justify-end items-center space-x-3">
-                                            <Link
-                                                to={`/job/${job.id}/applicants`}
-                                                className="text-secondary-600 hover:text-secondary-900 flex items-center font-bold text-xs bg-secondary-50 border border-secondary-200 px-2.5 py-1 rounded-lg"
-                                                title="Ver Candidatos Postulados"
-                                            >
-                                                <Users className="w-3.5 h-3.5 mr-1" />
-                                                Postulados ({allApplications.filter(a => a.job_id === job.id).length})
-                                            </Link>
+                            {activeTab === 'jobs' && filteredJobs.map(job => {
+                                const jobSource = job.source || (job.is_external ? 'scraper_sne' : 'organico');
+                                const companyDisplayName = job.company_name || allUsers.find(u => u.id === job.company_id)?.name || 'Desconocido';
 
-                                            <button
-                                                onClick={() => window.location.href = `/post-job?id=${job.id}`}
-                                                className="text-indigo-600 hover:text-indigo-900"
-                                                title="Editar"
-                                            >
-                                                <Briefcase className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleRepublish(job.id)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                                title="Republicar"
-                                            >
-                                                <RefreshCw className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleToggleStatus(job.id, job.active)}
-                                                className={`${job.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                                                title={job.active ? "Desactivar" : "Activar"}
-                                            >
-                                                <Power className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                return (
+                                    <tr key={job.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{job.title}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                            {companyDisplayName}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {jobSource === 'scraper_sne' ? (
+                                                <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-extrabold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                                    🤖 Scraper SNE
+                                                </span>
+                                            ) : (
+                                                <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    ✨ Orgánica
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${job.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {job.active ? 'Activa' : 'Inactiva'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(job.created_at)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex justify-end items-center space-x-3">
+                                                <Link
+                                                    to={`/job/${job.id}/applicants`}
+                                                    className="text-secondary-600 hover:text-secondary-900 flex items-center font-bold text-xs bg-secondary-50 border border-secondary-200 px-2.5 py-1 rounded-lg"
+                                                    title="Ver Candidatos Postulados"
+                                                >
+                                                    <Users className="w-3.5 h-3.5 mr-1" />
+                                                    Postulados ({allApplications.filter(a => a.job_id === job.id).length})
+                                                </Link>
+
+                                                <button
+                                                    onClick={() => window.location.href = `/post-job?id=${job.id}`}
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    title="Editar"
+                                                >
+                                                    <Briefcase className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRepublish(job.id)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Republicar"
+                                                >
+                                                    <RefreshCw className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleStatus(job.id, job.active)}
+                                                    className={`${job.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                                                    title={job.active ? "Desactivar" : "Activar"}
+                                                >
+                                                    <Power className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             {activeTab === 'applications' && filteredApplications.map(app => (
                                 <tr key={app.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">

@@ -22,6 +22,8 @@ const JobsPage = () => {
     const [applying, setApplying] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    const [visibleCount, setVisibleCount] = useState(20);
+
     const [filters, setFilters] = useState({
         keyword: searchParams.get('keyword') || '',
         state: searchParams.get('state') || '',
@@ -44,6 +46,7 @@ const JobsPage = () => {
             type: searchParams.get('type') || '',
             minSalary: searchParams.get('minSalary') || ''
         });
+        setVisibleCount(20);
     }, [searchParams]);
 
     const handleSearch = () => {
@@ -288,7 +291,7 @@ const JobsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 lg:overflow-hidden">
                 {/* Left Column: Job List */}
                 <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-20">
-                    {filteredJobs.map((job, index) => {
+                    {filteredJobs.slice(0, visibleCount).map((job, index) => {
                         const companyInfo = getJobCompany(job);
                         const isSelected = job.id === selectedJobId;
 
@@ -324,19 +327,15 @@ const JobsPage = () => {
                                     </div>
 
                                     <div className="flex items-center mb-3">
-                                        <div className="flex-shrink-0 mr-3">
-                                            {!job.is_confidential && companyInfo.logo ? (
+                                        {!job.is_confidential && companyInfo.logo && (
+                                            <div className="flex-shrink-0 mr-3">
                                                 <img
                                                     src={companyInfo.logo}
                                                     alt={companyInfo.name}
                                                     className="w-8 h-8 object-contain"
                                                 />
-                                            ) : (
-                                                <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
-                                                    <Building className="w-4 h-4 text-orange-500 opacity-80" />
-                                                </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                         <div className="text-sm text-slate-600 font-medium line-clamp-1">
                                             {companyInfo.name}
                                         </div>
@@ -368,6 +367,20 @@ const JobsPage = () => {
                             </div>
                         );
                     })}
+
+                    {/* PROGRESSIVE LOAD MORE BUTTON */}
+                    {visibleCount < filteredJobs.length && (
+                        <div className="pt-2 text-center">
+                            <button
+                                type="button"
+                                onClick={() => setVisibleCount(prev => prev + 20)}
+                                className="w-full bg-white hover:bg-slate-50 text-secondary-600 font-extrabold py-3 px-4 rounded-xl border border-secondary-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-sm"
+                            >
+                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length)} de {filteredJobs.length})
+                            </button>
+                        </div>
+                    )}
+
                     {filteredJobs.length === 0 && (
                         <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
                             No se encontraron vacantes.

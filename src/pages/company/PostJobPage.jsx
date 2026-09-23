@@ -239,6 +239,8 @@ const PostJobPage = () => {
                 is_confidential: canPostConfidential ? formData.isConfidential : false,
                 currency: 'MXN',
                 company_id: finalCompanyId,
+                empresa_override: resolvedCompanyName,
+                logo_override: resolvedCompanyLogo,
                 company_name: resolvedCompanyName,
                 company_logo: resolvedCompanyLogo,
                 companyProfile: targetCompanyProfile || (resolvedCompanyName ? { name: resolvedCompanyName, logo: resolvedCompanyLogo } : null)

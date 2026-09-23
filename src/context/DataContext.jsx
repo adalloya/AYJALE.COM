@@ -95,7 +95,7 @@ export const DataProvider = ({ children }) => {
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
                 .order('created_at', { ascending: false })
-                .limit(50);
+                .limit(1000);
 
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
@@ -125,13 +125,11 @@ export const DataProvider = ({ children }) => {
                 const isConfidential = job.is_confidential;
                 const profile = job.profiles;
 
-                let compName = cached?.name || job.company_name;
-                let compLogo = cached?.logo || job.company_logo;
+                let compName = job.empresa_override || job.company_name || cached?.name || job.company?.name || null;
+                let compLogo = job.logo_override || job.company_logo || cached?.logo || job.company?.logo_url || null;
 
                 if (!compName && profile) {
-                    if (profile.role === 'admin' || (profile.name && (profile.name.toLowerCase().includes('admin') || profile.name.toLowerCase().includes('adal')))) {
-                        compName = 'Empresa Registrada';
-                    } else {
+                    if (profile.role !== 'admin' && profile.name && !profile.name.toLowerCase().includes('admin') && !profile.name.toLowerCase().includes('adal')) {
                         compName = profile.name;
                     }
                     compLogo = compLogo || profile.logo || profile.logo_url || null;
@@ -142,11 +140,13 @@ export const DataProvider = ({ children }) => {
                     compLogo = null;
                 }
 
-                const resolvedName = compName || 'Empresa';
+                const resolvedName = compName || 'Confidencial';
                 const resolvedLogo = compLogo || profile?.logo || null;
 
                 return {
                     ...job,
+                    empresa_override: job.empresa_override || null,
+                    logo_override: job.logo_override || null,
                     company_name: resolvedName,
                     company_logo: resolvedLogo,
                     companyProfile: { name: resolvedName, logo: resolvedLogo },
@@ -218,8 +218,8 @@ export const DataProvider = ({ children }) => {
 
         // Extract non-DB metadata properties before inserting into Supabase
         const customProfile = jobData.companyProfile || null;
-        const customCompanyName = jobData.company_name || customProfile?.name || null;
-        const customCompanyLogo = jobData.company_logo || customProfile?.logo || null;
+        const customCompanyName = jobData.empresa_override || jobData.company_name || customProfile?.name || null;
+        const customCompanyLogo = jobData.logo_override || jobData.company_logo || customProfile?.logo || null;
 
         const jobPayloadData = { ...jobData };
         delete jobPayloadData.companyProfile; // Remove non-DB column properties
@@ -230,6 +230,8 @@ export const DataProvider = ({ children }) => {
 
         let payload = {
             ...jobPayloadData,
+            empresa_override: customCompanyName,
+            logo_override: customCompanyLogo,
             company_id: targetCompanyId,
             active: true
         };
@@ -369,6 +371,38 @@ export const DataProvider = ({ children }) => {
             fetchJobs();
         } catch (error) {
             console.error("Error republishing job:", error);
+            throw error;
+        }
+    };
+
+    const adminBulkDisableScraperJobs = async () => {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .update({ active: false })
+                .eq('source', 'scraper_sne');
+
+            if (error) throw error;
+            setJobs(prev => prev.map(j => j.source === 'scraper_sne' ? { ...j, active: false } : j));
+            fetchJobs();
+        } catch (error) {
+            console.error("Error bulk disabling scraper jobs:", error);
+            throw error;
+        }
+    };
+
+    const adminBulkDeleteScraperJobs = async () => {
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('source', 'scraper_sne');
+
+            if (error) throw error;
+            setJobs(prev => prev.filter(j => j.source !== 'scraper_sne'));
+            fetchJobs();
+        } catch (error) {
+            console.error("Error bulk deleting scraper jobs:", error);
             throw error;
         }
     };
@@ -822,6 +856,8 @@ export const DataProvider = ({ children }) => {
         adminRepublishJob,
         adminDeleteUser,
         adminCreateCompanyProfile,
+        adminBulkDisableScraperJobs,
+        adminBulkDeleteScraperJobs,
         incrementJobView,
         unlockCandidateContact,
         fetchCandidateProfile,
