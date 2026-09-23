@@ -265,6 +265,11 @@ const JobsPage = () => {
         return <div className="min-h-screen bg-slate-50" />;
     }
 
+    const hasActiveFilters = Boolean(filters.keyword || filters.state || filters.category || filters.type || filters.minSalary);
+    const displayResultCount = hasActiveFilters
+        ? filteredJobs.length
+        : Math.max(totalJobCount, filteredJobs.length);
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 h-full flex flex-col">
             <SEO
@@ -285,7 +290,7 @@ const JobsPage = () => {
                 filters={filters}
                 setFilters={setFilters}
                 onSearch={handleSearch}
-                resultCount={filteredJobs.length}
+                resultCount={displayResultCount}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 lg:overflow-hidden">

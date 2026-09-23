@@ -92,14 +92,30 @@ export const DataProvider = ({ children }) => {
         console.log('[DataContext] Starting fetchJobs...');
         const startTime = Date.now();
         try {
+            const isCompany = user?.role === 'company';
+            const isAdmin = user?.role === 'admin';
+
+            // 1. Separate HEAD query to get the TRUE total count in DB (bypasses 1000 row max limit)
+            let countQuery = supabase
+                .from('jobs')
+                .select('*', { count: 'exact', head: true });
+
+            if (!user || (!isCompany && !isAdmin)) {
+                countQuery = countQuery.neq('active', false);
+            }
+
+            countQuery.then(({ count: exactTotal }) => {
+                if (typeof exactTotal === 'number' && exactTotal > 0) {
+                    setTotalJobCount(exactTotal);
+                }
+            }).catch(err => console.error('[DataContext] Count query error:', err));
+
+            // 2. Main dataset query
             let query = supabase
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
                 .range(0, 999999);
-
-            const isCompany = user?.role === 'company';
-            const isAdmin = user?.role === 'admin';
 
             if (!user || (!isCompany && !isAdmin)) {
                 query = query.neq('active', false);
@@ -117,8 +133,8 @@ export const DataProvider = ({ children }) => {
 
             if (error) throw error;
 
-            if (typeof count === 'number') {
-                setTotalJobCount(count);
+            if (typeof count === 'number' && count > 0) {
+                setTotalJobCount(prev => Math.max(prev, count));
             }
 
             const companyCache = getJobCompanyCache();
