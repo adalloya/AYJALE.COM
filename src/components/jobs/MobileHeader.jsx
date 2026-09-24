@@ -38,14 +38,15 @@ const MobileHeader = memo(({
         <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-50 h-[60px] flex-shrink-0 relative">
             <button
                 onClick={onBack}
-                className="flex items-center text-slate-600 font-medium text-sm hover:text-slate-900 transition-colors"
+                className="flex items-center gap-1.5 text-slate-700 font-bold text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-all active:scale-95 cursor-pointer"
+                title="Cerrar vista deck y volver al listado"
             >
-                <ArrowLeft className="w-5 h-5 mr-1" />
-                Volver
+                <X className="w-4 h-4 text-slate-700" />
+                <span>Cerrar</span>
             </button>
 
-            <div className="text-sm font-medium text-slate-400">
-                {currentIndex + 1} de {totalJobs}
+            <div className="text-xs font-extrabold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                {currentIndex + 1} / {totalJobs}
             </div>
 
             <div className="flex items-center gap-3">

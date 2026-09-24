@@ -127,8 +127,7 @@ const LandingPage = () => {
                         <button
                             key={cat.id}
                             onClick={() => {
-                                const isMobile = window.innerWidth < 1024;
-                                navigate(`/jobs?category=${cat.name}${isMobile ? '&view=deck' : ''}`);
+                                navigate(`/jobs?category=${encodeURIComponent(cat.name)}`);
                             }}
                             className="group relative flex flex-col items-center p-6 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
                         >

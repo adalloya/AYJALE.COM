@@ -259,12 +259,6 @@ const JobsPage = () => {
         return salaryText;
     };
 
-    // Prevent flash of list view on mobile when redirecting to deck
-    // We check this condition during render to avoid painting the list before the useEffect redirect happens
-    if (window.innerWidth < 1024 && !location.state?.showList && !searchParams.get('showList')) {
-        return <div className="min-h-screen bg-slate-50" />;
-    }
-
     const hasActiveFilters = Boolean(filters.keyword || filters.state || filters.category || filters.type || filters.minSalary);
     const displayResultCount = hasActiveFilters
         ? filteredJobs.length
