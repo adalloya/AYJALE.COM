@@ -110,20 +110,20 @@ export const DataProvider = ({ children }) => {
                 }
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
-            // 2. Main dataset query
+            // 2. Main dataset query (Fast initial batch of 200 jobs for instant <500ms render)
             let query = supabase
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
-                .range(0, 999999);
+                .range(0, 199);
 
             if (!user || (!isCompany && !isAdmin)) {
                 query = query.neq('active', false);
             }
 
-            // 15 Second Timeout Race for resilient network queries
+            // 8 Second Timeout Race for resilient network queries
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Database Request Timed Out (15s)')), 15000)
+                setTimeout(() => reject(new Error('Database Request Timed Out (8s)')), 8000)
             );
 
             const { data, count, error } = await Promise.race([
@@ -137,37 +137,9 @@ export const DataProvider = ({ children }) => {
                 setTotalJobCount(prev => Math.max(prev, count));
             }
 
-            // Fetch parallel range chunks if count > 1000 so ALL jobs across all states are loaded
-            let rawData = data || [];
-            if (typeof count === 'number' && count > 1000) {
-                const totalTarget = Math.min(count, 10000);
-                const chunkPromises = [];
-                for (let offset = 1000; offset < totalTarget; offset += 1000) {
-                    let subQuery = supabase
-                        .from('jobs')
-                        .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
-                        .order('created_at', { ascending: false })
-                        .range(offset, offset + 999);
-
-                    if (!user || (!isCompany && !isAdmin)) {
-                        subQuery = subQuery.neq('active', false);
-                    }
-                    chunkPromises.push(subQuery);
-                }
-
-                try {
-                    const subResults = await Promise.all(chunkPromises);
-                    subResults.forEach(res => {
-                        if (res.data) rawData = rawData.concat(res.data);
-                    });
-                } catch (chunkErr) {
-                    console.error('[DataContext] Error fetching parallel range chunks:', chunkErr);
-                }
-            }
-
             const companyCache = getJobCompanyCache();
 
-            const enrichedData = rawData.map(job => {
+            const enrichedData = (data || []).map(job => {
                 const cached = companyCache[String(job.id)];
                 const isConfidential = job.is_confidential;
                 const profile = job.profiles;
@@ -219,7 +191,7 @@ export const DataProvider = ({ children }) => {
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
                 .order('created_at', { ascending: false })
-                .range(offset, offset + 999999);
+                .range(offset, offset + 199);
 
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
