@@ -353,7 +353,7 @@ const JobsPage = () => {
                                 }}
                                 className="w-full bg-white hover:bg-slate-50 text-secondary-600 font-extrabold py-3 px-4 rounded-xl border border-secondary-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-sm"
                             >
-                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length)} de {Math.max(filteredJobs.length, totalJobCount)})
+                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length).toLocaleString('es-MX')} de {Math.max(filteredJobs.length, totalJobCount).toLocaleString('es-MX')})
                             </button>
                         </div>
                     )}

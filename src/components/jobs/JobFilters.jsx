@@ -92,8 +92,8 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     />
                 </div>
 
-                <div className="ml-auto text-sm text-slate-500">
-                    {resultCount} {resultCount === 1 ? 'resultado' : 'resultados'}
+                <div className="ml-auto text-sm text-slate-600 font-extrabold">
+                    {Number(resultCount || 0).toLocaleString('es-MX')} {resultCount === 1 ? 'vacante encontrada' : 'vacantes encontradas'}
                 </div>
             </div>
         </div>
