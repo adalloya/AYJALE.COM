@@ -125,7 +125,7 @@ const JobsPage = () => {
         }
     }, [filteredJobs, selectedJobId]);
 
-    // Handle resize and explicit deck view request
+    // Handle resize effect for desktop layout
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 1024 && selectedJobId) {
@@ -133,24 +133,9 @@ const JobsPage = () => {
             }
         };
 
-        // ONLY redirect to deck if view=deck is EXPLICITLY requested in URL query params
-        const viewMode = searchParams.get('view');
-        const isMobile = window.innerWidth < 1024;
-
-        if (isMobile && viewMode === 'deck' && filteredJobs.length > 0) {
-            const targetJobId = selectedJobId || filteredJobs[0].id;
-            navigate(`/jobs/${targetJobId}`, {
-                replace: true,
-                state: {
-                    jobIds: filteredJobs.map(j => j.id),
-                    fromJobsPage: true
-                }
-            });
-        }
-
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [selectedJobId, filteredJobs, navigate, searchParams]);
+    }, [selectedJobId]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     const selectedCompany = selectedJob ? selectedJob.profiles : null;
@@ -252,7 +237,7 @@ const JobsPage = () => {
         : Math.max(totalJobCount, filteredJobs.length);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 h-full flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:h-full lg:flex lg:flex-col min-h-screen">
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
@@ -274,9 +259,9 @@ const JobsPage = () => {
                 resultCount={displayResultCount}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 lg:overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
                 {/* Left Column: Job List */}
-                <div className="lg:col-span-5 overflow-y-auto custom-scrollbar pr-2 space-y-4 pb-24 touch-pan-y">
+                <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-4 pb-16 lg:pb-24">
                     {filteredJobs.slice(0, visibleCount).map((job, index) => {
                         const companyInfo = getJobCompany(job);
                         const isSelected = job.id === selectedJobId;
