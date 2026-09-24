@@ -47,6 +47,87 @@ export const getJobCompany = (job) => {
     };
 };
 
+/**
+ * Formats salary display smartly:
+ * - If range exists and min !== max -> "$10,000 - $12,000 / mes"
+ * - If single monthly amount or min === max -> "$11,140 / mes"
+ * - If hidden -> "Salario no publicado"
+ */
+export const formatSalaryDisplay = (job) => {
+    if (!job) return { formatted: 'Salario no publicado', rawText: 'No publicado', period: '', isSingle: true };
+
+    if (job.hide_salary) {
+        return { formatted: 'Salario no publicado', rawText: 'Salario no publicado', period: '', isSingle: true };
+    }
+
+    const fmt = (n) => {
+        const num = Number(n);
+        if (isNaN(num) || num <= 0) return null;
+        return num.toLocaleString('es-MX', {
+            minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
+        });
+    };
+
+    const minVal = Number(job.salary_min);
+    const maxVal = Number(job.salary_max);
+    const singleVal = Number(job.salary);
+
+    const minFormatted = fmt(minVal);
+    const maxFormatted = fmt(maxVal);
+    const singleFormatted = fmt(singleVal);
+
+    // Period translation
+    let periodText = '';
+    if (job.salary_period && typeof job.salary_period === 'string') {
+        const periodMap = {
+            'monthly': 'mes',
+            'mensual': 'mes',
+            'mensuales': 'mes',
+            'yearly': 'año',
+            'anual': 'año',
+            'anuales': 'año',
+            'weekly': 'semana',
+            'semanal': 'semana',
+            'semanales': 'semana',
+            'hourly': 'hora',
+            'por hora': 'hora',
+            'daily': 'día',
+            'diario': 'día',
+            'diarios': 'día'
+        };
+        const p = job.salary_period.toLowerCase().trim();
+        periodText = periodMap[p] || p;
+    } else {
+        periodText = 'mes'; // Default to monthly in Mexico
+    }
+
+    const periodSuffix = periodText ? `/${periodText}` : '';
+
+    // Rule 1: Range format ONLY if both min & max exist AND min !== max
+    if (minFormatted && maxFormatted && minVal !== maxVal) {
+        return {
+            formatted: `$${minFormatted} - $${maxFormatted}`,
+            rawText: `$${minFormatted} - $${maxFormatted} ${periodSuffix}`,
+            period: periodSuffix,
+            isRange: true
+        };
+    }
+
+    // Rule 2: Single amount format (minVal, maxVal, or singleVal)
+    const activeAmount = minFormatted || maxFormatted || singleFormatted;
+    if (activeAmount) {
+        return {
+            formatted: `$${activeAmount}`,
+            rawText: `$${activeAmount} ${periodSuffix}`,
+            period: periodSuffix,
+            isSingle: true
+        };
+    }
+
+    return { formatted: 'Salario no publicado', rawText: 'Salario no publicado', period: '', isSingle: true };
+};
+
 export const normalizeText = (text = '') => {
     return text
         .toLowerCase()

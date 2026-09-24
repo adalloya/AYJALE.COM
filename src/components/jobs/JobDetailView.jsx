@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
-import { getJobCompany } from '../../utils/jobUtils';
+import { getJobCompany, formatSalaryDisplay } from '../../utils/jobUtils';
 import { FormattedDescription } from '../../utils/textFormatter';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
@@ -114,6 +114,26 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             {companyInfo.name}
                         </p>
 
+                        {/* Salary Highlight Badge */}
+                        <div className="mb-4">
+                            {(() => {
+                                const sal = formatSalaryDisplay(job);
+                                return sal.formatted !== 'Salario no publicado' ? (
+                                    <div className="inline-flex flex-col items-center bg-emerald-50 border border-emerald-200/80 px-4 py-2 rounded-2xl">
+                                        <div className="text-emerald-700 font-black text-xl tracking-tight leading-none flex items-baseline gap-0.5">
+                                            <span>{sal.formatted}</span>
+                                            {sal.period && <span className="text-emerald-600 text-xs font-semibold">{sal.period}</span>}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-emerald-800 mt-0.5">Sueldo estimado</span>
+                                    </div>
+                                ) : (
+                                    <span className="inline-block bg-slate-100 text-slate-500 font-bold text-xs px-3 py-1 rounded-full border border-slate-200">
+                                        Salario no publicado
+                                    </span>
+                                );
+                            })()}
+                        </div>
+
                         <div className="flex flex-wrap justify-center gap-2 mb-6">
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <Briefcase className="w-3 h-3 mr-1.5" />
@@ -122,10 +142,6 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <Tag className="w-3 h-3 mr-1.5" />
                                 {job.category}
-                            </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                <DollarSign className="w-3 h-3 mr-1.5" />
-                                {formatSalary(job)}
                             </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
                                 <MapPin className="w-3 h-3 mr-1.5" />
@@ -209,9 +225,9 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                     <div className="flex-1 min-w-0">
                         <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
 
-                        <div className="flex flex-wrap items-center text-sm text-slate-600 mb-4 gap-y-2">
-                            <span className="font-semibold text-slate-900 mr-2">
-                                {job.is_confidential ? 'Empresa Confidencial' : (company?.name || 'Empresa Confidencial')}
+                        <div className="flex flex-wrap items-center text-sm text-slate-600 mb-3 gap-y-2">
+                            <span className="font-bold text-slate-900 mr-2">
+                                {companyInfo.name}
                             </span>
                             <span className="hidden sm:inline mx-2 text-slate-300">•</span>
                             <span className="flex items-center whitespace-nowrap">
@@ -220,7 +236,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             </span>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 items-center">
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
                                 <Briefcase className="w-3 h-3 mr-1.5" />
                                 {job.type}
@@ -229,15 +245,27 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                                 <Tag className="w-3 h-3 mr-1.5" />
                                 {job.category}
                             </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
-                                <DollarSign className="w-3 h-3 mr-1.5" />
-                                {formatSalary(job)}
-                            </span>
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+                    {/* Salary & Actions Box */}
+                    <div className="flex flex-col items-end gap-3 w-full md:w-auto mt-4 md:mt-0 flex-shrink-0">
+                        {(() => {
+                            const sal = formatSalaryDisplay(job);
+                            return sal.formatted !== 'Salario no publicado' ? (
+                                <div className="text-right bg-emerald-50/80 border border-emerald-200/80 p-3 rounded-2xl w-full md:w-auto">
+                                    <div className="text-emerald-700 font-black text-2xl tracking-tight leading-none flex items-baseline justify-end gap-0.5">
+                                        <span>{sal.formatted}</span>
+                                        {sal.period && <span className="text-emerald-600 text-sm font-semibold ml-1">{sal.period}</span>}
+                                    </div>
+                                    <div className="text-[11px] font-bold text-emerald-800 mt-1">Sueldo bruto / neto estimado</div>
+                                </div>
+                            ) : (
+                                <div className="text-right bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl text-slate-500 font-bold text-xs">
+                                    Salario no publicado
+                                </div>
+                            );
+                        })()}
                         {hasApplied ? (
                             <button disabled className="flex-1 md:flex-none bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm whitespace-nowrap">
                                 Ya te has postulado
