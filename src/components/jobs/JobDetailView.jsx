@@ -1,10 +1,10 @@
-import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag } from 'lucide-react';
+import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag, GraduationCap } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
-import { getJobCompany, formatSalaryDisplay } from '../../utils/jobUtils';
+import { getJobCompany, formatSalaryDisplay, getEducationLevel } from '../../utils/jobUtils';
 import { FormattedDescription } from '../../utils/textFormatter';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
@@ -76,114 +76,97 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
         return salaryText;
     };
 
-    // Mobile Deck Layout
+    // Mobile Deck Layout (Single Unified Scrollable Container)
     if (isMobileDeck) {
         return (
-            <div className="bg-white h-full flex flex-col relative overflow-hidden">
+            <div className="bg-white h-full flex flex-col relative overflow-y-auto custom-scrollbar touch-pan-y p-6 pb-24 space-y-6">
                 {/* Banner Header */}
-                <div className="relative p-6 pt-12 pb-8 flex-shrink-0">
-                    {/* Background Logo Banner */}
-                    <div className="absolute inset-0 overflow-hidden z-0">
-                        <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white z-10" />
-                        {!job.is_confidential && companyInfo.logo ? (
+                <div className="relative flex-shrink-0 text-center flex flex-col items-center">
+                    {!job.is_confidential && companyInfo.logo && (
+                        <div className="mb-4 shadow-md rounded-2xl bg-white p-2 border border-slate-100">
                             <img
                                 src={companyInfo.logo}
-                                alt=""
-                                className="w-full h-full object-cover opacity-50 blur-sm scale-110"
+                                alt={companyInfo.name}
+                                className="w-16 h-16 object-contain rounded-xl"
                             />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 opacity-50" />
-                        )}
+                        </div>
+                    )}
+
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-1 leading-tight">{formatTitle(job.title)}</h1>
+                    <p className="text-slate-600 font-semibold text-sm mb-3">
+                        {companyInfo.name}
+                    </p>
+
+                    {/* Salary Highlight (Pure Green Text, No Background/Border) */}
+                    <div className="mb-4 text-center">
+                        {(() => {
+                            const sal = formatSalaryDisplay(job);
+                            return sal.formatted !== 'Salario no publicado' ? (
+                                <div className="inline-flex flex-col items-center">
+                                    <div className="text-emerald-600 font-black text-2xl tracking-tight leading-none flex items-baseline justify-center gap-0.5">
+                                        <span>{sal.formatted}</span>
+                                        {sal.period && <span className="text-emerald-600 font-bold text-sm ml-0.5">{sal.period}</span>}
+                                    </div>
+                                </div>
+                            ) : (
+                                <span className="text-slate-400 font-bold text-xs">
+                                    Salario no publicado
+                                </span>
+                            );
+                        })()}
                     </div>
 
-                    {/* Content Overlay */}
-                    <div className="relative z-20 flex flex-col items-center text-center">
-                        {/* Company Logo (Floating) - Only render if logo exists */}
-                        {!job.is_confidential && companyInfo.logo && (
-                            <div className="mb-4 shadow-lg rounded-2xl bg-white p-2">
-                                <img
-                                    src={companyInfo.logo}
-                                    alt={companyInfo.name}
-                                    className="w-16 h-16 object-contain rounded-xl"
-                                />
-                            </div>
+                    <div className="flex flex-wrap justify-center gap-2 mb-6">
+                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                            <Tag className="w-3 h-3 mr-1.5 text-slate-400" />
+                            {job.category}
+                        </span>
+                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                            <MapPin className="w-3 h-3 mr-1.5 text-slate-400" />
+                            {job.location}
+                        </span>
+                        {(() => {
+                            const edu = getEducationLevel(job);
+                            return edu ? (
+                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center">
+                                    <GraduationCap className="w-3 h-3 mr-1.5 text-blue-500" />
+                                    {edu}
+                                </span>
+                            ) : null;
+                        })()}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 w-full">
+                        {hasApplied ? (
+                            <button disabled className="flex-1 bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default shadow-sm">
+                                Ya te has postulado
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onApply}
+                                className="flex-1 bg-secondary-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md active:scale-95"
+                            >
+                                Postularme ahora
+                            </button>
                         )}
 
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{formatTitle(job.title)}</h1>
-                        <p className="text-slate-600 font-medium mb-4">
-                            {companyInfo.name}
-                        </p>
-
-                        {/* Salary Highlight (Pure Green Text, No Background/Border) */}
-                        <div className="mb-4 text-center">
-                            {(() => {
-                                const sal = formatSalaryDisplay(job);
-                                return sal.formatted !== 'Salario no publicado' ? (
-                                    <div className="inline-flex flex-col items-center">
-                                        <div className="text-emerald-600 font-black text-2xl tracking-tight leading-none flex items-baseline justify-center gap-0.5">
-                                            <span>{sal.formatted}</span>
-                                            {sal.period && <span className="text-emerald-600 font-bold text-sm ml-0.5">{sal.period}</span>}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <span className="text-slate-400 font-bold text-xs">
-                                        Salario no publicado
-                                    </span>
-                                );
-                            })()}
-                        </div>
-
-                        <div className="flex flex-wrap justify-center gap-2 mb-6">
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                <Briefcase className="w-3 h-3 mr-1.5" />
-                                {job.type}
-                            </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                <Tag className="w-3 h-3 mr-1.5" />
-                                {job.category}
-                            </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                <MapPin className="w-3 h-3 mr-1.5" />
-                                {job.location}
-                            </span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-3 w-full">
-                            {hasApplied ? (
-                                <button disabled className="flex-1 bg-green-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm">
-                                    Ya te has postulado
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={onApply}
-                                    className="flex-1 bg-orange-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-orange-700 transition-all shadow-md active:scale-95"
-                                >
-                                    Postularme ahora
-                                </button>
-                            )}
-
-                            <button
-                                onClick={handleShare}
-                                className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-sm active:scale-95"
-                                title="Compartir"
-                            >
-                                <Share2 className="w-5 h-5" />
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleShare}
+                            className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-sm active:scale-95"
+                            title="Compartir"
+                        >
+                            <Share2 className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
 
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-20">
-                    <div className="prose prose-slate prose-sm max-w-none">
-                        <h2 className="text-lg font-bold text-slate-900 mb-4 mt-2">Descripción completa del empleo</h2>
-                        <div className="text-slate-600 whitespace-pre-line leading-relaxed">
-                            {job.description}
-                        </div>
-                    </div>
+                {/* Content & Section Grid Cards */}
+                <div className="space-y-6">
+                    <h2 className="text-base font-extrabold text-slate-900">Descripción completa del empleo</h2>
+                    <FormattedDescription text={job.description} />
 
-                    <div className="pt-8 mt-8 border-t border-slate-100 flex justify-between items-center pb-8">
+                    <div className="pt-6 border-t border-slate-100 flex justify-between items-center pb-4">
                         <button
                             onClick={handleReport}
                             className="flex items-center text-slate-400 text-xs hover:text-slate-600 transition-colors"

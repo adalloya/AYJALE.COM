@@ -6,10 +6,10 @@ import SEO from '../components/SEO';
 import JobFilters from '../components/jobs/JobFilters';
 import JobDetailView from '../components/jobs/JobDetailView';
 import ApplicationModal from '../components/jobs/ApplicationModal';
-import { Building, MapPin, DollarSign, Tag, Briefcase } from 'lucide-react';
+import { Building, MapPin, DollarSign, Tag, Briefcase, GraduationCap } from 'lucide-react';
 
 import { formatFriendlyDate } from '../utils/dateUtils';
-import { getJobCompany, matchesStateFilter, formatSalaryDisplay } from '../utils/jobUtils';
+import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel } from '../utils/jobUtils';
 
 const JobsPage = () => {
     const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob } = useData();
@@ -332,10 +332,6 @@ const JobsPage = () => {
 
                                     <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-2">
                                         <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                            <Briefcase className="w-3 h-3 mr-1" />
-                                            {job.type}
-                                        </span>
-                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
                                             <Tag className="w-3 h-3 mr-1" />
                                             {job.category}
                                         </span>
@@ -343,6 +339,15 @@ const JobsPage = () => {
                                             <MapPin className="w-3 h-3 mr-1" />
                                             {job.location}
                                         </span>
+                                        {(() => {
+                                            const edu = getEducationLevel(job);
+                                            return edu ? (
+                                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded font-medium">
+                                                    <GraduationCap className="w-3 h-3 mr-1 text-blue-500" />
+                                                    {edu}
+                                                </span>
+                                            ) : null;
+                                        })()}
                                     </div>
 
                                     <div className="text-xs text-slate-400 text-right">

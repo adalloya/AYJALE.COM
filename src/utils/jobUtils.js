@@ -128,6 +128,26 @@ export const formatSalaryDisplay = (job) => {
     return { formatted: 'Salario no publicado', rawText: 'Salario no publicado', period: '', isSingle: true };
 };
 
+/**
+ * Resolves required education level for job cards and badges.
+ */
+export const getEducationLevel = (job) => {
+    if (!job) return null;
+    const edu = job.education_level || job.escolaridad || job.education || job.academic_level;
+    if (edu && typeof edu === 'string' && edu.trim() !== '' && edu !== 'N/A') {
+        return edu.trim();
+    }
+    // Check text for common education levels
+    const fullText = `${job.description || ''} ${job.requirements || ''}`.toLowerCase();
+    if (fullText.includes('licenciatura') || fullText.includes('profesional')) return 'Licenciatura';
+    if (fullText.includes('ingeniería') || fullText.includes('ingenieria')) return 'Ingeniería';
+    if (fullText.includes('carrera técnica') || fullText.includes('tecnico') || fullText.includes('técnica')) return 'Carrera Técnica';
+    if (fullText.includes('preparatoria') || fullText.includes('bachillerato')) return 'Preparatoria';
+    if (fullText.includes('secundaria')) return 'Secundaria';
+    if (fullText.includes('primaria')) return 'Primaria';
+    return null;
+};
+
 export const normalizeText = (text = '') => {
     return text
         .toLowerCase()
