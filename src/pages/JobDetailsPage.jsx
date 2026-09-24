@@ -49,8 +49,8 @@ const JobDetailsPage = () => {
     }, [jobIds, jobs, job]);
 
     const handleBack = useCallback(() => {
-        // Close deck and return to traditional mobile job list view
-        navigate('/jobs?showList=true');
+        // Close deck view and return to traditional mobile job list
+        navigate('/jobs', { state: { showList: true } });
     }, [navigate]);
 
     // Optimistic rendering: If we have the job, show it even if loading (background refresh)

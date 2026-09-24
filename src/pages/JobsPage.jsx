@@ -125,45 +125,32 @@ const JobsPage = () => {
         }
     }, [filteredJobs, selectedJobId]);
 
-    // Handle resize and initial mobile load
+    // Handle resize and explicit deck view request
     useEffect(() => {
         const handleResize = () => {
-            console.log('JobsPage Resize:', window.innerWidth, selectedJobId);
             if (window.innerWidth < 1024 && selectedJobId) {
-                console.log('Navigating to mobile deck:', selectedJobId);
-                // If resizing to mobile and a job is selected, go to deck view
-                navigate(`/jobs/${selectedJobId}`, {
-                    state: {
-                        jobIds: filteredJobs.map(j => j.id),
-                        fromJobsPage: true
-                    }
-                });
+                // Keep selected job context if user resizes
             }
         };
 
-        // Check for explicit "deck view" request (from Landing Page categories)
+        // ONLY redirect to deck if view=deck is EXPLICITLY requested in URL query params
         const viewMode = searchParams.get('view');
         const isMobile = window.innerWidth < 1024;
 
-        if (isMobile && filteredJobs.length > 0) {
-            // If "view=deck" is present OR we are just landing here without explicit "showList" intent
-            // AND we haven't already navigated (check if we are already on a detail page? No, this is JobsPage)
-
-            if (viewMode === 'deck' || !location.state?.showList) {
-                const targetJobId = selectedJobId || filteredJobs[0].id;
-                navigate(`/jobs/${targetJobId}`, {
-                    replace: true, // Replace history to avoid back button loop
-                    state: {
-                        jobIds: filteredJobs.map(j => j.id),
-                        fromJobsPage: true
-                    }
-                });
-            }
+        if (isMobile && viewMode === 'deck' && filteredJobs.length > 0) {
+            const targetJobId = selectedJobId || filteredJobs[0].id;
+            navigate(`/jobs/${targetJobId}`, {
+                replace: true,
+                state: {
+                    jobIds: filteredJobs.map(j => j.id),
+                    fromJobsPage: true
+                }
+            });
         }
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [selectedJobId, filteredJobs, navigate, location.state, searchParams]);
+    }, [selectedJobId, filteredJobs, navigate, searchParams]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     const selectedCompany = selectedJob ? selectedJob.profiles : null;
