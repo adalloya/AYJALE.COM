@@ -133,18 +133,41 @@ export const formatSalaryDisplay = (job) => {
  */
 export const getEducationLevel = (job) => {
     if (!job) return null;
-    const edu = job.education_level || job.escolaridad || job.education || job.academic_level;
-    if (edu && typeof edu === 'string' && edu.trim() !== '' && edu !== 'N/A') {
-        return edu.trim();
+    const rawEdu = job.education_level || job.escolaridad || job.education || job.academic_level || job.nivel_estudios || job.nivel_academico;
+    if (rawEdu && typeof rawEdu === 'string' && rawEdu.trim() !== '' && rawEdu !== 'N/A' && rawEdu !== 'null') {
+        const lowerRaw = rawEdu.toLowerCase().trim();
+        if (lowerRaw.includes('prepa') || lowerRaw.includes('vocacional') || lowerRaw.includes('bachillerato') || lowerRaw.includes('medio superior')) {
+            return 'Preparatoria / Bachillerato';
+        }
+        if (lowerRaw.includes('licenciatura') || lowerRaw.includes('profesional') || lowerRaw.includes('grado')) {
+            return 'Licenciatura';
+        }
+        if (lowerRaw.includes('ingenier')) {
+            return 'Ingeniería';
+        }
+        if (lowerRaw.includes('tecnic') || lowerRaw.includes('técnic')) {
+            return 'Carrera Técnica';
+        }
+        if (lowerRaw.includes('secundar')) {
+            return 'Secundaria';
+        }
+        if (lowerRaw.includes('primar')) {
+            return 'Primaria';
+        }
+        return rawEdu.trim();
     }
-    // Check text for common education levels
-    const fullText = `${job.description || ''} ${job.requirements || ''}`.toLowerCase();
+
+    // Check text for common education level keywords
+    const fullText = `${job.description || ''} ${job.requirements || ''} ${job.title || ''}`.toLowerCase();
+    if (fullText.includes('prepa') || fullText.includes('vocacional') || fullText.includes('bachillerato') || fullText.includes('medio superior')) {
+        return 'Preparatoria / Bachillerato';
+    }
     if (fullText.includes('licenciatura') || fullText.includes('profesional')) return 'Licenciatura';
     if (fullText.includes('ingeniería') || fullText.includes('ingenieria')) return 'Ingeniería';
-    if (fullText.includes('carrera técnica') || fullText.includes('tecnico') || fullText.includes('técnica')) return 'Carrera Técnica';
-    if (fullText.includes('preparatoria') || fullText.includes('bachillerato')) return 'Preparatoria';
+    if (fullText.includes('carrera técnica') || fullText.includes('tecnico') || fullText.includes('técnica') || fullText.includes('técnico')) return 'Carrera Técnica';
     if (fullText.includes('secundaria')) return 'Secundaria';
     if (fullText.includes('primaria')) return 'Primaria';
+
     return null;
 };
 

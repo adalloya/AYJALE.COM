@@ -136,8 +136,16 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         })()}
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions (Share on Left, Apply on Right on SAME line) */}
                     <div className="flex items-center gap-3 w-full">
+                        <button
+                            onClick={handleShare}
+                            className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-xs active:scale-95 flex-shrink-0"
+                            title="Compartir"
+                        >
+                            <Share2 className="w-5 h-5" />
+                        </button>
+
                         {hasApplied ? (
                             <button disabled className="flex-1 bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default shadow-sm">
                                 Ya te has postulado
@@ -150,14 +158,6 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                                 Postularme ahora
                             </button>
                         )}
-
-                        <button
-                            onClick={handleShare}
-                            className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-sm active:scale-95"
-                            title="Compartir"
-                        >
-                            <Share2 className="w-5 h-5" />
-                        </button>
                     </div>
                 </div>
 
@@ -247,26 +247,29 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                                 </div>
                             );
                         })()}
-                        {hasApplied ? (
-                            <button disabled className="flex-1 md:flex-none bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm whitespace-nowrap">
-                                Ya te has postulado
-                            </button>
-                        ) : (
+                        {/* Actions (Share on Left, Apply on Right on SAME line) */}
+                        <div className="flex items-center gap-2.5 w-full md:w-auto">
                             <button
-                                onClick={onApply}
-                                className="flex-1 md:flex-none bg-secondary-600 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                onClick={handleShare}
+                                className="p-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white flex-shrink-0"
+                                title="Compartir"
                             >
-                                Postularme ahora
+                                <Share2 className="w-5 h-5" />
                             </button>
-                        )}
 
-                        <button
-                            onClick={handleShare}
-                            className="p-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors"
-                            title="Compartir"
-                        >
-                            <Share2 className="w-5 h-5" />
-                        </button>
+                            {hasApplied ? (
+                                <button disabled className="flex-1 md:flex-none bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm cursor-default opacity-90 shadow-sm whitespace-nowrap">
+                                    Ya te has postulado
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={onApply}
+                                    className="flex-1 md:flex-none bg-secondary-600 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                >
+                                    Postularme ahora
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
