@@ -286,15 +286,28 @@ const JobsPage = () => {
                                         : 'border-slate-200 hover:border-orange-300 hover:shadow-sm'
                                         }`}
                                 >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className={`font-bold text-lg line-clamp-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
+                                    <div className="flex justify-between items-start gap-3 mb-2">
+                                        <h3 className={`font-bold text-base sm:text-lg line-clamp-1 flex-1 ${isSelected ? 'text-secondary-700' : 'text-slate-900'}`}>
                                             {job.title.charAt(0).toUpperCase() + job.title.slice(1).toLowerCase()}
                                         </h3>
-                                        {job.is_external && (
-                                            <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide">
-                                                Externa
-                                            </span>
-                                        )}
+                                        {/* TOP RIGHT SALARY DISPLAY (PURE GREEN TEXT, NO BG/BORDER) */}
+                                        {(() => {
+                                            const sal = formatSalaryDisplay(job);
+                                            return sal.formatted !== 'Salario no publicado' ? (
+                                                <div className="text-right flex-shrink-0">
+                                                    <span className="text-emerald-600 font-extrabold text-sm sm:text-base tracking-tight whitespace-nowrap">
+                                                        {sal.formatted}
+                                                        {sal.period && <span className="text-emerald-600 font-bold text-xs ml-0.5">{sal.period}</span>}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <div className="text-right flex-shrink-0">
+                                                    <span className="text-slate-400 font-medium text-xs whitespace-nowrap">
+                                                        No publicado
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
                                     <div className="flex items-center mb-3">
@@ -307,12 +320,17 @@ const JobsPage = () => {
                                                 />
                                             </div>
                                         )}
-                                        <div className="text-sm text-slate-600 font-medium line-clamp-1">
+                                        <div className="text-sm text-slate-600 font-medium line-clamp-1 flex-1">
                                             {companyInfo.name}
                                         </div>
+                                        {job.is_external && (
+                                            <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide ml-2 flex-shrink-0">
+                                                Externa
+                                            </span>
+                                        )}
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-3">
+                                    <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-2">
                                         <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
                                             <Briefcase className="w-3 h-3 mr-1" />
                                             {job.type}
@@ -325,19 +343,6 @@ const JobsPage = () => {
                                             <MapPin className="w-3 h-3 mr-1" />
                                             {job.location}
                                         </span>
-                                        {(() => {
-                                            const sal = formatSalaryDisplay(job);
-                                            return sal.formatted !== 'Salario no publicado' ? (
-                                                <span className="flex items-center bg-emerald-50 text-emerald-700 font-extrabold px-2.5 py-1 rounded-md border border-emerald-100/80">
-                                                    <DollarSign className="w-3.5 h-3.5 mr-0.5 text-emerald-600" />
-                                                    {sal.formatted} {sal.period}
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center bg-slate-50 text-slate-400 px-2 py-1 rounded">
-                                                    Salario no publicado
-                                                </span>
-                                            );
-                                        })()}
                                     </div>
 
                                     <div className="text-xs text-slate-400 text-right">

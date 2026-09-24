@@ -114,20 +114,19 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             {companyInfo.name}
                         </p>
 
-                        {/* Salary Highlight Badge */}
-                        <div className="mb-4">
+                        {/* Salary Highlight (Pure Green Text, No Background/Border) */}
+                        <div className="mb-4 text-center">
                             {(() => {
                                 const sal = formatSalaryDisplay(job);
                                 return sal.formatted !== 'Salario no publicado' ? (
-                                    <div className="inline-flex flex-col items-center bg-emerald-50 border border-emerald-200/80 px-4 py-2 rounded-2xl">
-                                        <div className="text-emerald-700 font-black text-xl tracking-tight leading-none flex items-baseline gap-0.5">
+                                    <div className="inline-flex flex-col items-center">
+                                        <div className="text-emerald-600 font-black text-2xl tracking-tight leading-none flex items-baseline justify-center gap-0.5">
                                             <span>{sal.formatted}</span>
-                                            {sal.period && <span className="text-emerald-600 text-xs font-semibold">{sal.period}</span>}
+                                            {sal.period && <span className="text-emerald-600 font-bold text-sm ml-0.5">{sal.period}</span>}
                                         </div>
-                                        <span className="text-[10px] font-bold text-emerald-800 mt-0.5">Sueldo estimado</span>
                                     </div>
                                 ) : (
-                                    <span className="inline-block bg-slate-100 text-slate-500 font-bold text-xs px-3 py-1 rounded-full border border-slate-200">
+                                    <span className="text-slate-400 font-bold text-xs">
                                         Salario no publicado
                                     </span>
                                 );
@@ -253,15 +252,14 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         {(() => {
                             const sal = formatSalaryDisplay(job);
                             return sal.formatted !== 'Salario no publicado' ? (
-                                <div className="text-right bg-emerald-50/80 border border-emerald-200/80 p-3 rounded-2xl w-full md:w-auto">
-                                    <div className="text-emerald-700 font-black text-2xl tracking-tight leading-none flex items-baseline justify-end gap-0.5">
+                                <div className="text-right w-full md:w-auto">
+                                    <div className="text-emerald-600 font-black text-2xl tracking-tight leading-none flex items-baseline justify-end gap-0.5">
                                         <span>{sal.formatted}</span>
-                                        {sal.period && <span className="text-emerald-600 text-sm font-semibold ml-1">{sal.period}</span>}
+                                        {sal.period && <span className="text-emerald-600 font-bold text-sm ml-0.5">{sal.period}</span>}
                                     </div>
-                                    <div className="text-[11px] font-bold text-emerald-800 mt-1">Sueldo bruto / neto estimado</div>
                                 </div>
                             ) : (
-                                <div className="text-right bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl text-slate-500 font-bold text-xs">
+                                <div className="text-right text-slate-400 font-bold text-xs">
                                     Salario no publicado
                                 </div>
                             );
