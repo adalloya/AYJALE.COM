@@ -172,7 +172,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
                 {/* Content & Section Grid Cards */}
                 <div className="space-y-6">
-                    <h2 className="text-base font-extrabold text-slate-900">Descripción completa del empleo</h2>
+                    <h2 className="text-base sm:text-lg font-black text-orange-600">Descripción completa del empleo</h2>
                     <FormattedDescription text={job.description} />
 
                     <div className="pt-6 border-t border-slate-100 flex justify-between items-center pb-4">
@@ -305,7 +305,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
             <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div className="space-y-8">
                     <section>
-                        <h2 className="text-lg font-bold text-slate-900 mb-4">Descripción completa del empleo</h2>
+                        <h2 className="text-lg font-black text-orange-600 mb-4">Descripción completa del empleo</h2>
                         <FormattedDescription text={job.description} />
                     </section>
 

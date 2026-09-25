@@ -16,21 +16,21 @@ export const FormattedDescription = ({ text }) => {
 
     const getSectionMeta = (titleLower) => {
         if (titleLower.includes('requisito') || titleLower.includes('perfil') || titleLower.includes('escolaridad')) {
-            return { title: 'Requisitos del Puesto', icon: ClipboardCheck, color: 'text-sky-600 bg-sky-50 border-sky-100' };
+            return { title: 'Requisitos del Puesto', icon: ClipboardCheck, color: 'text-orange-600 bg-orange-50 border-orange-100' };
         }
         if (titleLower.includes('horario') || titleLower.includes('jornada') || titleLower.includes('días')) {
-            return { title: 'Horarios y Jornada', icon: Clock, color: 'text-amber-600 bg-amber-50 border-amber-100' };
+            return { title: 'Horarios y Jornada', icon: Clock, color: 'text-orange-600 bg-orange-50 border-orange-100' };
         }
         if (titleLower.includes('funcion') || titleLower.includes('actividad') || titleLower.includes('tarea') || titleLower.includes('responsabil')) {
-            return { title: 'Funciones y Actividades', icon: ListChecks, color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
+            return { title: 'Funciones y Actividades', icon: ListChecks, color: 'text-orange-600 bg-orange-50 border-orange-100' };
         }
         if (titleLower.includes('prestacion') || titleLower.includes('beneficio') || titleLower.includes('ofrecemos')) {
-            return { title: 'Prestaciones y Beneficios', icon: Gift, color: 'text-indigo-600 bg-indigo-50 border-indigo-100' };
+            return { title: 'Prestaciones y Beneficios', icon: Gift, color: 'text-orange-600 bg-orange-50 border-orange-100' };
         }
         if (titleLower.includes('proceso') || titleLower.includes('contacto') || titleLower.includes('reclutamiento')) {
-            return { title: 'Proceso de Reclutamiento', icon: MessageSquare, color: 'text-purple-600 bg-purple-50 border-purple-100' };
+            return { title: 'Proceso de Reclutamiento', icon: MessageSquare, color: 'text-orange-600 bg-orange-50 border-orange-100' };
         }
-        return { title: 'Detalles Adicionales', icon: ChevronRight, color: 'text-slate-600 bg-slate-50 border-slate-200' };
+        return { title: 'Detalles Adicionales', icon: ChevronRight, color: 'text-orange-600 bg-orange-50 border-orange-100' };
     };
 
     lines.forEach((line) => {
@@ -54,16 +54,16 @@ export const FormattedDescription = ({ text }) => {
         sections.push(currentSection);
     }
 
-    // If no explicit section headers were found, render as clean bullet/paragraph list
+    // If no explicit section headers were found, render as single structured card
     if (sections.length <= 1) {
         return (
-            <div className="space-y-3 text-slate-700 text-sm leading-relaxed bg-slate-50/60 border border-slate-200/80 rounded-2xl p-5">
+            <div className="space-y-3 text-slate-700 text-sm leading-relaxed bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
                 {lines.map((line, idx) => {
                     const isBullet = /^[•\-\*\d+\.]\s+/.test(line);
                     const cleanText = line.replace(/^[•\-\*\d+\.]\s+/, '');
                     return isBullet ? (
                         <div key={idx} className="flex items-start gap-2.5 my-1">
-                            <span className="text-secondary-600 font-bold text-base leading-none select-none">•</span>
+                            <span className="text-orange-600 font-bold text-base leading-none select-none">•</span>
                             <span className="flex-1 font-medium">{cleanText}</span>
                         </div>
                     ) : (
@@ -78,6 +78,7 @@ export const FormattedDescription = ({ text }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
             {sections.map((sec, idx) => {
                 const Icon = sec.icon || ChevronRight;
+                // If odd number of sections (e.g. 5 sections), the 5th section spans full 2 columns as a wide rectangle!
                 const isFullWidth = sec.title === 'Proceso de Reclutamiento' || (sections.length % 2 !== 0 && idx === sections.length - 1);
 
                 return (
@@ -85,11 +86,11 @@ export const FormattedDescription = ({ text }) => {
                         key={idx}
                         className={`bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs transition-all ${isFullWidth ? 'md:col-span-2' : ''}`}
                     >
-                        <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/60">
-                            <div className={`p-2 rounded-xl border ${sec.color || 'bg-slate-100 text-slate-600'}`}>
-                                <Icon className="w-4 h-4" />
+                        <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/70">
+                            <div className={`p-2 rounded-xl border ${sec.color || 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                                <Icon className="w-4.5 h-4.5" />
                             </div>
-                            <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">
+                            <h4 className="font-extrabold text-orange-600 text-sm sm:text-base tracking-tight">
                                 {sec.rawTitle || sec.title}
                             </h4>
                         </div>
@@ -97,7 +98,7 @@ export const FormattedDescription = ({ text }) => {
                         <div className="space-y-2 text-slate-700 text-xs sm:text-sm">
                             {sec.items.map((item, itemIdx) => (
                                 <div key={itemIdx} className="flex items-start gap-2">
-                                    <span className="text-secondary-500 font-bold text-xs select-none mt-0.5">•</span>
+                                    <span className="text-orange-500 font-bold text-xs select-none mt-0.5">•</span>
                                     <span className="flex-1 font-medium leading-relaxed">{item}</span>
                                 </div>
                             ))}
