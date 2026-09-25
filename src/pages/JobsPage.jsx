@@ -29,7 +29,8 @@ const JobsPage = () => {
         state: searchParams.get('state') || '',
         category: searchParams.get('category') || '',
         type: searchParams.get('type') || '',
-        minSalary: searchParams.get('minSalary') || ''
+        minSalary: searchParams.get('minSalary') || '',
+        salaryRange: searchParams.get('salaryRange') || ''
     });
 
     const [selectedJobId, setSelectedJobId] = useState(() => {
@@ -44,7 +45,8 @@ const JobsPage = () => {
             state: searchParams.get('state') || '',
             category: searchParams.get('category') || '',
             type: searchParams.get('type') || '',
-            minSalary: searchParams.get('minSalary') || ''
+            minSalary: searchParams.get('minSalary') || '',
+            salaryRange: searchParams.get('salaryRange') || ''
         });
         setVisibleCount(20);
     }, [searchParams]);
@@ -56,6 +58,7 @@ const JobsPage = () => {
         if (filters.category) params.category = filters.category;
         if (filters.type) params.type = filters.type;
         if (filters.minSalary) params.minSalary = filters.minSalary;
+        if (filters.salaryRange) params.salaryRange = filters.salaryRange;
         setSearchParams(params);
     };
 
@@ -106,11 +109,23 @@ const JobsPage = () => {
             // Type Filter
             if (filters.type && job.type !== filters.type) return false;
 
-            // Salary Filter
-            if (filters.minSalary) {
+            // Salary Range & Min Salary Filter
+            if (filters.salaryRange) {
+                const jobMin = Number(job.salary_min || job.salary || 0);
+                const jobMax = Number(job.salary_max || job.salary || 0);
+                const effectiveSalary = jobMax || jobMin;
+
+                if (effectiveSalary > 0) {
+                    if (filters.salaryRange === '0-8000' && effectiveSalary > 8000) return false;
+                    if (filters.salaryRange === '8000-12000' && (effectiveSalary < 8000 || effectiveSalary > 12000)) return false;
+                    if (filters.salaryRange === '12000-18000' && (effectiveSalary < 12000 || effectiveSalary > 18000)) return false;
+                    if (filters.salaryRange === '18000-25000' && (effectiveSalary < 18000 || effectiveSalary > 25000)) return false;
+                    if (filters.salaryRange === '25000-40000' && (effectiveSalary < 25000 || effectiveSalary > 40000)) return false;
+                    if (filters.salaryRange === '40000+' && effectiveSalary < 40000) return false;
+                }
+            } else if (filters.minSalary) {
                 const min = Number(filters.minSalary);
-                const jobMin = job.salary_min || job.salary || 0;
-                const jobMax = job.salary_max || job.salary || 0;
+                const jobMax = Number(job.salary_max || job.salary || 0);
                 if (jobMax < min) return false;
             }
 

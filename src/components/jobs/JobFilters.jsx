@@ -94,17 +94,20 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     <option value="Becario / Prácticas">Becario / Prácticas</option>
                 </select>
 
-                {/* Min Salary */}
-                <div className="relative w-32">
-                    <DollarSign className="absolute left-2 top-1.5 text-slate-400 w-4 h-4" />
-                    <input
-                        type="number"
-                        placeholder="Sueldo Mín."
-                        className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary-500 outline-none text-sm"
-                        value={filters.minSalary}
-                        onChange={(e) => handleChange('minSalary', e.target.value)}
-                    />
-                </div>
+                {/* Salary Range Dropdown */}
+                <select
+                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-secondary-500 outline-none bg-white font-medium text-slate-700"
+                    value={filters.salaryRange || ''}
+                    onChange={(e) => handleChange('salaryRange', e.target.value)}
+                >
+                    <option value="">Rango de Sueldo</option>
+                    <option value="0-8000">Hasta $8,000 / mes</option>
+                    <option value="8000-12000">$8,000 - $12,000 / mes</option>
+                    <option value="12000-18000">$12,000 - $18,000 / mes</option>
+                    <option value="18000-25000">$18,000 - $25,000 / mes</option>
+                    <option value="25000-40000">$25,000 - $40,000 / mes</option>
+                    <option value="40000+">Más de $40,000 / mes</option>
+                </select>
 
                 <div className="ml-auto text-sm text-slate-600 font-extrabold">
                     {Number(resultCount || 0).toLocaleString('es-MX')} {resultCount === 1 ? 'vacante encontrada' : 'vacantes encontradas'}
