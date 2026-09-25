@@ -329,8 +329,8 @@ const JobsPage = () => {
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-                {/* Left Column: Job List */}
-                <div className="lg:col-span-5 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-4 pb-16 lg:pb-24">
+                {/* Left Column: Job List (1/3 Width) */}
+                <div className="lg:col-span-4 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-4 pb-16 lg:pb-24">
                     {filteredJobs.slice(0, visibleCount).map((job, index) => {
                         const companyInfo = getJobCompany(job);
                         const isSelected = job.id === selectedJobId;
@@ -462,8 +462,8 @@ const JobsPage = () => {
                     )}
                 </div>
 
-                {/* Right Column: Job Details (Desktop Only) */}
-                <div className="hidden lg:block lg:col-span-7 h-full overflow-hidden">
+                {/* Right Column: Job Details (Desktop Only - 2/3 Width) */}
+                <div className="hidden lg:block lg:col-span-8 h-full overflow-hidden">
                     <JobDetailView
                         job={selectedJob}
                         company={selectedCompany}
