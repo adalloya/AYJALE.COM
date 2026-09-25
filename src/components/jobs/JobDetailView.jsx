@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag, GraduationCap } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -6,10 +7,15 @@ import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
 import { getJobCompany, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../../utils/jobUtils';
 import { FormattedDescription } from '../../utils/textFormatter';
+import ReportJobModal from './ReportJobModal';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { reportJob } = useData();
+
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [submittingReport, setSubmittingReport] = useState(false);
 
     if (!job) return <div className="p-8 text-center text-slate-500">Selecciona una vacante para ver los detalles.</div>;
 
@@ -22,7 +28,18 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     };
 
     const handleReport = () => {
-        window.location.href = `mailto:soporte@ayjale.com?subject=Reporte de Vacante ${job.id}&body=Hola, quiero reportar la vacante "${job.title}" por la siguiente razón:`;
+        setShowReportModal(true);
+    };
+
+    const handleReportSubmit = async (reportData) => {
+        setSubmittingReport(true);
+        try {
+            await reportJob(job.id, reportData);
+        } catch (err) {
+            console.error('Error submitting job report:', err);
+        } finally {
+            setSubmittingReport(false);
+        }
     };
 
     // console.log('JobDetailView: Job Data:', job);
@@ -312,15 +329,23 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                     <div className="pt-8 border-t border-slate-100 flex justify-between items-center">
                         <button
                             onClick={handleReport}
-                            className="flex items-center text-slate-400 text-sm hover:text-slate-600 transition-colors bg-slate-50 px-4 py-2 rounded-lg"
+                            className="flex items-center text-slate-500 font-bold text-xs hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl border border-red-100 cursor-pointer active:scale-95"
                         >
-                            <Flag className="w-4 h-4 mr-2" />
-                            Reportar empleo
+                            <Flag className="w-4 h-4 mr-2 text-red-600" />
+                            Reportar vacante
                         </button>
                         <span className="text-xs text-slate-300 font-mono">ID: {String(job.id).slice(0, 8)}...</span>
                     </div>
                 </div>
             </div>
+
+            <ReportJobModal
+                isOpen={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                onSubmit={handleReportSubmit}
+                jobTitle={job.title}
+                loading={submittingReport}
+            />
         </div>
     );
 };

@@ -2,40 +2,78 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2, Plus } from 'lucide-react';
+import { Users, Building2, Briefcase, Search, RefreshCw, Power, Lock, Eye, Settings, Sliders, Trash2, Plus, ShieldAlert, Check, Ban, CheckCircle2 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, adminBulkDisableScraperJobs, adminBulkDeleteScraperJobs, siteSettings, updateSiteSettings } = useData();
+    const { jobs, adminGetUsers, adminRepublishJob, toggleJobStatus, adminGetApplications, updateUserProfile, adminGetContactUnlocks, adminDeleteUser, adminBulkDisableScraperJobs, adminBulkDeleteScraperJobs, siteSettings, updateSiteSettings, adminGetReportedJobs, adminApproveReportedJob, adminDeleteReportedJob, adminBlockCompanyFromReport } = useData();
     const { resetPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('candidates');
     const [jobSourceFilter, setJobSourceFilter] = useState('all'); // 'all' | 'organico' | 'scraper_sne'
     const [allUsers, setAllUsers] = useState([]);
     const [allApplications, setAllApplications] = useState([]);
     const [allUnlocks, setAllUnlocks] = useState([]);
+    const [reportedJobs, setReportedJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [usersData, appsData, unlocksData] = await Promise.all([
+                const [usersData, appsData, unlocksData, reportsData] = await Promise.all([
                     adminGetUsers(),
                     adminGetApplications(),
-                    adminGetContactUnlocks()
+                    adminGetContactUnlocks(),
+                    adminGetReportedJobs()
                 ]);
                 setAllUsers(usersData || []);
                 setAllApplications(appsData || []);
                 setAllUnlocks(unlocksData || []);
+                setReportedJobs(reportsData || []);
             } catch (error) {
                 console.error("Failed to load admin data", error);
                 setLoading(false);
-                alert("Error cargando datos: " + error.message);
             } finally {
                 setLoading(false);
             }
         };
         loadData();
-    }, [adminGetUsers, adminGetApplications, adminGetContactUnlocks]);
+    }, [adminGetUsers, adminGetApplications, adminGetContactUnlocks, adminGetReportedJobs]);
+
+    const handleApproveReportedJob = async (reportId, jobId) => {
+        if (window.confirm('¿Aprobar y reactivar esta vacante?')) {
+            try {
+                await adminApproveReportedJob(reportId, jobId);
+                setReportedJobs(prev => prev.filter(r => r.id !== reportId));
+                alert('Vacante aprobada y reactivada exitosamente.');
+            } catch (e) {
+                alert('Error al aprobar vacante: ' + e.message);
+            }
+        }
+    };
+
+    const handleDeleteReportedJob = async (reportId, jobId) => {
+        if (window.confirm('🔴 ¿Estás seguro de ELIMINAR permanentemente esta vacante reportada?')) {
+            try {
+                await adminDeleteReportedJob(reportId, jobId);
+                setReportedJobs(prev => prev.filter(r => r.id !== reportId));
+                alert('Vacante eliminada permanentemente.');
+            } catch (e) {
+                alert('Error al eliminar vacante: ' + e.message);
+            }
+        }
+    };
+
+    const handleBlockCompanyFromReport = async (companyId, jobId, companyName) => {
+        if (window.confirm(`⛔ ALERTA: ¿Estás seguro de BLOQUEAR la cuenta de la empresa "${companyName}" y desactivar todas sus vacantes?`)) {
+            try {
+                await adminBlockCompanyFromReport(companyId, jobId);
+                setAllUsers(prev => prev.map(u => u.id === companyId ? { ...u, role: 'blocked', active: false } : u));
+                alert(`Empresa "${companyName}" bloqueada y sus vacantes desactivadas.`);
+            } catch (e) {
+                alert('Error al bloquear empresa: ' + e.message);
+            }
+        }
+    };
 
     const candidates = allUsers.filter(u => u.role === 'candidate');
     const companies = allUsers.filter(u => u.role === 'company');
@@ -303,6 +341,13 @@ const AdminDashboard = () => {
                             Desbloqueos
                         </button>
                         <button
+                            onClick={() => setActiveTab('reported')}
+                            className={`px-4 py-2 rounded-md text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${activeTab === 'reported' ? 'bg-red-600 text-white shadow-sm' : 'text-red-600 bg-red-50 hover:bg-red-100'}`}
+                        >
+                            <ShieldAlert className="w-4 h-4" />
+                            Vacantes Reportadas ({reportedJobs.length})
+                        </button>
+                        <button
                             onClick={() => setActiveTab('settings')}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-1.5 ${activeTab === 'settings' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
@@ -512,6 +557,86 @@ const AdminDashboard = () => {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                ) : activeTab === 'reported' ? (
+                    <div className="p-6">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                                    <ShieldAlert className="w-6 h-6 text-red-600" />
+                                    Vacantes Reportadas ({reportedJobs.length})
+                                </h3>
+                                <p className="text-xs text-slate-500 font-medium">Vacantes suspendidas automáticamente tras el reporte de candidatos para revisión de seguridad.</p>
+                            </div>
+                        </div>
+
+                        {reportedJobs.length === 0 ? (
+                            <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                                <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                                <h4 className="text-base font-extrabold text-slate-900">¡No hay vacantes reportadas pendientes!</h4>
+                                <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">Todas las vacantes publicadas cumplen con las normas comunitarias y de seguridad.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {reportedJobs.map(report => {
+                                    const job = report.job || jobs.find(j => j.id === report.job_id) || {};
+                                    return (
+                                        <div key={report.id} className="bg-white border border-red-200 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-red-300 transition-all">
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-3">
+                                                <div>
+                                                    <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5">
+                                                        <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
+                                                        {report.reason}
+                                                    </span>
+                                                    <h4 className="text-lg font-extrabold text-slate-900 mt-2">{job.title || `Vacante ID: ${report.job_id}`}</h4>
+                                                    <p className="text-xs text-slate-500 font-medium">Empresa: <strong className="text-slate-800">{job.company_name || 'Desconocida'}</strong> • Ubicación: {job.location || 'México'}</p>
+                                                </div>
+                                                <div className="text-right text-xs text-slate-400 font-mono">
+                                                    Reportado por: {report.reported_by || 'Candidato'} <br />
+                                                    Fecha: {formatDate(report.created_at)}
+                                                </div>
+                                            </div>
+
+                                            {report.comments && (
+                                                <div className="bg-red-50/50 p-3.5 rounded-xl border border-red-100 text-xs text-slate-800 font-medium">
+                                                    <strong className="text-red-700 block mb-1">Comentarios del reporte:</strong>
+                                                    "{report.comments}"
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-wrap gap-2.5 items-center justify-end pt-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleApproveReportedJob(report.id, report.job_id)}
+                                                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                                                >
+                                                    <Check className="w-4 h-4 text-emerald-600" />
+                                                    Aprobar / Reactivar Vacante
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteReportedJob(report.id, report.job_id)}
+                                                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Eliminar Vacante Permaneciente
+                                                </button>
+                                                {job.company_id && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleBlockCompanyFromReport(job.company_id, report.job_id, job.company_name)}
+                                                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+                                                    >
+                                                        <Ban className="w-4 h-4 text-red-400" />
+                                                        Bloquear Reclutador / Empresa
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">

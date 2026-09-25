@@ -855,6 +855,105 @@ export const DataProvider = ({ children }) => {
         return data;
     };
 
+    // Candidate Job Reporting & Automatic Deactivation
+    const reportJob = async (jobId, reportData) => {
+        const reportObj = {
+            id: 'rep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            job_id: jobId,
+            reason: reportData.reason,
+            comments: reportData.comments || '',
+            reported_by: user?.email || 'Candidato Anónimo',
+            created_at: new Date().toISOString(),
+            status: 'pending'
+        };
+
+        try {
+            await supabase.from('job_reports').insert([reportObj]);
+        } catch (err) {
+            console.warn('[DataContext] job_reports table fallback:', err);
+        }
+
+        try {
+            const localReports = JSON.parse(localStorage.getItem('ayjale_job_reports') || '[]');
+            localReports.unshift(reportObj);
+            localStorage.setItem('ayjale_job_reports', JSON.stringify(localReports));
+        } catch (e) {}
+
+        // AUTOMATICALLY DEACTIVATE JOB IN SUPABASE & LOCAL STATE
+        try {
+            await supabase.from('jobs').update({ active: false, status: 'reported' }).eq('id', jobId);
+        } catch (e) {
+            console.warn('Error deactivating reported job in DB:', e);
+        }
+
+        setJobs(prev => prev.map(j => j.id === jobId ? { ...j, active: false, status: 'reported' } : j));
+        return { success: true };
+    };
+
+    // Admin Reported Jobs Queries & Actions
+    const adminGetReportedJobs = async () => {
+        let reports = [];
+        try {
+            const { data, error } = await supabase
+                .from('job_reports')
+                .select('*, job:job_id(*)')
+                .order('created_at', { ascending: false });
+            if (!error && data) reports = data;
+        } catch (e) {}
+
+        try {
+            const local = JSON.parse(localStorage.getItem('ayjale_job_reports') || '[]');
+            if (local.length > 0) {
+                const ids = new Set(reports.map(r => r.id));
+                local.forEach(r => {
+                    if (!ids.has(r.id)) reports.push(r);
+                });
+            }
+        } catch (e) {}
+
+        return reports;
+    };
+
+    const adminApproveReportedJob = async (reportId, jobId) => {
+        try {
+            await supabase.from('job_reports').update({ status: 'approved' }).eq('id', reportId);
+            await supabase.from('jobs').update({ active: true, status: 'active' }).eq('id', jobId);
+        } catch (e) {}
+
+        try {
+            const local = JSON.parse(localStorage.getItem('ayjale_job_reports') || '[]');
+            const updated = local.filter(r => r.id !== reportId);
+            localStorage.setItem('ayjale_job_reports', JSON.stringify(updated));
+        } catch (e) {}
+
+        setJobs(prev => prev.map(j => j.id === jobId ? { ...j, active: true, status: 'active' } : j));
+    };
+
+    const adminDeleteReportedJob = async (reportId, jobId) => {
+        try {
+            await supabase.from('job_reports').delete().eq('id', reportId);
+            await supabase.from('jobs').delete().eq('id', jobId);
+        } catch (e) {}
+
+        try {
+            const local = JSON.parse(localStorage.getItem('ayjale_job_reports') || '[]');
+            const updated = local.filter(r => r.id !== reportId);
+            localStorage.setItem('ayjale_job_reports', JSON.stringify(updated));
+        } catch (e) {}
+
+        setJobs(prev => prev.filter(j => j.id !== jobId));
+    };
+
+    const adminBlockCompanyFromReport = async (companyId, jobId) => {
+        if (!companyId) return;
+        try {
+            await supabase.from('profiles').update({ role: 'blocked', active: false }).eq('id', companyId);
+            await supabase.from('jobs').update({ active: false, status: 'blocked' }).eq('company_id', companyId);
+        } catch (e) {}
+
+        setJobs(prev => prev.map(j => String(j.company_id) === String(companyId) ? { ...j, active: false, status: 'blocked' } : j));
+    };
+
     // Fetch initial data and set up polling
     useEffect(() => {
         console.log('[DataContext] Initial Load Effect Triggered', { user: user?.id });
@@ -980,10 +1079,15 @@ export const DataProvider = ({ children }) => {
         incrementJobView,
         unlockCandidateContact,
         fetchCandidateProfile,
-        adminGetContactUnlocks
+        adminGetContactUnlocks,
+        reportJob,
+        adminGetReportedJobs,
+        adminApproveReportedJob,
+        adminDeleteReportedJob,
+        adminBlockCompanyFromReport
     }), [
         jobs, applications, users, loading, notifications, contactUnlocks, siteSettings, updateSiteSettings, user,
-        adminGetUsers, adminGetApplications, adminGetContactUnlocks, fetchContactUnlocks
+        adminGetUsers, adminGetApplications, adminGetContactUnlocks, fetchContactUnlocks, reportJob, adminGetReportedJobs, adminApproveReportedJob, adminDeleteReportedJob, adminBlockCompanyFromReport
     ]);
 
     return (
