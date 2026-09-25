@@ -16,7 +16,6 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSort
         const counts = {
             salary: { '0-8000': 0, '8000-12000': 0, '12000-18000': 0, '18000-25000': 0, '25000-40000': 0, '40000+': 0 },
             date: { '24h': 0, '7d': 0, '30d': 0 },
-            type: {},
             category: {},
             education: {},
             experience: {}
@@ -29,6 +28,9 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSort
 
         (jobs || []).forEach(job => {
             if (!job.active) return;
+
+            // Apply active state filter to facet calculations so counts reflect 100% of selected state!
+            if (filters.state && !matchesStateFilter(job.location, filters.state)) return;
 
             // 1. Salary facets
             const sal = Number(job.salary_max || job.salary_min || job.salary || 0);
@@ -50,23 +52,18 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSort
                 if (diff <= thirtyDays) counts.date['30d']++;
             }
 
-            // 3. Modality / Type facets
-            if (job.type) {
-                counts.type[job.type] = (counts.type[job.type] || 0) + 1;
-            }
-
-            // 4. Category facets
+            // 3. Category facets
             if (job.category) {
                 counts.category[job.category] = (counts.category[job.category] || 0) + 1;
             }
 
-            // 5. Education facets
+            // 4. Education facets
             const edu = getEducationLevel(job);
             if (edu) {
                 counts.education[edu] = (counts.education[edu] || 0) + 1;
             }
 
-            // 6. Experience facets
+            // 5. Experience facets
             const exp = getExperienceLevel(job);
             if (exp) {
                 counts.experience[exp] = (counts.experience[exp] || 0) + 1;
@@ -74,7 +71,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSort
         });
 
         return counts;
-    }, [jobs]);
+    }, [jobs, filters.state]);
 
     const activeCategories = JOB_CATEGORIES.filter(cat => (facets.category[cat] || 0) > 0);
 
@@ -150,22 +147,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSort
                     <option value="30d">Último mes ({facets.date['30d']})</option>
                 </select>
 
-                {/* 3. Modalidad Filter */}
-                <select
-                    className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${filters.type ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                    value={filters.type || ''}
-                    onChange={(e) => handleChange('type', e.target.value)}
-                >
-                    <option value="">Modalidad ▾</option>
-                    <option value="Tiempo completo">Tiempo completo ({facets.type['Tiempo completo'] || 0})</option>
-                    <option value="Medio tiempo">Medio tiempo ({facets.type['Medio tiempo'] || 0})</option>
-                    <option value="Remoto">Remoto ({facets.type['Remoto'] || 0})</option>
-                    <option value="Híbrido">Híbrido ({facets.type['Híbrido'] || 0})</option>
-                    <option value="Por proyecto">Por proyecto ({facets.type['Por proyecto'] || 0})</option>
-                    <option value="Becario / Prácticas">Becario / Prácticas ({facets.type['Becario / Prácticas'] || 0})</option>
-                </select>
-
-                {/* 4. Categoría Filter */}
+                {/* 3. Categoría Filter */}
                 <select
                     className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all max-w-[210px] ${filters.category ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
                     value={filters.category || ''}

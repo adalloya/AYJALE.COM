@@ -110,12 +110,12 @@ export const DataProvider = ({ children }) => {
                 }
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
-            // 2. Step 1: Fast initial micro-batch (30 items for instant <150ms render)
+            // 2. Step 1: Fast initial batch (200 items for instant render & deep facet coverage)
             let initialQuery = supabase
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
-                .range(0, 29);
+                .range(0, 199);
 
             if (!user || (!isCompany && !isAdmin)) {
                 initialQuery = initialQuery.neq('active', false);
@@ -170,7 +170,7 @@ export const DataProvider = ({ children }) => {
                 });
             };
 
-            // INSTANT RENDER TO CANDIDATE (<150ms)!
+            // INSTANT RENDER TO CANDIDATE (<200ms)!
             if (firstData && firstData.length > 0) {
                 const firstEnriched = enrichBatch(firstData);
                 setJobs(firstEnriched);
@@ -181,7 +181,7 @@ export const DataProvider = ({ children }) => {
             setTimeout(async () => {
                 try {
                     const chunkPromises = [
-                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(30, 2999),
+                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(200, 2999),
                         supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(3000, 5999),
                         supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(6000, 9999)
                     ];
