@@ -1,11 +1,25 @@
 import { Search, MapPin, Briefcase, DollarSign, Filter } from 'lucide-react';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
+import { useData } from '../../context/DataContext';
+import { matchesStateFilter } from '../../utils/jobUtils';
 
 const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
+    const { jobs } = useData();
 
     const handleChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
+
+    // Calculate dynamic counts for categories based on active jobs
+    const categoryCounts = (jobs || []).reduce((acc, job) => {
+        if (!job.active) return acc;
+        const cat = job.category || 'Otros';
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+    }, {});
+
+    // Filter out categories with 0 count
+    const activeCategories = JOB_CATEGORIES.filter(cat => (categoryCounts[cat] || 0) > 0);
 
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
@@ -36,8 +50,6 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     </select>
                 </div>
 
-
-
                 <button
                     onClick={onSearch}
                     className="bg-secondary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-secondary-700 transition-colors shadow-sm hover:shadow text-sm whitespace-nowrap"
@@ -55,13 +67,15 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
 
                 {/* Category */}
                 <select
-                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-secondary-500 outline-none bg-white max-w-[200px]"
+                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-secondary-500 outline-none bg-white max-w-[220px]"
                     value={filters.category}
                     onChange={(e) => handleChange('category', e.target.value)}
                 >
                     <option value="">Todas las Categorías</option>
-                    {JOB_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                    {activeCategories.map(cat => (
+                        <option key={cat} value={cat}>
+                            {cat} ({categoryCounts[cat]})
+                        </option>
                     ))}
                 </select>
 

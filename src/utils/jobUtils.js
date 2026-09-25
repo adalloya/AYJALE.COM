@@ -302,7 +302,16 @@ export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
     // Check aliases if defined for this state
     const aliases = STATE_ALIASES[selectedState];
     if (aliases) {
-        return aliases.some(alias => normLoc.includes(normalizeText(alias)));
+        return aliases.some(alias => {
+            const normAlias = normalizeText(alias);
+            // Short alias like "nl", "df", "bc", "qro", "ags", "slp" - require word boundary match
+            if (normAlias.length <= 3) {
+                const escaped = normAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i');
+                return regex.test(normLoc);
+            }
+            return normLoc.includes(normAlias);
+        });
     }
 
     return false;

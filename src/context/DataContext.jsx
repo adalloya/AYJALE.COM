@@ -110,12 +110,12 @@ export const DataProvider = ({ children }) => {
                 }
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
-            // 2. Main dataset query (Fast initial batch of 200 jobs for instant <500ms render)
+            // 2. Main dataset query (Fetch 3,000 jobs for 100% complete coverage across all Mexican states)
             let query = supabase
                 .from('jobs')
                 .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
                 .order('created_at', { ascending: false })
-                .range(0, 199);
+                .range(0, 2999);
 
             if (!user || (!isCompany && !isAdmin)) {
                 query = query.neq('active', false);
