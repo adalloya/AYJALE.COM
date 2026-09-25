@@ -30,7 +30,9 @@ const JobsPage = () => {
         category: searchParams.get('category') || '',
         type: searchParams.get('type') || '',
         minSalary: searchParams.get('minSalary') || '',
-        salaryRange: searchParams.get('salaryRange') || ''
+        salaryRange: searchParams.get('salaryRange') || '',
+        datePosted: searchParams.get('datePosted') || '',
+        education: searchParams.get('education') || ''
     });
 
     const [selectedJobId, setSelectedJobId] = useState(() => {
@@ -46,7 +48,9 @@ const JobsPage = () => {
             category: searchParams.get('category') || '',
             type: searchParams.get('type') || '',
             minSalary: searchParams.get('minSalary') || '',
-            salaryRange: searchParams.get('salaryRange') || ''
+            salaryRange: searchParams.get('salaryRange') || '',
+            datePosted: searchParams.get('datePosted') || '',
+            education: searchParams.get('education') || ''
         });
         setVisibleCount(20);
     }, [searchParams]);
@@ -59,6 +63,8 @@ const JobsPage = () => {
         if (filters.type) params.type = filters.type;
         if (filters.minSalary) params.minSalary = filters.minSalary;
         if (filters.salaryRange) params.salaryRange = filters.salaryRange;
+        if (filters.datePosted) params.datePosted = filters.datePosted;
+        if (filters.education) params.education = filters.education;
         setSearchParams(params);
     };
 
@@ -123,10 +129,22 @@ const JobsPage = () => {
                     if (filters.salaryRange === '25000-40000' && (effectiveSalary < 25000 || effectiveSalary > 40000)) return false;
                     if (filters.salaryRange === '40000+' && effectiveSalary < 40000) return false;
                 }
-            } else if (filters.minSalary) {
-                const min = Number(filters.minSalary);
-                const jobMax = Number(job.salary_max || job.salary || 0);
-                if (jobMax < min) return false;
+            }
+
+            // Publication Date Filter
+            if (filters.datePosted && job.created_at) {
+                const jobDate = new Date(job.created_at).getTime();
+                const now = Date.now();
+                const diffHours = (now - jobDate) / (1000 * 60 * 60);
+                if (filters.datePosted === '24h' && diffHours > 24) return false;
+                if (filters.datePosted === '7d' && diffHours > 168) return false;
+                if (filters.datePosted === '30d' && diffHours > 720) return false;
+            }
+
+            // Education Level Filter
+            if (filters.education) {
+                const jobEdu = getEducationLevel(job);
+                if (!jobEdu || !matchesStateFilter(jobEdu, filters.education)) return false;
             }
 
             return true;
