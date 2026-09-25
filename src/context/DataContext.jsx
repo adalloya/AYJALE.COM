@@ -110,36 +110,33 @@ export const DataProvider = ({ children }) => {
                 }
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
-            // 2. Main dataset query (Fetch 3,000 jobs for 100% complete coverage across all Mexican states)
-            let query = supabase
-                .from('jobs')
-                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
-                .order('created_at', { ascending: false })
-                .range(0, 2999);
+            // 2. Parallel Chunk Queries (Fetch up to 10,000 jobs across 3 parallel chunks for 100% complete coverage)
+            const chunkPromises = [
+                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(0, 2999),
+                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(3000, 5999),
+                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(6000, 9999)
+            ];
 
-            if (!user || (!isCompany && !isAdmin)) {
-                query = query.neq('active', false);
-            }
-
-            // 8 Second Timeout Race for resilient network queries
+            // 10 Second Timeout Race for resilient network queries
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Database Request Timed Out (8s)')), 8000)
+                setTimeout(() => reject(new Error('Database Request Timed Out (10s)')), 10000)
             );
 
-            const { data, count, error } = await Promise.race([
-                query,
+            const chunkResults = await Promise.race([
+                Promise.all(chunkPromises),
                 timeoutPromise
             ]);
 
-            if (error) throw error;
-
-            if (typeof count === 'number' && count > 0) {
-                setTotalJobCount(prev => Math.max(prev, count));
-            }
+            let rawData = [];
+            chunkResults.forEach(res => {
+                if (res.data && Array.isArray(res.data)) {
+                    rawData = rawData.concat(res.data);
+                }
+            });
 
             const companyCache = getJobCompanyCache();
 
-            const enrichedData = (data || []).map(job => {
+            const enrichedData = rawData.map(job => {
                 const cached = companyCache[String(job.id)];
                 const isConfidential = job.is_confidential;
                 const profile = job.profiles;
