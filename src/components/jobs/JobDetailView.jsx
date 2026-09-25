@@ -95,14 +95,16 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
     // Mobile Deck Layout (Single Unified Scrollable Container)
     if (isMobileDeck) {
+        const hasLogo = !job.is_confidential && Boolean(companyInfo.logo);
+
         return (
             <div className="bg-white h-full flex flex-col relative overflow-y-auto custom-scrollbar touch-pan-y p-4 sm:p-6 pb-24 space-y-4">
                 {/* Mobile Deck Header */}
                 <div className="relative flex-shrink-0 space-y-3">
-                    {/* Top Row: Logo on Left, Salary + Job Title + Company Name on Right */}
-                    <div className="flex items-start gap-4 justify-between">
-                        {/* Left: Larger Logo */}
-                        {!job.is_confidential && companyInfo.logo ? (
+                    {/* Top Row Layout */}
+                    {hasLogo ? (
+                        <div className="flex items-start gap-4 justify-between">
+                            {/* Left: Larger Logo */}
                             <div className="flex-shrink-0 shadow-2xs rounded-2xl bg-white p-2 border border-slate-100">
                                 <img
                                     src={companyInfo.logo}
@@ -110,36 +112,62 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                                     className="w-20 h-20 sm:w-22 sm:h-22 object-contain rounded-xl"
                                 />
                             </div>
-                        ) : null}
 
-                        {/* Right: Salary on top right, Title below, Company Name below */}
-                        <div className="flex-1 min-w-0 text-right">
-                            {/* Top Right Corner: Salary */}
-                            {(() => {
-                                const sal = formatSalaryDisplay(job);
-                                return sal.formatted !== 'Salario no publicado' ? (
-                                    <div className="text-emerald-600 font-black text-xl sm:text-2xl tracking-tight leading-none mb-1 flex items-baseline justify-end gap-0.5">
-                                        <span>{sal.formatted}</span>
-                                        {sal.period && <span className="text-emerald-600 font-bold text-xs ml-0.5">{sal.period}</span>}
-                                    </div>
-                                ) : (
-                                    <div className="text-slate-400 font-bold text-xs mb-1">
-                                        Salario no publicado
-                                    </div>
-                                );
-                            })()}
+                            {/* Right: Salary on top right, Title below, Company Name below */}
+                            <div className="flex-1 min-w-0 text-right">
+                                {(() => {
+                                    const sal = formatSalaryDisplay(job);
+                                    return sal.formatted !== 'Salario no publicado' ? (
+                                        <div className="text-emerald-600 font-black text-xl sm:text-2xl tracking-tight leading-none mb-1 flex items-baseline justify-end gap-0.5">
+                                            <span>{sal.formatted}</span>
+                                            {sal.period && <span className="text-emerald-600 font-bold text-xs ml-0.5">{sal.period}</span>}
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 font-bold text-xs mb-1">
+                                            Salario no publicado
+                                        </div>
+                                    );
+                                })()}
 
-                            {/* Job Title */}
-                            <h1 className="text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight line-clamp-2">
-                                {formatTitle(job.title)}
-                            </h1>
+                                <h1 className="text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight line-clamp-2">
+                                    {formatTitle(job.title)}
+                                </h1>
 
-                            {/* Company Name */}
-                            <p className="text-slate-600 font-extrabold text-xs mt-0.5 truncate">
-                                {companyInfo.name}
-                            </p>
+                                <p className="text-slate-600 font-extrabold text-xs mt-0.5 truncate">
+                                    {companyInfo.name}
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-start justify-between gap-4">
+                            {/* Left: Job Title & Company Name (Left Aligned at Top) */}
+                            <div className="flex-1 min-w-0 text-left">
+                                <h1 className="text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight line-clamp-2">
+                                    {formatTitle(job.title)}
+                                </h1>
+                                <p className="text-slate-600 font-extrabold text-xs mt-0.5 truncate">
+                                    {companyInfo.name}
+                                </p>
+                            </div>
+
+                            {/* Right: Salary (Top Right Corner) */}
+                            <div className="flex-shrink-0 text-right">
+                                {(() => {
+                                    const sal = formatSalaryDisplay(job);
+                                    return sal.formatted !== 'Salario no publicado' ? (
+                                        <div className="text-emerald-600 font-black text-xl sm:text-2xl tracking-tight leading-none flex items-baseline justify-end gap-0.5">
+                                            <span>{sal.formatted}</span>
+                                            {sal.period && <span className="text-emerald-600 font-bold text-xs ml-0.5">{sal.period}</span>}
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 font-bold text-xs">
+                                            Salario no publicado
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Centered Badges below logo & titles */}
                     <div className="flex flex-wrap items-center justify-center gap-1.5 py-1">
