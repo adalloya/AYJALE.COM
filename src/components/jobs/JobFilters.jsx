@@ -29,6 +29,7 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
     const facets = useMemo(() => {
         const counts = {
             salary: { '0-8000': 0, '8000-12000': 0, '12000-18000': 0, '18000-25000': 0, '25000-40000': 0, '40000+': 0 },
+            date: { '24h': 0, '7d': 0, '30d': 0 },
             category: {},
             education: {},
             experience: {}

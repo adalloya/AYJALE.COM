@@ -33,15 +33,31 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
         return { title: 'Detalles Adicionales', icon: ChevronRight, color: 'text-orange-600 bg-orange-50 border-orange-100' };
     };
 
+    const renderFormattedText = (str) => {
+        if (!str) return null;
+        const parts = str.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                const inner = part.slice(2, -2);
+                return <strong key={i} className="font-extrabold text-slate-900">{inner}</strong>;
+            }
+            return part;
+        });
+    };
+
     lines.forEach((line) => {
-        const isHeading = /^(requisitos|funciones|ofrecemos|beneficios|actividades|contacto|perfil|horarios|horario|jornada|sueldo|ubicación|proceso):/i.test(line) ||
-            (line.endsWith(':') && line.length < 40);
+        // Detect markdown bold headings like **Contacto / Postulación:** or **Requisitos:** or standard headings
+        const isBoldHeading = /^\*\*(.*?)\*\*:?$/.test(line);
+        const isStandardHeading = /^(requisitos|funciones|ofrecemos|beneficios|actividades|contacto|perfil|horarios|horario|jornada|sueldo|ubicación|proceso):/i.test(line) ||
+            (line.endsWith(':') && line.length < 50);
+
+        const isHeading = isBoldHeading || isStandardHeading;
 
         if (isHeading) {
             if (currentSection.items.length > 0) {
                 sections.push(currentSection);
             }
-            const cleanHeading = line.replace(/:$/, '').trim();
+            const cleanHeading = line.replace(/^\*\*/, '').replace(/\*\*:?$/, '').replace(/:$/, '').trim();
             const meta = getSectionMeta(cleanHeading.toLowerCase());
             currentSection = { ...meta, rawTitle: cleanHeading, items: [] };
         } else {
@@ -68,10 +84,10 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
                     return isBullet ? (
                         <div key={idx} className="flex items-start gap-2.5 my-1">
                             <span className="text-orange-600 font-bold text-base leading-none select-none">•</span>
-                            <span className="flex-1 font-medium">{cleanText}</span>
+                            <span className="flex-1 font-medium">{renderFormattedText(cleanText)}</span>
                         </div>
                     ) : (
-                        <p key={idx} className="my-1 font-medium">{line}</p>
+                        <p key={idx} className="my-1 font-medium">{renderFormattedText(line)}</p>
                     );
                 })}
             </div>
@@ -102,7 +118,7 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
                             {sec.items.map((item, itemIdx) => (
                                 <div key={itemIdx} className="flex items-start gap-2">
                                     <span className="text-orange-500 font-bold text-xs select-none mt-0.5">•</span>
-                                    <span className="flex-1 font-medium leading-relaxed">{item}</span>
+                                    <span className="flex-1 font-medium leading-relaxed">{renderFormattedText(item)}</span>
                                 </div>
                             ))}
                         </div>
