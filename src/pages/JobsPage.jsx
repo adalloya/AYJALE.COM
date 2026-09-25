@@ -332,12 +332,12 @@ const JobsPage = () => {
 
                                     <div className="flex flex-wrap gap-2 text-xs text-slate-600 mb-2">
                                         <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                                            <Tag className="w-3 h-3 mr-1 text-slate-400" />
-                                            {job.category}
-                                        </span>
-                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
                                             <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                                             {job.location}
+                                        </span>
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                            <Tag className="w-3 h-3 mr-1 text-slate-400" />
+                                            {job.category}
                                         </span>
                                         {(() => {
                                             const edu = getEducationLevel(job);

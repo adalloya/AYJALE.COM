@@ -116,21 +116,30 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         })()}
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                            <Tag className="w-3 h-3 mr-1.5 text-slate-400" />
-                            {job.category}
-                        </span>
-                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                    <div className="flex flex-wrap justify-center gap-2 mb-6 text-xs">
+                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
                             <MapPin className="w-3 h-3 mr-1.5 text-slate-400" />
                             {job.location}
+                        </span>
+                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
+                            <Tag className="w-3 h-3 mr-1.5 text-slate-400" />
+                            {job.category}
                         </span>
                         {(() => {
                             const edu = getEducationLevel(job);
                             return edu ? (
-                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center">
-                                    <GraduationCap className="w-3 h-3 mr-1.5 text-blue-500" />
+                                <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                    <GraduationCap className="w-3 h-3 mr-1.5 text-slate-400" />
                                     {edu}
+                                </span>
+                            ) : null;
+                        })()}
+                        {(() => {
+                            const exp = getExperienceLevel(job);
+                            return exp ? (
+                                <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                    <Briefcase className="w-3 h-3 mr-1.5 text-slate-400" />
+                                    {exp}
                                 </span>
                             ) : null;
                         })()}
@@ -219,6 +228,10 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         </div>
 
                         <div className="flex flex-wrap gap-2 items-center">
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
+                                <MapPin className="w-3 h-3 mr-1.5 text-slate-500" />
+                                {job.location}
+                            </span>
                             <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
                                 <Tag className="w-3 h-3 mr-1.5 text-slate-500" />
                                 {job.category}
