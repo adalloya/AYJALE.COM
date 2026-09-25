@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { Search, MapPin, Briefcase, DollarSign, Filter, Calendar, Tag, GraduationCap } from 'lucide-react';
+import { Search, MapPin, Briefcase, DollarSign, Filter, Calendar, Tag, GraduationCap, ArrowUpDown } from 'lucide-react';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 import { useData } from '../../context/DataContext';
-import { getEducationLevel } from '../../utils/jobUtils';
+import { getEducationLevel, getExperienceLevel } from '../../utils/jobUtils';
 
-const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
+const JobFilters = ({ filters, setFilters, onSearch, resultCount, sortBy, onSortChange }) => {
     const { jobs } = useData();
 
     const handleChange = (key, value) => {
@@ -18,7 +18,8 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
             date: { '24h': 0, '7d': 0, '30d': 0 },
             type: {},
             category: {},
-            education: {}
+            education: {},
+            experience: {}
         };
 
         const now = Date.now();
@@ -63,6 +64,12 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
             const edu = getEducationLevel(job);
             if (edu) {
                 counts.education[edu] = (counts.education[edu] || 0) + 1;
+            }
+
+            // 6. Experience facets
+            const exp = getExperienceLevel(job);
+            if (exp) {
+                counts.experience[exp] = (counts.experience[exp] || 0) + 1;
             }
         });
 
@@ -109,7 +116,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                 </button>
             </div>
 
-            {/* OCC-STYLE HORIZONTAL PILL FILTER ROW (Exact Sequence: Sueldo -> Fecha -> Modalidad -> Categoría -> Educación) */}
+            {/* OCC-STYLE HORIZONTAL PILL FILTER ROW & SORTING CONTROL */}
             <div className="pt-3 border-t border-slate-100 flex flex-wrap gap-2.5 items-center">
                 <div className="flex items-center text-slate-400 text-xs font-bold mr-1">
                     <Filter className="w-3.5 h-3.5 mr-1" />
@@ -185,8 +192,39 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                     <option value="Secundaria">Secundaria ({facets.education['Secundaria'] || 0})</option>
                 </select>
 
-                <div className="ml-auto text-xs font-extrabold text-slate-600">
-                    {Number(resultCount || 0).toLocaleString('es-MX')} {resultCount === 1 ? 'vacante' : 'vacantes'}
+                {/* 6. Experiencia Filter */}
+                <select
+                    className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${filters.experience ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
+                    value={filters.experience || ''}
+                    onChange={(e) => handleChange('experience', e.target.value)}
+                >
+                    <option value="">Experiencia ▾</option>
+                    <option value="Sin experiencia">Sin experiencia ({facets.experience['Sin experiencia'] || 0})</option>
+                    <option value="6 meses de exp.">6 meses de exp. ({facets.experience['6 meses de exp.'] || 0})</option>
+                    <option value="1 - 2 años de exp.">1 - 2 años de exp. ({facets.experience['1 - 2 años de exp.'] || 0})</option>
+                    <option value="2 - 3 años de exp.">2 - 3 años de exp. ({facets.experience['2 - 3 años de exp.'] || 0})</option>
+                    <option value="3+ años de exp.">3+ años de exp. ({facets.experience['3+ años de exp.'] || 0})</option>
+                </select>
+
+                {/* Sort Control & Vacancy Counter */}
+                <div className="ml-auto flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
+                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Ordenar por:</span>
+                        <select
+                            className="border border-slate-200 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-700 bg-white shadow-2xs outline-none cursor-pointer hover:border-slate-300"
+                            value={sortBy || 'recent'}
+                            onChange={(e) => onSortChange && onSortChange(e.target.value)}
+                        >
+                            <option value="recent">Más recientes ⬇</option>
+                            <option value="salary_desc">Sueldo: Mayor a menor ⬇</option>
+                            <option value="salary_asc">Sueldo: Menor a mayor ⬆</option>
+                        </select>
+                    </div>
+
+                    <span className="text-xs font-extrabold text-slate-800 bg-slate-100 px-3 py-1 rounded-full border border-slate-200/80">
+                        {Number(resultCount || 0).toLocaleString('es-MX')} {resultCount === 1 ? 'vacante' : 'vacantes'}
+                    </span>
                 </div>
             </div>
         </div>

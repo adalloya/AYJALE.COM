@@ -32,8 +32,11 @@ const JobsPage = () => {
         minSalary: searchParams.get('minSalary') || '',
         salaryRange: searchParams.get('salaryRange') || '',
         datePosted: searchParams.get('datePosted') || '',
-        education: searchParams.get('education') || ''
+        education: searchParams.get('education') || '',
+        experience: searchParams.get('experience') || ''
     });
+
+    const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'recent');
 
     const [selectedJobId, setSelectedJobId] = useState(() => {
         const jobIdParam = searchParams.get('jobId');
@@ -50,8 +53,10 @@ const JobsPage = () => {
             minSalary: searchParams.get('minSalary') || '',
             salaryRange: searchParams.get('salaryRange') || '',
             datePosted: searchParams.get('datePosted') || '',
-            education: searchParams.get('education') || ''
+            education: searchParams.get('education') || '',
+            experience: searchParams.get('experience') || ''
         });
+        setSortBy(searchParams.get('sortBy') || 'recent');
         setVisibleCount(20);
     }, [searchParams]);
 
@@ -65,6 +70,8 @@ const JobsPage = () => {
         if (filters.salaryRange) params.salaryRange = filters.salaryRange;
         if (filters.datePosted) params.datePosted = filters.datePosted;
         if (filters.education) params.education = filters.education;
+        if (filters.experience) params.experience = filters.experience;
+        if (sortBy && sortBy !== 'recent') params.sortBy = sortBy;
         setSearchParams(params);
     };
 
@@ -147,9 +154,27 @@ const JobsPage = () => {
                 if (!jobEdu || !matchesStateFilter(jobEdu, filters.education)) return false;
             }
 
+            // Experience Level Filter
+            if (filters.experience) {
+                const jobExp = getExperienceLevel(job);
+                if (!jobExp || !matchesStateFilter(jobExp, filters.experience)) return false;
+            }
+
             return true;
         })
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        .sort((a, b) => {
+            if (sortBy === 'salary_desc') {
+                const salA = Number(a.salary_max || a.salary_min || a.salary || 0);
+                const salB = Number(b.salary_max || b.salary_min || b.salary || 0);
+                return salB - salA;
+            }
+            if (sortBy === 'salary_asc') {
+                const salA = Number(a.salary_max || a.salary_min || a.salary || 0);
+                const salB = Number(b.salary_max || b.salary_min || b.salary || 0);
+                return salA - salB;
+            }
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
 
     // Auto-select first job if none selected and jobs exist (Desktop only)
     useEffect(() => {
@@ -270,7 +295,7 @@ const JobsPage = () => {
         : Math.max(totalJobCount, filteredJobs.length);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:h-full lg:flex lg:flex-col min-h-screen">
+        <div className="w-full max-w-full px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:h-full lg:flex lg:flex-col min-h-screen">
             <SEO
                 title="Vacantes"
                 description="Explora cientos de vacantes en todo México. Filtra por estado, categoría y encuentra tu próximo empleo hoy."
@@ -290,6 +315,17 @@ const JobsPage = () => {
                 setFilters={setFilters}
                 onSearch={handleSearch}
                 resultCount={displayResultCount}
+                sortBy={sortBy}
+                onSortChange={(val) => {
+                    setSortBy(val);
+                    const params = Object.fromEntries(searchParams.entries());
+                    if (val && val !== 'recent') {
+                        params.sortBy = val;
+                    } else {
+                        delete params.sortBy;
+                    }
+                    setSearchParams(params);
+                }}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">

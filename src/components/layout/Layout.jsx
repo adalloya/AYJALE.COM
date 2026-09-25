@@ -59,7 +59,7 @@ const Layout = ({ children }) => {
                 </script>
             </Helmet>
             <Navbar />
-            <main className={`flex-1 ${isFullWidth ? 'w-full' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'} ${isJobsPage ? 'lg:overflow-hidden overflow-y-auto' : ''}`}>
+            <main className={`flex-1 ${isFullWidth ? 'w-full' : 'max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-6'} ${isJobsPage ? 'lg:overflow-hidden overflow-y-auto' : ''}`}>
                 {children}
             </main>
             <Footer compact={isJobsPage} />
