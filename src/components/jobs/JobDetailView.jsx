@@ -96,57 +96,66 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
     // Mobile Deck Layout (Single Unified Scrollable Container)
     if (isMobileDeck) {
         return (
-            <div className="bg-white h-full flex flex-col relative overflow-y-auto custom-scrollbar touch-pan-y p-6 pb-24 space-y-6">
-                {/* Banner Header */}
-                <div className="relative flex-shrink-0 text-center flex flex-col items-center">
-                    {!job.is_confidential && companyInfo.logo && (
-                        <div className="mb-4 shadow-md rounded-2xl bg-white p-2 border border-slate-100">
-                            <img
-                                src={companyInfo.logo}
-                                alt={companyInfo.name}
-                                className="w-16 h-16 object-contain rounded-xl"
-                            />
-                        </div>
-                    )}
+            <div className="bg-white h-full flex flex-col relative overflow-y-auto custom-scrollbar touch-pan-y p-4 sm:p-6 pb-24 space-y-4">
+                {/* Mobile Deck Header */}
+                <div className="relative flex-shrink-0 space-y-3">
+                    {/* Top Row: Logo on Left, Salary + Job Title + Company Name on Right */}
+                    <div className="flex items-start gap-4 justify-between">
+                        {/* Left: Larger Logo */}
+                        {!job.is_confidential && companyInfo.logo ? (
+                            <div className="flex-shrink-0 shadow-2xs rounded-2xl bg-white p-2 border border-slate-100">
+                                <img
+                                    src={companyInfo.logo}
+                                    alt={companyInfo.name}
+                                    className="w-20 h-20 sm:w-22 sm:h-22 object-contain rounded-xl"
+                                />
+                            </div>
+                        ) : null}
 
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-1 leading-tight">{formatTitle(job.title)}</h1>
-                    <p className="text-slate-600 font-semibold text-sm mb-3">
-                        {companyInfo.name}
-                    </p>
-
-                    {/* Salary Highlight (Pure Green Text, No Background/Border) */}
-                    <div className="mb-4 text-center">
-                        {(() => {
-                            const sal = formatSalaryDisplay(job);
-                            return sal.formatted !== 'Salario no publicado' ? (
-                                <div className="inline-flex flex-col items-center">
-                                    <div className="text-emerald-600 font-black text-2xl tracking-tight leading-none flex items-baseline justify-center gap-0.5">
+                        {/* Right: Salary on top right, Title below, Company Name below */}
+                        <div className="flex-1 min-w-0 text-right">
+                            {/* Top Right Corner: Salary */}
+                            {(() => {
+                                const sal = formatSalaryDisplay(job);
+                                return sal.formatted !== 'Salario no publicado' ? (
+                                    <div className="text-emerald-600 font-black text-xl sm:text-2xl tracking-tight leading-none mb-1 flex items-baseline justify-end gap-0.5">
                                         <span>{sal.formatted}</span>
-                                        {sal.period && <span className="text-emerald-600 font-bold text-sm ml-0.5">{sal.period}</span>}
+                                        {sal.period && <span className="text-emerald-600 font-bold text-xs ml-0.5">{sal.period}</span>}
                                     </div>
-                                </div>
-                            ) : (
-                                <span className="text-slate-400 font-bold text-xs">
-                                    Salario no publicado
-                                </span>
-                            );
-                        })()}
+                                ) : (
+                                    <div className="text-slate-400 font-bold text-xs mb-1">
+                                        Salario no publicado
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Job Title */}
+                            <h1 className="text-base sm:text-lg font-black text-slate-900 leading-snug tracking-tight line-clamp-2">
+                                {formatTitle(job.title)}
+                            </h1>
+
+                            {/* Company Name */}
+                            <p className="text-slate-600 font-extrabold text-xs mt-0.5 truncate">
+                                {companyInfo.name}
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-2 mb-6 text-xs">
-                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <MapPin className="w-3 h-3 mr-1.5 text-slate-400" />
+                    {/* Centered Badges below logo & titles */}
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 py-1">
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                            <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                             {job.location}
                         </span>
-                        <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <Tag className="w-3 h-3 mr-1.5 text-slate-400" />
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                            <Tag className="w-3 h-3 mr-1 text-slate-400" />
                             {job.category}
                         </span>
                         {(() => {
                             const edu = getEducationLevel(job);
                             return edu ? (
-                                <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
-                                    <GraduationCap className="w-3 h-3 mr-1.5 text-slate-400" />
+                                <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                    <GraduationCap className="w-3 h-3 mr-1 text-slate-400" />
                                     {edu}
                                 </span>
                             ) : null;
@@ -154,32 +163,32 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         {(() => {
                             const exp = getExperienceLevel(job);
                             return exp ? (
-                                <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium flex items-center">
-                                    <Briefcase className="w-3 h-3 mr-1.5 text-slate-400" />
+                                <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                    <Briefcase className="w-3 h-3 mr-1 text-slate-400" />
                                     {exp}
                                 </span>
                             ) : null;
                         })()}
                     </div>
 
-                    {/* Actions (Share on Left, Apply on Right on SAME line) */}
-                    <div className="flex items-center gap-3 w-full">
+                    {/* Centered Primary Action Button & Share */}
+                    <div className="flex items-center justify-center gap-2.5 w-full pt-1">
                         <button
                             onClick={handleShare}
-                            className="p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-xs active:scale-95 flex-shrink-0"
+                            className="p-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white shadow-2xs active:scale-95 flex-shrink-0"
                             title="Compartir"
                         >
-                            <Share2 className="w-5 h-5" />
+                            <Share2 className="w-4 h-4" />
                         </button>
 
                         {hasApplied ? (
-                            <button disabled className="flex-1 bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm cursor-default shadow-sm">
+                            <button disabled className="flex-1 max-w-xs bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm cursor-default shadow-xs text-center">
                                 Ya te has postulado
                             </button>
                         ) : (
                             <button
                                 onClick={onApply}
-                                className="flex-1 bg-secondary-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-secondary-700 transition-all shadow-md active:scale-95"
+                                className="flex-1 max-w-xs bg-secondary-600 text-white px-6 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm hover:bg-secondary-700 transition-all shadow-md active:scale-95 text-center"
                             >
                                 Postularme ahora
                             </button>
