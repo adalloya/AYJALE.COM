@@ -75,7 +75,7 @@ export const FormattedDescription = ({ text }) => {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
             {sections.map((sec, idx) => {
                 const Icon = sec.icon || ChevronRight;
                 const isFullWidth = sec.title === 'Proceso de Reclutamiento' || (sections.length % 2 !== 0 && idx === sections.length - 1);
@@ -83,9 +83,9 @@ export const FormattedDescription = ({ text }) => {
                 return (
                     <div
                         key={idx}
-                        className={`bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4.5 transition-all ${isFullWidth ? 'md:col-span-2' : ''}`}
+                        className={`bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs transition-all ${isFullWidth ? 'md:col-span-2' : ''}`}
                     >
-                        <div className="flex items-center gap-2.5 mb-3">
+                        <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/60">
                             <div className={`p-2 rounded-xl border ${sec.color || 'bg-slate-100 text-slate-600'}`}>
                                 <Icon className="w-4 h-4" />
                             </div>

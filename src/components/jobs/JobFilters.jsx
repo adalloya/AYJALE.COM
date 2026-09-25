@@ -29,7 +29,7 @@ const JobFilters = ({ filters, setFilters, onSearch, resultCount }) => {
                         value={filters.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                     >
-                        <option value="">Selecciona un Estado...</option>
+                        <option value="">Todo México</option>
                         {MEXICAN_STATES.map(state => (
                             <option key={state} value={state}>{state}</option>
                         ))}

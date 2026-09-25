@@ -9,7 +9,7 @@ import ApplicationModal from '../components/jobs/ApplicationModal';
 import { Building, MapPin, DollarSign, Tag, Briefcase, GraduationCap } from 'lucide-react';
 
 import { formatFriendlyDate } from '../utils/dateUtils';
-import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel } from '../utils/jobUtils';
+import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../utils/jobUtils';
 
 const JobsPage = () => {
     const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob } = useData();
@@ -330,21 +330,30 @@ const JobsPage = () => {
                                         )}
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-2">
-                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                            <Tag className="w-3 h-3 mr-1" />
+                                    <div className="flex flex-wrap gap-2 text-xs text-slate-600 mb-2">
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                            <Tag className="w-3 h-3 mr-1 text-slate-400" />
                                             {job.category}
                                         </span>
-                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded">
-                                            <MapPin className="w-3 h-3 mr-1" />
+                                        <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                            <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                                             {job.location}
                                         </span>
                                         {(() => {
                                             const edu = getEducationLevel(job);
                                             return edu ? (
-                                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded font-medium">
-                                                    <GraduationCap className="w-3 h-3 mr-1 text-blue-500" />
+                                                <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                                    <GraduationCap className="w-3 h-3 mr-1 text-slate-400" />
                                                     {edu}
+                                                </span>
+                                            ) : null;
+                                        })()}
+                                        {(() => {
+                                            const exp = getExperienceLevel(job);
+                                            return exp ? (
+                                                <span className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                                    <Briefcase className="w-3 h-3 mr-1 text-slate-400" />
+                                                    {exp}
                                                 </span>
                                             ) : null;
                                         })()}

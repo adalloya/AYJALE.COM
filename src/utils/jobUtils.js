@@ -165,8 +165,39 @@ export const getEducationLevel = (job) => {
     if (fullText.includes('licenciatura') || fullText.includes('profesional')) return 'Licenciatura';
     if (fullText.includes('ingeniería') || fullText.includes('ingenieria')) return 'Ingeniería';
     if (fullText.includes('carrera técnica') || fullText.includes('tecnico') || fullText.includes('técnica') || fullText.includes('técnico')) return 'Carrera Técnica';
-    if (fullText.includes('secundaria')) return 'Secundaria';
-    if (fullText.includes('primaria')) return 'Primaria';
+    return null;
+};
+
+/**
+ * Resolves required experience level for job cards and badges.
+ */
+export const getExperienceLevel = (job) => {
+    if (!job) return null;
+    const rawExp = job.experience_level || job.experiencia || job.experience || job.experiencia_requerida;
+    if (rawExp && typeof rawExp === 'string' && rawExp.trim() !== '' && rawExp !== 'N/A' && rawExp !== 'null') {
+        return rawExp.trim();
+    }
+
+    // Check text for common experience keywords
+    const fullText = `${job.description || ''} ${job.requirements || ''} ${job.title || ''}`.toLowerCase();
+    if (fullText.includes('sin experiencia') || fullText.includes('no requiere experiencia') || fullText.includes('no necesaria')) {
+        return 'Sin experiencia';
+    }
+    if (fullText.includes('6 meses') || fullText.includes('medio año')) {
+        return '6 meses de exp.';
+    }
+    if (fullText.includes('1 a 2 años') || fullText.includes('1 - 2 años') || fullText.includes('1 año')) {
+        return '1 - 2 años de exp.';
+    }
+    if (fullText.includes('2 a 3 años') || fullText.includes('2 - 3 años') || fullText.includes('2 años')) {
+        return '2 - 3 años de exp.';
+    }
+    if (fullText.includes('3 a 5 años') || fullText.includes('3 - 5 años') || fullText.includes('3 años')) {
+        return '3+ años de exp.';
+    }
+    if (fullText.includes('5 años') || fullText.includes('experiencia previa')) {
+        return 'Experiencia requerida';
+    }
 
     return null;
 };

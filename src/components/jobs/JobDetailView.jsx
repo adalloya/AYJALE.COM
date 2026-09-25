@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { formatFriendlyDate } from '../../utils/dateUtils';
-import { getJobCompany, formatSalaryDisplay, getEducationLevel } from '../../utils/jobUtils';
+import { getJobCompany, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../../utils/jobUtils';
 import { FormattedDescription } from '../../utils/textFormatter';
 
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
@@ -219,14 +219,28 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                         </div>
 
                         <div className="flex flex-wrap gap-2 items-center">
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
-                                <Briefcase className="w-3 h-3 mr-1.5" />
-                                {job.type}
-                            </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center">
-                                <Tag className="w-3 h-3 mr-1.5" />
+                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
+                                <Tag className="w-3 h-3 mr-1.5 text-slate-500" />
                                 {job.category}
                             </span>
+                            {(() => {
+                                const edu = getEducationLevel(job);
+                                return edu ? (
+                                    <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
+                                        <GraduationCap className="w-3 h-3 mr-1.5 text-slate-500" />
+                                        {edu}
+                                    </span>
+                                ) : null;
+                            })()}
+                            {(() => {
+                                const exp = getExperienceLevel(job);
+                                return exp ? (
+                                    <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
+                                        <Briefcase className="w-3 h-3 mr-1.5 text-slate-500" />
+                                        {exp}
+                                    </span>
+                                ) : null;
+                            })()}
                         </div>
                     </div>
 
