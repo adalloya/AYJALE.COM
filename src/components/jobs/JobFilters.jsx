@@ -1,22 +1,34 @@
-import { useMemo, useState } from 'react';
-import { Search, MapPin, Filter, ChevronDown } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { Search, MapPin, Filter, ChevronDown, RotateCcw } from 'lucide-react';
 import { MEXICAN_STATES, JOB_CATEGORIES } from '../../data/mockData';
 import { useData } from '../../context/DataContext';
 import { getEducationLevel, getExperienceLevel, matchesStateFilter } from '../../utils/jobUtils';
 
-const JobFilters = ({ filters, setFilters, onSearch }) => {
+const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
     const { jobs } = useData();
-    const [isExpanded, setIsExpanded] = useState(false);
+    // Expand by default on mobile screens (< 768px)
+    const [isExpanded, setIsExpanded] = useState(() => window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setIsExpanded(true);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
 
+    const activeFilterCount = [filters.salaryRange, filters.category, filters.education, filters.experience].filter(Boolean).length;
+
     // Pre-aggregate high-performance facet index (< 1ms zero-lag in-memory computation)
     const facets = useMemo(() => {
         const counts = {
             salary: { '0-8000': 0, '8000-12000': 0, '12000-18000': 0, '18000-25000': 0, '25000-40000': 0, '40000+': 0 },
-            date: { '24h': 0, '7d': 0, '30d': 0 },
             category: {},
             education: {},
             experience: {}
@@ -75,7 +87,6 @@ const JobFilters = ({ filters, setFilters, onSearch }) => {
     }, [jobs, filters.state]);
 
     const activeCategories = JOB_CATEGORIES.filter(cat => (facets.category[cat] || 0) > 0);
-    const activeFilterCount = [filters.salaryRange, filters.datePosted, filters.category, filters.education, filters.experience].filter(Boolean).length;
 
     return (
         <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-2xs border border-slate-200/90 mb-4 space-y-3">
@@ -147,7 +158,7 @@ const JobFilters = ({ filters, setFilters, onSearch }) => {
                         value={filters.salaryRange || ''}
                         onChange={(e) => handleChange('salaryRange', e.target.value)}
                     >
-                        <option value="">Sueldo ▾</option>
+                        <option value="">Cualquier sueldo</option>
                         <option value="0-8000">Hasta $8,000 / mes ({facets.salary['0-8000']})</option>
                         <option value="8000-12000">$8,000 - $12,000 / mes ({facets.salary['8000-12000']})</option>
                         <option value="12000-18000">$12,000 - $18,000 / mes ({facets.salary['12000-18000']})</option>
@@ -156,25 +167,13 @@ const JobFilters = ({ filters, setFilters, onSearch }) => {
                         <option value="40000+">Más de $40,000 / mes ({facets.salary['40000+']})</option>
                     </select>
 
-                    {/* 2. Fecha Filter */}
-                    <select
-                        className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${filters.datePosted ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                        value={filters.datePosted || ''}
-                        onChange={(e) => handleChange('datePosted', e.target.value)}
-                    >
-                        <option value="">Fecha ▾</option>
-                        <option value="24h">Últimas 24 horas ({facets.date['24h']})</option>
-                        <option value="7d">Última semana ({facets.date['7d']})</option>
-                        <option value="30d">Último mes ({facets.date['30d']})</option>
-                    </select>
-
-                    {/* 3. Categoría Filter */}
+                    {/* 2. Categoría Filter */}
                     <select
                         className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all max-w-[210px] ${filters.category ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
                         value={filters.category || ''}
                         onChange={(e) => handleChange('category', e.target.value)}
                     >
-                        <option value="">Categoría ▾</option>
+                        <option value="">Todas las categorías</option>
                         {activeCategories.map(cat => (
                             <option key={cat} value={cat}>
                                 {cat} ({facets.category[cat]})
@@ -182,32 +181,44 @@ const JobFilters = ({ filters, setFilters, onSearch }) => {
                         ))}
                     </select>
 
-                    {/* 4. Educación Filter */}
+                    {/* 3. Educación Filter */}
                     <select
                         className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${filters.education ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
                         value={filters.education || ''}
                         onChange={(e) => handleChange('education', e.target.value)}
                     >
-                        <option value="">Educación ▾</option>
+                        <option value="">Todos los niveles educativos</option>
                         <option value="Licenciatura">Licenciatura ({facets.education['Licenciatura'] || 0})</option>
                         <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato ({facets.education['Preparatoria / Bachillerato'] || 0})</option>
                         <option value="Carrera Técnica">Carrera Técnica ({facets.education['Carrera Técnica'] || 0})</option>
                         <option value="Secundaria">Secundaria ({facets.education['Secundaria'] || 0})</option>
                     </select>
 
-                    {/* 5. Experiencia Filter */}
+                    {/* 4. Experiencia Filter */}
                     <select
                         className={`border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${filters.experience ? 'bg-secondary-50 border-secondary-300 text-secondary-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
                         value={filters.experience || ''}
                         onChange={(e) => handleChange('experience', e.target.value)}
                     >
-                        <option value="">Experiencia ▾</option>
+                        <option value="">Cualquier experiencia</option>
                         <option value="Sin experiencia">Sin experiencia ({facets.experience['Sin experiencia'] || 0})</option>
                         <option value="6 meses de exp.">6 meses de exp. ({facets.experience['6 meses de exp.'] || 0})</option>
                         <option value="1 - 2 años de exp.">1 - 2 años de exp. ({facets.experience['1 - 2 años de exp.'] || 0})</option>
                         <option value="2 - 3 años de exp.">2 - 3 años de exp. ({facets.experience['2 - 3 años de exp.'] || 0})</option>
                         <option value="3+ años de exp.">3+ años de exp. ({facets.experience['3+ años de exp.'] || 0})</option>
                     </select>
+
+                    {/* Quitar Filtros Button */}
+                    {(activeFilterCount > 0 || filters.keyword || filters.state) && (
+                        <button
+                            type="button"
+                            onClick={onResetFilters}
+                            className="ml-auto text-xs font-extrabold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                        >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Quitar filtros</span>
+                        </button>
+                    )}
                 </div>
             )}
         </div>

@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import JobFilters from '../components/jobs/JobFilters';
 import JobDetailView from '../components/jobs/JobDetailView';
 import ApplicationModal from '../components/jobs/ApplicationModal';
-import { Building, MapPin, DollarSign, Tag, Briefcase, GraduationCap } from 'lucide-react';
+import { Building, MapPin, DollarSign, Tag, Briefcase, GraduationCap, RotateCcw, Search } from 'lucide-react';
 
 import { formatFriendlyDate } from '../utils/dateUtils';
 import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../utils/jobUtils';
@@ -73,6 +73,21 @@ const JobsPage = () => {
         if (filters.experience) params.experience = filters.experience;
         if (sortBy && sortBy !== 'recent') params.sortBy = sortBy;
         setSearchParams(params);
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            keyword: '',
+            state: '',
+            category: '',
+            type: '',
+            minSalary: '',
+            salaryRange: '',
+            datePosted: '',
+            education: '',
+            experience: ''
+        });
+        setSearchParams({});
     };
 
     const filteredJobs = jobs
@@ -314,6 +329,7 @@ const JobsPage = () => {
                 filters={filters}
                 setFilters={setFilters}
                 onSearch={handleSearch}
+                onResetFilters={handleResetFilters}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
@@ -452,8 +468,8 @@ const JobsPage = () => {
                         );
                     })}
 
-                    {/* PROGRESSIVE LOAD MORE BUTTON */}
-                    {(visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
+                    {/* PROGRESSIVE LOAD MORE BUTTON (Only rendered when there are results matching search) */}
+                    {filteredJobs.length > 0 && (visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
                         <div className="pt-2 text-center">
                             <button
                                 type="button"
@@ -466,14 +482,33 @@ const JobsPage = () => {
                                 }}
                                 className="w-full bg-white hover:bg-slate-50 text-secondary-600 font-extrabold py-3 px-4 rounded-xl border border-secondary-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-sm"
                             >
-                                ⚡ Cargar más vacantes (Mostrando {Math.min(visibleCount, filteredJobs.length).toLocaleString('es-MX')} de {Math.max(filteredJobs.length, totalJobCount).toLocaleString('es-MX')})
+                                Cargar más vacantes
                             </button>
                         </div>
                     )}
 
+                    {/* PROFESSIONAL EMPTY STATE WITH RESET BUTTON */}
                     {filteredJobs.length === 0 && (
-                        <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
-                            No se encontraron vacantes.
+                        <div className="text-center py-16 px-6 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
+                            <div className="w-14 h-14 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto border border-slate-200/60">
+                                <Search className="w-7 h-7" />
+                            </div>
+                            <div className="max-w-md mx-auto space-y-1">
+                                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                                    No encontramos vacantes para tu búsqueda
+                                </h3>
+                                <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
+                                    Por el momento no tenemos vacantes disponibles que coincidan con los filtros seleccionados. Te sugerimos modificar tu búsqueda o quitar los filtros aplicados.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleResetFilters}
+                                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white font-extrabold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95 cursor-pointer"
+                            >
+                                <RotateCcw className="w-4 h-4 text-orange-400" />
+                                Quitar filtros
+                            </button>
                         </div>
                     )}
                 </div>
