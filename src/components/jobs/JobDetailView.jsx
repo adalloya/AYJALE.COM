@@ -244,20 +244,20 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             </span>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 items-center">
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
-                                <MapPin className="w-3 h-3 mr-1.5 text-slate-500" />
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                            <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                                 {job.location}
                             </span>
-                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
-                                <Tag className="w-3 h-3 mr-1.5 text-slate-500" />
+                            <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                <Tag className="w-3 h-3 mr-1 text-slate-400" />
                                 {job.category}
                             </span>
                             {(() => {
                                 const edu = getEducationLevel(job);
                                 return edu ? (
-                                    <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
-                                        <GraduationCap className="w-3 h-3 mr-1.5 text-slate-500" />
+                                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                        <GraduationCap className="w-3 h-3 mr-1 text-slate-400" />
                                         {edu}
                                     </span>
                                 ) : null;
@@ -265,8 +265,8 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
                             {(() => {
                                 const exp = getExperienceLevel(job);
                                 return exp ? (
-                                    <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-md text-xs font-medium flex items-center border border-slate-200/60">
-                                        <Briefcase className="w-3 h-3 mr-1.5 text-slate-500" />
+                                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center border border-slate-200/50">
+                                        <Briefcase className="w-3 h-3 mr-1 text-slate-400" />
                                         {exp}
                                     </span>
                                 ) : null;

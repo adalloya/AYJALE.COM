@@ -314,23 +314,39 @@ const JobsPage = () => {
                 filters={filters}
                 setFilters={setFilters}
                 onSearch={handleSearch}
-                resultCount={displayResultCount}
-                sortBy={sortBy}
-                onSortChange={(val) => {
-                    setSortBy(val);
-                    const params = Object.fromEntries(searchParams.entries());
-                    if (val && val !== 'recent') {
-                        params.sortBy = val;
-                    } else {
-                        delete params.sortBy;
-                    }
-                    setSearchParams(params);
-                }}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
                 {/* Left Column: Job List (1/3 Width) */}
-                <div className="lg:col-span-4 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-4 pb-16 lg:pb-24">
+                <div className="lg:col-span-4 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-3 pb-16 lg:pb-24">
+                    {/* Header Row Above Job List: Result Count (Left) & Sort Dropdown (Right) */}
+                    <div className="flex items-center justify-between pb-1 text-xs font-bold text-slate-500">
+                        <span className="text-slate-700 font-extrabold text-xs">
+                            {Number(displayResultCount || 0).toLocaleString('es-MX')} {displayResultCount === 1 ? 'vacante' : 'vacantes'}
+                        </span>
+                        <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                            <span>Ordenar:</span>
+                            <select
+                                className="border border-slate-200 rounded-lg px-2 py-0.5 text-xs font-bold text-slate-700 bg-white shadow-2xs outline-none cursor-pointer hover:border-slate-300"
+                                value={sortBy || 'recent'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSortBy(val);
+                                    const params = Object.fromEntries(searchParams.entries());
+                                    if (val && val !== 'recent') {
+                                        params.sortBy = val;
+                                    } else {
+                                        delete params.sortBy;
+                                    }
+                                    setSearchParams(params);
+                                }}
+                            >
+                                <option value="recent">Más recientes ⬇</option>
+                                <option value="salary_desc">Sueldo: Mayor a menor ⬇</option>
+                                <option value="salary_asc">Sueldo: Menor a mayor ⬆</option>
+                            </select>
+                        </div>
+                    </div>
                     {filteredJobs.slice(0, visibleCount).map((job, index) => {
                         const companyInfo = getJobCompany(job);
                         const isSelected = job.id === selectedJobId;
