@@ -40,8 +40,8 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [dragX, setDragX] = useState(0);
 
     // Determine which card is "behind" based on drag direction
-    // Only show if drag is significant to prevent flicker
-    const backgroundJob = Math.abs(dragX) > 1 ? (dragX > 0 ? prevJob : nextJob) : null;
+    // Only show if drag is significant to prevent flicker during micro-touches
+    const backgroundJob = (Math.abs(dragX) > 15 || isSwipingOut) ? (dragX > 0 ? prevJob : nextJob) : null;
     const backgroundCompany = backgroundJob?.profiles;
 
     const [isDragging, setIsDragging] = useState(false);

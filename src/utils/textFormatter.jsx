@@ -5,7 +5,7 @@ import { ClipboardCheck, Clock, ListChecks, Gift, MessageSquare, ChevronRight } 
  * Renders job description text formatted into structured cards
  * inspired by the SNE scraper preview layout (Requisitos, Horarios, Funciones, Prestaciones, Proceso).
  */
-export const FormattedDescription = ({ text }) => {
+export const FormattedDescription = ({ text, isMobileDeck = false }) => {
     if (!text) return null;
 
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -54,10 +54,14 @@ export const FormattedDescription = ({ text }) => {
         sections.push(currentSection);
     }
 
-    // If no explicit section headers were found, render as single structured card
+    const cardBgClass = isMobileDeck
+        ? 'bg-transparent border-0 p-0 sm:p-5 shadow-none'
+        : 'bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs';
+
+    // If no explicit section headers were found, render as single structured block
     if (sections.length <= 1) {
         return (
-            <div className="space-y-3 text-slate-700 text-sm leading-relaxed bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
+            <div className={`space-y-3 text-slate-700 text-sm leading-relaxed ${cardBgClass}`}>
                 {lines.map((line, idx) => {
                     const isBullet = /^[•\-\*\d+\.]\s+/.test(line);
                     const cleanText = line.replace(/^[•\-\*\d+\.]\s+/, '');
@@ -75,16 +79,15 @@ export const FormattedDescription = ({ text }) => {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sections.map((sec, idx) => {
                 const Icon = sec.icon || ChevronRight;
-                // If odd number of sections (e.g. 5 sections), the 5th section spans full 2 columns as a wide rectangle!
                 const isFullWidth = sec.title === 'Proceso de Reclutamiento' || (sections.length % 2 !== 0 && idx === sections.length - 1);
 
                 return (
                     <div
                         key={idx}
-                        className={`bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs transition-all ${isFullWidth ? 'md:col-span-2' : ''}`}
+                        className={`transition-all ${isFullWidth ? 'md:col-span-2' : ''} ${cardBgClass}`}
                     >
                         <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/70">
                             <div className={`p-2 rounded-xl border ${sec.color || 'bg-orange-50 text-orange-600 border-orange-100'}`}>
@@ -109,3 +112,5 @@ export const FormattedDescription = ({ text }) => {
         </div>
     );
 };
+
+export default FormattedDescription;
