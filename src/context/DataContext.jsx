@@ -110,72 +110,106 @@ export const DataProvider = ({ children }) => {
                 }
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
-            // 2. Parallel Chunk Queries (Fetch up to 10,000 jobs across 3 parallel chunks for 100% complete coverage)
-            const chunkPromises = [
-                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(0, 2999),
-                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(3000, 5999),
-                supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(6000, 9999)
-            ];
+            // 2. Step 1: Fast initial micro-batch (30 items for instant <150ms render)
+            let initialQuery = supabase
+                .from('jobs')
+                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
+                .order('created_at', { ascending: false })
+                .range(0, 29);
 
-            // 10 Second Timeout Race for resilient network queries
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Database Request Timed Out (10s)')), 10000)
-            );
+            if (!user || (!isCompany && !isAdmin)) {
+                initialQuery = initialQuery.neq('active', false);
+            }
 
-            const chunkResults = await Promise.race([
-                Promise.all(chunkPromises),
-                timeoutPromise
-            ]);
+            const { data: firstData, count: totalCount, error: firstErr } = await initialQuery;
+            if (firstErr) throw firstErr;
 
-            let rawData = [];
-            chunkResults.forEach(res => {
-                if (res.data && Array.isArray(res.data)) {
-                    rawData = rawData.concat(res.data);
-                }
-            });
+            if (typeof totalCount === 'number' && totalCount > 0) {
+                setTotalJobCount(totalCount);
+            }
 
             const companyCache = getJobCompanyCache();
 
-            const enrichedData = rawData.map(job => {
-                const cached = companyCache[String(job.id)];
-                const isConfidential = job.is_confidential;
-                const profile = job.profiles;
+            const enrichBatch = (rawList) => {
+                return (rawList || []).map(job => {
+                    const cached = companyCache[String(job.id)];
+                    const isConfidential = job.is_confidential;
+                    const profile = job.profiles;
 
-                let compName = job.empresa_override || job.company_name || cached?.name || job.company?.name || null;
-                let compLogo = job.logo_override || job.company_logo || cached?.logo || job.company?.logo_url || null;
+                    let compName = job.empresa_override || job.company_name || cached?.name || job.company?.name || null;
+                    let compLogo = job.logo_override || job.company_logo || cached?.logo || job.company?.logo_url || null;
 
-                if (!compName && profile) {
-                    if (profile.role !== 'admin' && profile.name && !profile.name.toLowerCase().includes('admin') && !profile.name.toLowerCase().includes('adal')) {
-                        compName = profile.name;
+                    if (!compName && profile) {
+                        if (profile.role !== 'admin' && profile.name && !profile.name.toLowerCase().includes('admin') && !profile.name.toLowerCase().includes('adal')) {
+                            compName = profile.name;
+                        }
+                        compLogo = compLogo || profile.logo || profile.logo_url || null;
                     }
-                    compLogo = compLogo || profile.logo || profile.logo_url || null;
-                }
 
-                if (isConfidential) {
-                    compName = 'Empresa Confidencial';
-                    compLogo = null;
-                }
-
-                const resolvedName = compName || 'Confidencial';
-                const resolvedLogo = compLogo || profile?.logo || null;
-
-                return {
-                    ...job,
-                    empresa_override: job.empresa_override || null,
-                    logo_override: job.logo_override || null,
-                    company_name: resolvedName,
-                    company_logo: resolvedLogo,
-                    companyProfile: { name: resolvedName, logo: resolvedLogo },
-                    profiles: {
-                        ...profile,
-                        name: resolvedName,
-                        logo: resolvedLogo
+                    if (isConfidential) {
+                        compName = 'Empresa Confidencial';
+                        compLogo = null;
                     }
-                };
-            });
 
-            console.log(`[DataContext] fetchJobs success in ${Date.now() - startTime}ms. Items: ${enrichedData.length}`);
-            setJobs(enrichedData);
+                    const resolvedName = compName || 'Confidencial';
+                    const resolvedLogo = compLogo || profile?.logo || null;
+
+                    return {
+                        ...job,
+                        empresa_override: job.empresa_override || null,
+                        logo_override: job.logo_override || null,
+                        company_name: resolvedName,
+                        company_logo: resolvedLogo,
+                        companyProfile: { name: resolvedName, logo: resolvedLogo },
+                        profiles: {
+                            ...profile,
+                            name: resolvedName,
+                            logo: resolvedLogo
+                        }
+                    };
+                });
+            };
+
+            // INSTANT RENDER TO CANDIDATE (<150ms)!
+            if (firstData && firstData.length > 0) {
+                const firstEnriched = enrichBatch(firstData);
+                setJobs(firstEnriched);
+                console.log(`[DataContext] Instant initial render in ${Date.now() - startTime}ms. Items: ${firstEnriched.length}`);
+            }
+
+            // Step 2: Non-blocking Background Progressive Hydration
+            setTimeout(async () => {
+                try {
+                    const chunkPromises = [
+                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(30, 2999),
+                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(3000, 5999),
+                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(6000, 9999)
+                    ];
+
+                    const chunkResults = await Promise.all(chunkPromises);
+                    let fullRaw = [...(firstData || [])];
+                    chunkResults.forEach(res => {
+                        if (res.data && Array.isArray(res.data)) {
+                            fullRaw = fullRaw.concat(res.data);
+                        }
+                    });
+
+                    // Deduplicate by job ID
+                    const seenIds = new Set();
+                    const dedupedRaw = fullRaw.filter(j => {
+                        if (seenIds.has(j.id)) return false;
+                        seenIds.add(j.id);
+                        return true;
+                    });
+
+                    const fullEnriched = enrichBatch(dedupedRaw);
+                    setJobs(fullEnriched);
+                    console.log(`[DataContext] Full background hydration finished in ${Date.now() - startTime}ms. Total: ${fullEnriched.length}`);
+                } catch (bgErr) {
+                    console.error('[DataContext] Background hydration error:', bgErr);
+                }
+            }, 50);
+
         } catch (error) {
             console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
             setJobs([]);
