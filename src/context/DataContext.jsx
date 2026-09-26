@@ -181,34 +181,35 @@ export const DataProvider = ({ children }) => {
                 console.log(`[DataContext] Instant initial render in ${Date.now() - startTime}ms. Items: ${firstEnriched.length}`);
             }
 
-            // Step 2: Non-blocking Background Parallel Hydration (Lightweight listing fields, 500-row chunks)
+            // Step 2: Controlled Sequential Hydration (1 connection at a time for Supabase NANO tier stability)
             setTimeout(async () => {
                 try {
-                    // Listing fields query (omits 10KB full description text in bulk REST to prevent 500 timeouts & 160MB payload)
-                    const listingFields = 'id, title, description, location, category, type, salary, salary_min, salary_max, salary_period, hide_salary, is_confidential, is_external, external_url, active, created_at, company_id, empresa_override, logo_override, company_name, company_logo, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
+                    const selectFields = '*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
                     
-                    const chunkPromises = [];
-                    const maxCount = totalCount || 15000;
-                    for (let start = 0; start <= maxCount; start += 500) {
+                    let fullRaw = [];
+                    const maxCount = Math.min(totalCount || 13000, 15000);
+                    const chunkSize = 1000;
+
+                    for (let start = 0; start <= maxCount; start += chunkSize) {
                         let q = supabase
                             .from('jobs')
-                            .select(listingFields)
+                            .select(selectFields)
                             .order('created_at', { ascending: false })
-                            .range(start, start + 499);
-                        
+                            .range(start, start + chunkSize - 1);
+
                         if (!user || (!isCompany && !isAdmin)) {
                             q = q.neq('active', false);
                         }
-                        chunkPromises.push(q);
-                    }
 
-                    const chunkResults = await Promise.all(chunkPromises);
-                    let fullRaw = [];
-                    chunkResults.forEach(res => {
-                        if (res.data && Array.isArray(res.data)) {
-                            fullRaw = fullRaw.concat(res.data);
+                        const { data: chunkData, error: chunkErr } = await q;
+
+                        if (!chunkErr && Array.isArray(chunkData)) {
+                            fullRaw.push(...chunkData);
                         }
-                    });
+
+                        // Brief 30ms breathing room for Supabase NANO connection pool
+                        await new Promise(r => setTimeout(r, 30));
+                    }
 
                     // Deduplicate by job ID
                     const seenIds = new Set();
