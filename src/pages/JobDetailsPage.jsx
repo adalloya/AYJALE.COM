@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MobileJobDeck from '../components/jobs/MobileJobDeck';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { matchesStateFilter } from '../utils/jobUtils';
 import SEO from '../components/SEO';
 import JobDetailView from '../components/jobs/JobDetailView';
 import { ArrowLeft } from 'lucide-react';
@@ -43,10 +44,18 @@ const JobDetailsPage = () => {
     const jobIds = location.state?.jobIds;
 
     const deckJobs = useMemo(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const stateParam = searchParams.get('state') || location.state?.state;
+
+        if (stateParam) {
+            const filteredByState = jobs.filter(j => j.active && matchesStateFilter(j.location, stateParam));
+            if (filteredByState.length > 0) return filteredByState;
+        }
+
         return (jobIds && jobIds.length > 0)
             ? jobIds.map(id => jobs.find(j => j.id === id)).filter(Boolean)
             : (job ? [job] : []);
-    }, [jobIds, jobs, job]);
+    }, [jobIds, jobs, job, location.search, location.state]);
 
     const handleBack = useCallback(() => {
         // Close deck view and return to traditional mobile job list

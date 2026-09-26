@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -12,11 +12,12 @@ import { formatFriendlyDate } from '../utils/dateUtils';
 import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../utils/jobUtils';
 
 const JobsPage = () => {
-    const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob } = useData();
+    const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob, loading } = useData();
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const observerTarget = useRef(null);
 
     const [showModal, setShowModal] = useState(false);
     const [applying, setApplying] = useState(false);
@@ -214,6 +215,32 @@ const JobsPage = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [selectedJobId]);
+
+    // Infinite Scroll IntersectionObserver effect (Automatic seamless load more)
+    useEffect(() => {
+        const target = observerTarget.current;
+        if (!target) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && filteredJobs.length > 0) {
+                    if (visibleCount < filteredJobs.length || jobs.length < totalJobCount) {
+                        setVisibleCount(prev => {
+                            const nextCount = prev + 20;
+                            if (nextCount >= jobs.length && jobs.length < totalJobCount) {
+                                fetchMoreJobs(jobs.length);
+                            }
+                            return nextCount;
+                        });
+                    }
+                }
+            },
+            { threshold: 0.1, rootMargin: '250px' }
+        );
+
+        observer.observe(target);
+        return () => observer.unobserve(target);
+    }, [filteredJobs.length, visibleCount, jobs.length, totalJobCount, fetchMoreJobs]);
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     const selectedCompany = selectedJob ? selectedJob.profiles : null;
@@ -483,27 +510,26 @@ const JobsPage = () => {
                         );
                     })}
 
-                    {/* PROGRESSIVE LOAD MORE BUTTON (Only rendered when there are results matching search) */}
-                    {filteredJobs.length > 0 && (visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
-                        <div className="pt-2 text-center">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const nextCount = visibleCount + 20;
-                                    setVisibleCount(nextCount);
-                                    if (nextCount >= jobs.length && jobs.length < totalJobCount) {
-                                        fetchMoreJobs(jobs.length);
-                                    }
-                                }}
-                                className="w-full bg-white hover:bg-slate-50 text-secondary-600 font-extrabold py-3 px-4 rounded-xl border border-secondary-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-sm"
-                            >
-                                Cargar más vacantes
-                            </button>
+                    {/* ELEGANT SKELETON LOADING STATE */}
+                    {loading && jobs.length === 0 ? (
+                        <div className="space-y-3">
+                            <div className="p-4 bg-white rounded-2xl border border-orange-100/80 shadow-2xs text-center space-y-2">
+                                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                <p className="text-sm font-extrabold text-orange-600">Estamos cargando las mejores vacantes para ti...</p>
+                            </div>
+                            {[1, 2, 3, 4, 5].map(n => (
+                                <div key={n} className="p-4 bg-white rounded-2xl border border-slate-200 animate-pulse space-y-3">
+                                    <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                    <div className="h-3 bg-slate-150 rounded w-1/2"></div>
+                                    <div className="flex gap-2 pt-1">
+                                        <div className="h-5 bg-slate-100 rounded w-16"></div>
+                                        <div className="h-5 bg-slate-100 rounded w-24"></div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
-
-                    {/* PROFESSIONAL EMPTY STATE WITH RESET BUTTON */}
-                    {filteredJobs.length === 0 && (
+                    ) : filteredJobs.length === 0 ? (
+                        /* PROFESSIONAL EMPTY STATE WITH RESET BUTTON */
                         <div className="text-center py-16 px-6 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
                             <div className="w-14 h-14 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto border border-slate-200/60">
                                 <Search className="w-7 h-7" />
@@ -524,6 +550,16 @@ const JobsPage = () => {
                                 <RotateCcw className="w-4 h-4 text-orange-400" />
                                 Quitar filtros
                             </button>
+                        </div>
+                    ) : null}
+
+                    {/* INFINITE SCROLL AUTOMATIC SENTINEL & LOAD MORE FALLBACK */}
+                    {filteredJobs.length > 0 && (visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
+                        <div ref={observerTarget} className="pt-2 pb-4 text-center">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-500 rounded-full text-xs font-bold border border-slate-200">
+                                <div className="w-3.5 h-3.5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Cargando más vacantes...</span>
+                            </div>
                         </div>
                     )}
                 </div>

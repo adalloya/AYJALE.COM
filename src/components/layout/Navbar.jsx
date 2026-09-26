@@ -89,7 +89,7 @@ const Navbar = () => {
 
     return (
         <nav className="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-50">
-            <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-full px-2 sm:px-4 lg:px-6">
                 <div className="flex justify-between h-20">
                     <div className="flex items-center">
                         <Link to="/" className="flex-shrink-0 flex items-center">
