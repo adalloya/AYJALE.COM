@@ -231,6 +231,26 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const fetchRPCFacets = useCallback(async (activeFilters = {}) => {
+        try {
+            const { data, error } = await supabase.rpc('get_filtros_facetados', {
+                p_keyword: activeFilters.keyword || null,
+                p_state: activeFilters.state || null,
+                p_category: activeFilters.category || null,
+                p_salary_range: activeFilters.salaryRange || null,
+                p_education: activeFilters.education || null,
+                p_experience: activeFilters.experience || null
+            });
+
+            if (error) {
+                return null;
+            }
+            return data;
+        } catch (err) {
+            return null;
+        }
+    }, []);
+
     const fetchMoreJobs = async (offset) => {
         try {
             let query = supabase
@@ -1063,6 +1083,7 @@ export const DataProvider = ({ children }) => {
 
 
     const value = useMemo(() => ({
+        fetchRPCFacets,
         jobs,
         totalJobCount,
         fetchMoreJobs,

@@ -5,9 +5,22 @@ import { useData } from '../../context/DataContext';
 import { getEducationLevel, getExperienceLevel, matchesStateFilter } from '../../utils/jobUtils';
 
 const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
-    const { jobs, totalJobCount } = useData();
+    const { jobs, totalJobCount, fetchRPCFacets } = useData();
+    const [rpcFacets, setRpcFacets] = useState(null);
     // Expand by default on mobile screens (< 768px)
     const [isExpanded, setIsExpanded] = useState(() => window.innerWidth < 768);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (fetchRPCFacets) {
+            fetchRPCFacets(filters).then(res => {
+                if (isMounted && res) {
+                    setRpcFacets(res);
+                }
+            });
+        }
+        return () => { isMounted = false; };
+    }, [filters, fetchRPCFacets]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -87,9 +100,18 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
         return counts;
     }, [jobs, filters.state]);
 
-    // Aggregate state vacancy counts across all active jobs for the state dropdown selector
+    // Aggregate state vacancy counts (prefers ultra-fast RPC response, falls back to memory)
     const stateCounts = useMemo(() => {
         const counts = {};
+        if (rpcFacets && Array.isArray(rpcFacets.estados) && rpcFacets.estados.length > 0) {
+            rpcFacets.estados.forEach(item => {
+                if (item.nombre) {
+                    counts[item.nombre] = Number(item.total || 0);
+                }
+            });
+            return counts;
+        }
+
         (jobs || []).forEach(job => {
             if (!job.active) return;
             MEXICAN_STATES.forEach(st => {
@@ -99,7 +121,7 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
             });
         });
         return counts;
-    }, [jobs]);
+    }, [jobs, rpcFacets]);
 
     const activeCategories = JOB_CATEGORIES.filter(cat => (facets.category[cat] || 0) > 0);
 
