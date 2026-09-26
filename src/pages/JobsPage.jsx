@@ -166,13 +166,13 @@ const JobsPage = () => {
             // Education Level Filter
             if (filters.education) {
                 const jobEdu = getEducationLevel(job);
-                if (!jobEdu || !matchesStateFilter(jobEdu, filters.education)) return false;
+                if (!jobEdu || jobEdu.toLowerCase() !== filters.education.toLowerCase()) return false;
             }
 
             // Experience Level Filter
             if (filters.experience) {
                 const jobExp = getExperienceLevel(job);
-                if (!jobExp || !matchesStateFilter(jobExp, filters.experience)) return false;
+                if (!jobExp || jobExp.toLowerCase() !== filters.experience.toLowerCase()) return false;
             }
 
             return true;
@@ -357,9 +357,9 @@ const JobsPage = () => {
                                     setSearchParams(params);
                                 }}
                             >
-                                <option value="recent">Más recientes ⬇</option>
-                                <option value="salary_desc">Sueldo: Mayor a menor ⬇</option>
-                                <option value="salary_asc">Sueldo: Menor a mayor ⬆</option>
+                                <option value="recent">Más recientes</option>
+                                <option value="salary_desc">Sueldo: Mayor a menor</option>
+                                <option value="salary_asc">Sueldo: Menor a mayor</option>
                             </select>
                         </div>
                     </div>
