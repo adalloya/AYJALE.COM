@@ -210,6 +210,41 @@ export const normalizeText = (text = '') => {
         .trim();
 };
 
+export const STATE_IDENTIFIERS = {
+    "Aguascalientes": ["aguascalientes", "ags", "ags."],
+    "Baja California": ["baja california", "b.c.", " b c "],
+    "Baja California Sur": ["baja california sur", "b.c.s.", " b c s "],
+    "Campeche": ["campeche", "camp."],
+    "Chiapas": ["chiapas", "chis.", "chis"],
+    "Chihuahua": ["chihuahua", "chih", "chih."],
+    "Coahuila": ["coahuila", "coah", "coah."],
+    "Colima": ["colima", "col.", "col"],
+    "Ciudad de México": ["ciudad de mexico", "cdmx", "c.d.m.x.", "distrito federal", "mexico df", "d.f."],
+    "Durango": ["durango", "dgo", "dgo."],
+    "Guanajuato": ["guanajuato", "gto", "gto."],
+    "Guerrero": ["guerrero", "gro", "gro."],
+    "Hidalgo": ["hidalgo", "hgo", "hgo."],
+    "Jalisco": ["jalisco", "jal", "jal."],
+    "México": ["estado de mexico", "edomex", "edo. de mex.", "edo mex"],
+    "Michoacán": ["michoacan", "mich", "mich."],
+    "Morelos": ["morelos", "mor", "mor."],
+    "Nayarit": ["nayarit", "nay", "nay."],
+    "Nuevo León": ["nuevo leon", "n.l.", " n l "],
+    "Oaxaca": ["oaxaca", "oax", "oax."],
+    "Puebla": ["puebla", "pue", "pue."],
+    "Querétaro": ["queretaro", "qro", "qro."],
+    "Quintana Roo": ["quintana roo", "q. roo", "q roo", "qroo"],
+    "San Luis Potosí": ["san luis potosi", "slp", "s.l.p."],
+    "Sinaloa": ["sinaloa", "sin", "sin."],
+    "Sonora": ["sonora", "son", "son."],
+    "Tabasco": ["tabasco", "tab", "tab."],
+    "Tamaulipas": ["tamaulipas", "tamps", "tamps."],
+    "Tlaxcala": ["tlaxcala", "tlax", "tlax."],
+    "Veracruz": ["veracruz", "ver", "ver."],
+    "Yucatán": ["yucatan", "yuc", "yuc."],
+    "Zacatecas": ["zacatecas", "zac", "zac."]
+};
+
 export const STATE_ALIASES = {
     "Ciudad de México": [
         "ciudad de mexico", "cdmx", "c.d.m.x.", "df", "distrito federal", "mexico df",
@@ -218,13 +253,13 @@ export const STATE_ALIASES = {
         "tlalpan", "azcapotzalco", "magdalena contreras", "cuajimalpa", "milpa alta", "tlahuac", "xochimilco"
     ],
     "México": [
-        "estado de mexico", "edomex", "edo. de mex.", "edo mex", "mexico",
+        "estado de mexico", "edomex", "edo. de mex.", "edo mex",
         "toluca", "naucalpan", "ecatepec", "tlalnepantla", "nezahualcoyotl",
         "cuautitlan", "huixquilucan", "atizapan", "chimalhuacan", "chalco",
         "tecamac", "metepec", "coacalco", "ixtapaluca", "texcoco", "tultitlan", "los reyes la paz"
     ],
     "Nuevo León": [
-        "nuevo leon", "nl", "n.l.", "monterrey", "apodaca", "san pedro", "guadalupe",
+        "nuevo leon", "nl", "n.l.", "monterrey", "apodaca", "san pedro garza garcia", "san pedro", "guadalupe",
         "escobedo", "san nicolas", "santa catarina", "juarez", "pesqueria", "cadereyta", "garcia"
     ],
     "Querétaro": [
@@ -240,7 +275,7 @@ export const STATE_ALIASES = {
         "coahuila", "coahuila de zaragoza", "saltillo", "torreon", "ramos arizpe", "monclova", "piedras negras"
     ],
     "Chihuahua": [
-        "chihuahua", "chih", "chih.", "juarez", "ciudad juarez", "delicias", "parral"
+        "chihuahua", "chih", "chih.", "ciudad juarez", "delicias", "parral"
     ],
     "Puebla": [
         "puebla", "pue", "pue.", "san andres cholula", "tehuacan", "san pedro cholula"
@@ -289,6 +324,13 @@ export const STATE_ALIASES = {
     "Tlaxcala": ["tlaxcala", "tlax", "apizaco"]
 };
 
+const checkWordMatch = (text = '', searchStr = '') => {
+    if (!text || !searchStr) return false;
+    const escaped = searchStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i');
+    return regex.test(text);
+};
+
 export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
     if (!selectedState) return true;
     if (!jobLocation) return false;
@@ -296,19 +338,59 @@ export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
     const normLoc = normalizeText(jobLocation);
     const normSelected = normalizeText(selectedState);
 
-    // Direct accent-free substring match
+    // 1. Direct state name match in location
     if (normLoc.includes(normSelected)) return true;
 
-    // Check aliases if defined for this state
+    // 2. Disambiguation: Check if job location explicitly specifies a DIFFERENT state than selectedState
+    for (const [stateName, identifiers] of Object.entries(STATE_IDENTIFIERS)) {
+        if (stateName === selectedState) continue;
+
+        const hasOtherState = identifiers.some(id => {
+            const normId = normalizeText(id);
+            if (normId.length <= 3) {
+                return checkWordMatch(normLoc, normId);
+            }
+            return normLoc.includes(normId);
+        });
+
+        if (hasOtherState) {
+            // Check if selectedState is ALSO explicitly mentioned
+            const selIdentifiers = STATE_IDENTIFIERS[selectedState] || [normSelected];
+            const hasSelectedState = selIdentifiers.some(id => {
+                const normId = normalizeText(id);
+                if (normId.length <= 3) {
+                    return checkWordMatch(normLoc, normId);
+                }
+                return normLoc.includes(normId);
+            });
+
+            // If it explicitly belongs to another state and NOT the selected state, exclude it!
+            if (!hasSelectedState) {
+                return false;
+            }
+        }
+    }
+
+    // 3. Check selectedState identifiers
+    const selIdentifiers = STATE_IDENTIFIERS[selectedState];
+    if (selIdentifiers) {
+        const hasIdMatch = selIdentifiers.some(id => {
+            const normId = normalizeText(id);
+            if (normId.length <= 3) {
+                return checkWordMatch(normLoc, normId);
+            }
+            return normLoc.includes(normId);
+        });
+        if (hasIdMatch) return true;
+    }
+
+    // 4. Check municipality aliases for selectedState
     const aliases = STATE_ALIASES[selectedState];
     if (aliases) {
         return aliases.some(alias => {
             const normAlias = normalizeText(alias);
-            // Short alias like "nl", "df", "bc", "qro", "ags", "slp" - require word boundary match
             if (normAlias.length <= 3) {
-                const escaped = normAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i');
-                return regex.test(normLoc);
+                return checkWordMatch(normLoc, normAlias);
             }
             return normLoc.includes(normAlias);
         });
