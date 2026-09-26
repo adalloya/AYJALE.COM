@@ -7,30 +7,8 @@ import { getEducationLevel, getExperienceLevel, matchesStateFilter } from '../..
 const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
     const { jobs, totalJobCount, fetchRPCFacets, stateCounts: contextStateCounts } = useData();
     const [rpcFacets, setRpcFacets] = useState(null);
-    // Expand by default on mobile screens (< 768px)
-    const [isExpanded, setIsExpanded] = useState(() => window.innerWidth < 768);
-
-    useEffect(() => {
-        let isMounted = true;
-        if (fetchRPCFacets) {
-            fetchRPCFacets(filters).then(res => {
-                if (isMounted && res) {
-                    setRpcFacets(res);
-                }
-            });
-        }
-        return () => { isMounted = false; };
-    }, [filters, fetchRPCFacets]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setIsExpanded(true);
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    // Filter panel collapsed by default on mobile and desktop
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));

@@ -510,23 +510,34 @@ const JobsPage = () => {
                         );
                     })}
 
-                    {/* ELEGANT SKELETON LOADING STATE */}
+                    {/* WORLD-CLASS GLASSMORPHISM BACKDROP BLUR & SPINNER LOADING UX */}
                     {loading && jobs.length === 0 ? (
-                        <div className="space-y-3">
-                            <div className="p-4 bg-white rounded-2xl border border-orange-100/80 shadow-2xs text-center space-y-2">
-                                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                <p className="text-sm font-extrabold text-orange-600">Estamos cargando las mejores vacantes para ti...</p>
-                            </div>
-                            {[1, 2, 3, 4, 5].map(n => (
-                                <div key={n} className="p-4 bg-white rounded-2xl border border-slate-200 animate-pulse space-y-3">
-                                    <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                                    <div className="h-3 bg-slate-150 rounded w-1/2"></div>
-                                    <div className="flex gap-2 pt-1">
-                                        <div className="h-5 bg-slate-100 rounded w-16"></div>
-                                        <div className="h-5 bg-slate-100 rounded w-24"></div>
-                                    </div>
+                        <div className="relative min-h-[420px]">
+                            {/* Glassmorphism Centered Overlay */}
+                            <div className="absolute inset-x-2 top-8 z-20 p-6 bg-white/85 backdrop-blur-md border border-orange-200/80 rounded-2xl shadow-xl text-center space-y-3 max-w-sm mx-auto animate-in fade-in zoom-in-95 duration-200">
+                                <div className="relative w-12 h-12 mx-auto">
+                                    <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent border-b-orange-400 rounded-full animate-spin"></div>
+                                    <div className="absolute inset-0 w-12 h-12 border-4 border-orange-200/50 rounded-full animate-ping opacity-30"></div>
                                 </div>
-                            ))}
+                                <div className="space-y-1">
+                                    <h4 className="text-base font-black text-slate-900 tracking-tight">Cargando vacantes...</h4>
+                                    <p className="text-xs font-bold text-orange-600">Estamos preparando las mejores ofertas para ti</p>
+                                </div>
+                            </div>
+
+                            {/* Blurred Container Card Skeletons Behind */}
+                            <div className="filter blur-[2px] opacity-40 select-none pointer-events-none space-y-3">
+                                {[1, 2, 3, 4, 5].map(n => (
+                                    <div key={n} className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+                                        <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                        <div className="h-3 bg-slate-150 rounded w-1/2"></div>
+                                        <div className="flex gap-2 pt-1">
+                                            <div className="h-5 bg-slate-100 rounded w-16"></div>
+                                            <div className="h-5 bg-slate-100 rounded w-24"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : filteredJobs.length === 0 ? (
                         /* PROFESSIONAL EMPTY STATE WITH RESET BUTTON */
