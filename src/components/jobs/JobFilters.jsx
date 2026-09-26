@@ -87,7 +87,23 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
         return counts;
     }, [jobs, filters.state]);
 
+    // Aggregate state vacancy counts across all active jobs for the state dropdown selector
+    const stateCounts = useMemo(() => {
+        const counts = {};
+        (jobs || []).forEach(job => {
+            if (!job.active) return;
+            MEXICAN_STATES.forEach(st => {
+                if (matchesStateFilter(job.location, st)) {
+                    counts[st] = (counts[st] || 0) + 1;
+                }
+            });
+        });
+        return counts;
+    }, [jobs]);
+
     const activeCategories = JOB_CATEGORIES.filter(cat => (facets.category[cat] || 0) > 0);
+
+    const totalActiveCount = (jobs || []).filter(j => j.active).length;
 
     return (
         <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-2xs border border-slate-200/90 mb-4 space-y-3">
@@ -108,14 +124,19 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                 <div className="flex-1 w-full relative">
                     <MapPin className="absolute left-3.5 top-3 text-slate-400 w-4 h-4 pointer-events-none z-10" />
                     <select
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm font-medium text-slate-800"
+                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-transparent outline-none appearance-none bg-white text-sm font-medium text-slate-800 cursor-pointer"
                         value={filters.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                     >
-                        <option value="">Todo México</option>
-                        {MEXICAN_STATES.map(state => (
-                            <option key={state} value={state}>{state}</option>
-                        ))}
+                        <option value="">Todo México ({totalActiveCount.toLocaleString('es-MX')})</option>
+                        {MEXICAN_STATES.map(state => {
+                            const count = stateCounts[state] || 0;
+                            return (
+                                <option key={state} value={state}>
+                                    {state} ({count.toLocaleString('es-MX')})
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
