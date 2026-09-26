@@ -37,15 +37,13 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     const [isSwipingOut, setIsSwipingOut] = useState(false);
 
-    const [dragX, setDragX] = useState(0);
-
-    // Determine which card is "behind" based on drag direction
-    // Only show if drag is significant to prevent flicker during micro-touches
-    const backgroundJob = (Math.abs(dragX) > 15 || isSwipingOut) ? (dragX > 0 ? prevJob : nextJob) : null;
-    const backgroundCompany = backgroundJob?.profiles;
-
     const [isDragging, setIsDragging] = useState(false);
     const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
+
+    // Determine which card is "behind" based on drag direction
+    // ONLY render background card when user is ACTIVELY dragging past threshold to prevent 1-frame ghost flicker
+    const backgroundJob = (isDragging && Math.abs(dragX) > 20) ? (dragX > 0 ? prevJob : nextJob) : null;
+    const backgroundCompany = backgroundJob?.profiles;
 
     const cardRef = useRef(null);
     const menuRef = useRef(null);
@@ -235,14 +233,16 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
             // Wait for animation to complete before switching
             setTimeout(() => {
-                if (direction === 'right') {
+                const swipeDir = direction;
+                setExitDirection(null);
+                setDragX(0);
+                setIsSwipingOut(false); // Reset background transition FIRST
+
+                if (swipeDir === 'right') {
                     handlePrev();
                 } else {
                     handleNext();
                 }
-                setExitDirection(null);
-                setDragX(0);
-                setIsSwipingOut(false); // Reset background transition
             }, 200); // 200ms matches CSS transition
         } else {
             // Reset (Snap Back)
