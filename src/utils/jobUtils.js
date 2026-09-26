@@ -212,14 +212,14 @@ export const normalizeText = (text = '') => {
 
 export const STATE_IDENTIFIERS = {
     "Aguascalientes": ["aguascalientes", "ags", "ags."],
-    "Baja California": ["baja california", "b.c.", " b c "],
-    "Baja California Sur": ["baja california sur", "b.c.s.", " b c s "],
-    "Campeche": ["campeche", "camp."],
+    "Baja California": ["baja california", "b.c.", "bc"],
+    "Baja California Sur": ["baja california sur", "b.c.s.", "bcs"],
+    "Campeche": ["campeche", "camp.", "camp"],
     "Chiapas": ["chiapas", "chis.", "chis"],
     "Chihuahua": ["chihuahua", "chih", "chih."],
     "Coahuila": ["coahuila", "coah", "coah."],
     "Colima": ["colima", "col.", "col"],
-    "Ciudad de México": ["ciudad de mexico", "cdmx", "c.d.m.x.", "distrito federal", "mexico df", "d.f."],
+    "Ciudad de México": ["ciudad de mexico", "cdmx", "c.d.m.x.", "distrito federal", "mexico df", "d.f.", "df"],
     "Durango": ["durango", "dgo", "dgo."],
     "Guanajuato": ["guanajuato", "gto", "gto."],
     "Guerrero": ["guerrero", "gro", "gro."],
@@ -229,7 +229,7 @@ export const STATE_IDENTIFIERS = {
     "Michoacán": ["michoacan", "mich", "mich."],
     "Morelos": ["morelos", "mor", "mor."],
     "Nayarit": ["nayarit", "nay", "nay."],
-    "Nuevo León": ["nuevo leon", "n.l.", " n l "],
+    "Nuevo León": ["nuevo leon", "n.l.", "nl"],
     "Oaxaca": ["oaxaca", "oax", "oax."],
     "Puebla": ["puebla", "pue", "pue."],
     "Querétaro": ["queretaro", "qro", "qro."],
@@ -341,58 +341,15 @@ export const matchesStateFilter = (jobLocation = '', selectedState = '') => {
     // 1. Direct state name match in location
     if (normLoc.includes(normSelected)) return true;
 
-    // 2. Disambiguation: Check if job location explicitly specifies a DIFFERENT state than selectedState
-    for (const [stateName, identifiers] of Object.entries(STATE_IDENTIFIERS)) {
-        if (stateName === selectedState) continue;
-
-        const hasOtherState = identifiers.some(id => {
+    // 2. Strict State Identifier & Abbreviation match (ignores municipal aliases entirely)
+    const identifiers = STATE_IDENTIFIERS[selectedState];
+    if (identifiers) {
+        return identifiers.some(id => {
             const normId = normalizeText(id);
             if (normId.length <= 3) {
                 return checkWordMatch(normLoc, normId);
             }
             return normLoc.includes(normId);
-        });
-
-        if (hasOtherState) {
-            // Check if selectedState is ALSO explicitly mentioned
-            const selIdentifiers = STATE_IDENTIFIERS[selectedState] || [normSelected];
-            const hasSelectedState = selIdentifiers.some(id => {
-                const normId = normalizeText(id);
-                if (normId.length <= 3) {
-                    return checkWordMatch(normLoc, normId);
-                }
-                return normLoc.includes(normId);
-            });
-
-            // If it explicitly belongs to another state and NOT the selected state, exclude it!
-            if (!hasSelectedState) {
-                return false;
-            }
-        }
-    }
-
-    // 3. Check selectedState identifiers
-    const selIdentifiers = STATE_IDENTIFIERS[selectedState];
-    if (selIdentifiers) {
-        const hasIdMatch = selIdentifiers.some(id => {
-            const normId = normalizeText(id);
-            if (normId.length <= 3) {
-                return checkWordMatch(normLoc, normId);
-            }
-            return normLoc.includes(normId);
-        });
-        if (hasIdMatch) return true;
-    }
-
-    // 4. Check municipality aliases for selectedState
-    const aliases = STATE_ALIASES[selectedState];
-    if (aliases) {
-        return aliases.some(alias => {
-            const normAlias = normalizeText(alias);
-            if (normAlias.length <= 3) {
-                return checkWordMatch(normLoc, normAlias);
-            }
-            return normLoc.includes(normAlias);
         });
     }
 

@@ -154,15 +154,12 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                         value={filters.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                     >
-                        <option value="">Todo México ({totalActiveCount.toLocaleString('es-MX')})</option>
-                        {MEXICAN_STATES.map(state => {
-                            const count = stateCounts[state] || 0;
-                            return (
-                                <option key={state} value={state}>
-                                    {state} ({count.toLocaleString('es-MX')})
-                                </option>
-                            );
-                        })}
+                        <option value="">Todo México</option>
+                        {MEXICAN_STATES.map(state => (
+                            <option key={state} value={state}>
+                                {state}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
@@ -207,12 +204,12 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                         onChange={(e) => handleChange('salaryRange', e.target.value)}
                     >
                         <option value="">Cualquier sueldo</option>
-                        <option value="0-8000">Hasta $8,000 / mes ({facets.salary['0-8000']})</option>
-                        <option value="8000-12000">$8,000 - $12,000 / mes ({facets.salary['8000-12000']})</option>
-                        <option value="12000-18000">$12,000 - $18,000 / mes ({facets.salary['12000-18000']})</option>
-                        <option value="18000-25000">$18,000 - $25,000 / mes ({facets.salary['18000-25000']})</option>
-                        <option value="25000-40000">$25,000 - $40,000 / mes ({facets.salary['25000-40000']})</option>
-                        <option value="40000+">Más de $40,000 / mes ({facets.salary['40000+']})</option>
+                        <option value="0-8000">Hasta $8,000 / mes</option>
+                        <option value="8000-12000">$8,000 - $12,000 / mes</option>
+                        <option value="12000-18000">$12,000 - $18,000 / mes</option>
+                        <option value="18000-25000">$18,000 - $25,000 / mes</option>
+                        <option value="25000-40000">$25,000 - $40,000 / mes</option>
+                        <option value="40000+">Más de $40,000 / mes</option>
                     </select>
 
                     {/* 2. Categoría Filter */}
@@ -222,9 +219,9 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                         onChange={(e) => handleChange('category', e.target.value)}
                     >
                         <option value="">Todas las categorías</option>
-                        {activeCategories.map(cat => (
+                        {JOB_CATEGORIES.map(cat => (
                             <option key={cat} value={cat}>
-                                {cat} ({facets.category[cat]})
+                                {cat}
                             </option>
                         ))}
                     </select>
@@ -236,10 +233,10 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                         onChange={(e) => handleChange('education', e.target.value)}
                     >
                         <option value="">Todos los niveles educativos</option>
-                        <option value="Licenciatura">Licenciatura ({facets.education['Licenciatura'] || 0})</option>
-                        <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato ({facets.education['Preparatoria / Bachillerato'] || 0})</option>
-                        <option value="Carrera Técnica">Carrera Técnica ({facets.education['Carrera Técnica'] || 0})</option>
-                        <option value="Secundaria">Secundaria ({facets.education['Secundaria'] || 0})</option>
+                        <option value="Licenciatura">Licenciatura</option>
+                        <option value="Preparatoria / Bachillerato">Preparatoria / Bachillerato</option>
+                        <option value="Carrera Técnica">Carrera Técnica</option>
+                        <option value="Secundaria">Secundaria</option>
                     </select>
 
                     {/* 4. Experiencia Filter */}
@@ -249,11 +246,11 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
                         onChange={(e) => handleChange('experience', e.target.value)}
                     >
                         <option value="">Cualquier experiencia</option>
-                        <option value="Sin experiencia">Sin experiencia ({facets.experience['Sin experiencia'] || 0})</option>
-                        <option value="6 meses de exp.">6 meses de exp. ({facets.experience['6 meses de exp.'] || 0})</option>
-                        <option value="1 - 2 años de exp.">1 - 2 años de exp. ({facets.experience['1 - 2 años de exp.'] || 0})</option>
-                        <option value="2 - 3 años de exp.">2 - 3 años de exp. ({facets.experience['2 - 3 años de exp.'] || 0})</option>
-                        <option value="3+ años de exp.">3+ años de exp. ({facets.experience['3+ años de exp.'] || 0})</option>
+                        <option value="Sin experiencia">Sin experiencia</option>
+                        <option value="6 meses de exp.">6 meses de exp.</option>
+                        <option value="1 - 2 años de exp.">1 - 2 años de exp.</option>
+                        <option value="2 - 3 años de exp.">2 - 3 años de exp.</option>
+                        <option value="3+ años de exp.">3+ años de exp.</option>
                     </select>
 
                     {/* Quitar Filtros Button */}
