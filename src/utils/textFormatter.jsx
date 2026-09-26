@@ -74,14 +74,11 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
         ? 'bg-transparent border-0 p-0 sm:p-5 shadow-none'
         : 'bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs';
 
-    // If no explicit section headers were found, render as single structured block with FileText icon!
+    // If no explicit section headers were found, render as single structured block!
     if (sections.length <= 1) {
         return (
             <div className={`space-y-3 text-slate-700 text-sm leading-relaxed ${cardBgClass}`}>
-                <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/70">
-                    <div className="p-2 rounded-xl border bg-orange-50 text-orange-600 border-orange-100">
-                        <FileText className="w-4.5 h-4.5" />
-                    </div>
+                <div className="pb-2.5 mb-3.5 border-b border-slate-200/70">
                     <h4 className="font-extrabold text-orange-600 text-sm sm:text-base tracking-tight">
                         Descripción de la Vacante
                     </h4>
@@ -105,17 +102,12 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
     return (
         <div className="flex flex-col gap-4 w-full">
             {sections.map((sec, idx) => {
-                const Icon = sec.icon || ChevronRight;
-
                 return (
                     <div
                         key={idx}
                         className={`transition-all w-full ${cardBgClass}`}
                     >
-                        <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/70">
-                            <div className={`p-2 rounded-xl border ${sec.color || 'bg-orange-50 text-orange-600 border-orange-100'}`}>
-                                <Icon className="w-4.5 h-4.5" />
-                            </div>
+                        <div className="pb-2.5 mb-3.5 border-b border-slate-200/70">
                             <h4 className="font-extrabold text-orange-600 text-sm sm:text-base tracking-tight">
                                 {sec.rawTitle || sec.title}
                             </h4>

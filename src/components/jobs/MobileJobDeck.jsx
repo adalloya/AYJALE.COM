@@ -35,8 +35,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     const [boundaryFeedback, setBoundaryFeedback] = useState({ active: false, type: null, fading: false });
 
-    const [isSwipingOut, setIsSwipingOut] = useState(false);
-
+    const [dragX, setDragX] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
 
