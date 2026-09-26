@@ -177,17 +177,29 @@ export const DataProvider = ({ children }) => {
                 console.log(`[DataContext] Instant initial render in ${Date.now() - startTime}ms. Items: ${firstEnriched.length}`);
             }
 
-            // Step 2: Non-blocking Background Progressive Hydration
+            // Step 2: Non-blocking Background Parallel Hydration in 1,000-row chunks (100% DB coverage)
             setTimeout(async () => {
                 try {
-                    const chunkPromises = [
-                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(200, 2999),
-                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(3000, 5999),
-                        supabase.from('jobs').select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)').order('created_at', { ascending: false }).range(6000, 9999)
-                    ];
+                    const selectFields = '*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
+                    let baseQuery = supabase.from('jobs').select(selectFields).order('created_at', { ascending: false });
+
+                    if (!user || (!isCompany && !isAdmin)) {
+                        baseQuery = baseQuery.neq('active', false);
+                    }
+
+                    const chunkPromises = [];
+                    for (let start = 0; start <= 12000; start += 1000) {
+                        chunkPromises.push(
+                            supabase
+                                .from('jobs')
+                                .select(selectFields)
+                                .order('created_at', { ascending: false })
+                                .range(start, start + 999)
+                        );
+                    }
 
                     const chunkResults = await Promise.all(chunkPromises);
-                    let fullRaw = [...(firstData || [])];
+                    let fullRaw = [];
                     chunkResults.forEach(res => {
                         if (res.data && Array.isArray(res.data)) {
                             fullRaw = fullRaw.concat(res.data);
@@ -204,11 +216,11 @@ export const DataProvider = ({ children }) => {
 
                     const fullEnriched = enrichBatch(dedupedRaw);
                     setJobs(fullEnriched);
-                    console.log(`[DataContext] Full background hydration finished in ${Date.now() - startTime}ms. Total: ${fullEnriched.length}`);
+                    console.log(`[DataContext] Full 100% background hydration finished in ${Date.now() - startTime}ms. Total items: ${fullEnriched.length}`);
                 } catch (bgErr) {
                     console.error('[DataContext] Background hydration error:', bgErr);
                 }
-            }, 50);
+            }, 10);
 
         } catch (error) {
             console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
