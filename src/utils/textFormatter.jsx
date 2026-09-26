@@ -72,7 +72,7 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
 
     const cardBgClass = isMobileDeck
         ? 'bg-transparent border-0 p-0 sm:p-5 shadow-none'
-        : 'bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 shadow-2xs';
+        : 'bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs';
 
     // If no explicit section headers were found, render as single structured block!
     if (sections.length <= 1) {
