@@ -94,17 +94,22 @@ const JobsPage = () => {
         .filter(job => {
             if (!job.active) return false;
 
-            // Keyword Filter
+            // Keyword Filter (Checks title, location, company name, and description)
             if (filters.keyword) {
-                const keyword = filters.keyword.toLowerCase();
+                const keyword = filters.keyword.toLowerCase().trim();
                 const companyName = job.profiles ? job.profiles.name.toLowerCase() : '';
-                const matchesKeyword = job.title.toLowerCase().includes(keyword) ||
-                    job.description.toLowerCase().includes(keyword) ||
-                    companyName.includes(keyword);
+                const jobTitle = job.title ? job.title.toLowerCase() : '';
+                const jobLocation = job.location ? job.location.toLowerCase() : '';
+                const jobDesc = job.description ? job.description.toLowerCase() : '';
+
+                const matchesKeyword = jobTitle.includes(keyword) ||
+                    jobLocation.includes(keyword) ||
+                    companyName.includes(keyword) ||
+                    jobDesc.includes(keyword);
                 if (!matchesKeyword) return false;
             }
 
-            // State Filter (Accent & Alias Insensitive)
+            // State Filter (Strict state name & state abbreviation match)
             if (filters.state && !matchesStateFilter(job.location, filters.state)) return false;
 
             // Category Filter (with Legacy Mapping)
@@ -304,7 +309,17 @@ const JobsPage = () => {
         return salaryText;
     };
 
-    const hasActiveFilters = Boolean(filters.keyword || filters.state || filters.category || filters.type || filters.minSalary);
+    const hasActiveFilters = Boolean(
+        filters.keyword ||
+        filters.state ||
+        filters.category ||
+        filters.type ||
+        filters.minSalary ||
+        filters.salaryRange ||
+        filters.datePosted ||
+        filters.education ||
+        filters.experience
+    );
     const displayResultCount = hasActiveFilters
         ? filteredJobs.length
         : Math.max(totalJobCount, filteredJobs.length);
