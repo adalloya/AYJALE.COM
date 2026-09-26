@@ -181,26 +181,25 @@ export const DataProvider = ({ children }) => {
                 console.log(`[DataContext] Instant initial render in ${Date.now() - startTime}ms. Items: ${firstEnriched.length}`);
             }
 
-            // Step 2: Non-blocking Background Parallel Hydration in 1,000-row chunks (100% DB coverage)
+            // Step 2: Non-blocking Background Parallel Hydration (Lightweight listing fields, 500-row chunks)
             setTimeout(async () => {
                 try {
-                    const selectFields = '*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
-                    let baseQuery = supabase.from('jobs').select(selectFields).order('created_at', { ascending: false });
-
-                    if (!user || (!isCompany && !isAdmin)) {
-                        baseQuery = baseQuery.neq('active', false);
-                    }
-
+                    // Listing fields query (omits 10KB full description text in bulk REST to prevent 500 timeouts & 160MB payload)
+                    const listingFields = 'id, title, description, location, category, type, salary, salary_min, salary_max, salary_period, hide_salary, is_confidential, is_external, external_url, active, created_at, company_id, empresa_override, logo_override, company_name, company_logo, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
+                    
                     const chunkPromises = [];
-                    const maxFetchRange = Math.max(16000, (totalCount || 15000) + 1000);
-                    for (let start = 0; start <= maxFetchRange; start += 1000) {
-                        chunkPromises.push(
-                            supabase
-                                .from('jobs')
-                                .select(selectFields)
-                                .order('created_at', { ascending: false })
-                                .range(start, start + 999)
-                        );
+                    const maxCount = totalCount || 15000;
+                    for (let start = 0; start <= maxCount; start += 500) {
+                        let q = supabase
+                            .from('jobs')
+                            .select(listingFields)
+                            .order('created_at', { ascending: false })
+                            .range(start, start + 499);
+                        
+                        if (!user || (!isCompany && !isAdmin)) {
+                            q = q.neq('active', false);
+                        }
+                        chunkPromises.push(q);
                     }
 
                     const chunkResults = await Promise.all(chunkPromises);
