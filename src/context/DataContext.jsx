@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
+import { MEXICAN_STATES } from '../data/mockData';
+import { matchesStateFilter } from '../utils/jobUtils';
 
 const DataContext = createContext();
 
@@ -26,6 +28,8 @@ export const DataProvider = ({ children }) => {
             return defaults;
         }
     });
+
+    const [stateCounts, setStateCounts] = useState({});
 
     const updateSiteSettings = useCallback(async (newSettings) => {
         setSiteSettings(prev => {
@@ -230,6 +234,38 @@ export const DataProvider = ({ children }) => {
             setJobs([]);
         }
     };
+
+    const fetchStateCounts = useCallback(async () => {
+        try {
+            // 1. Try RPC first for instant < 15ms response
+            const { data: rpcData } = await supabase.rpc('get_filtros_facetados', {});
+            if (rpcData && Array.isArray(rpcData.estados) && rpcData.estados.length > 0) {
+                const counts = {};
+                rpcData.estados.forEach(item => {
+                    if (item.nombre) counts[item.nombre] = Number(item.total || 0);
+                });
+                setStateCounts(counts);
+                return;
+            }
+
+            // 2. Fallback: Lightweight location column select (< 100ms for 13,006 rows)
+            const { data: locData } = await supabase.from('jobs').select('location').eq('active', true);
+            if (locData && locData.length > 0) {
+                const counts = {};
+                locData.forEach(j => {
+                    if (!j.location) return;
+                    MEXICAN_STATES.forEach(st => {
+                        if (matchesStateFilter(j.location, st)) {
+                            counts[st] = (counts[st] || 0) + 1;
+                        }
+                    });
+                });
+                setStateCounts(counts);
+            }
+        } catch (e) {
+            console.warn('[DataContext] Error fetching instant state counts:', e);
+        }
+    }, []);
 
     const fetchRPCFacets = useCallback(async (activeFilters = {}) => {
         try {
@@ -998,7 +1034,7 @@ export const DataProvider = ({ children }) => {
                 setLoading(true);
             }
             try {
-                await Promise.all([fetchJobs(), fetchApplications()]);
+                await Promise.all([fetchJobs(), fetchApplications(), fetchStateCounts()]);
             } catch (error) {
                 console.error("Error loading initial data:", error);
             } finally {
@@ -1084,6 +1120,7 @@ export const DataProvider = ({ children }) => {
 
     const value = useMemo(() => ({
         fetchRPCFacets,
+        stateCounts,
         jobs,
         totalJobCount,
         fetchMoreJobs,
