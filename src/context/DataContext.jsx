@@ -188,7 +188,8 @@ export const DataProvider = ({ children }) => {
                     }
 
                     const chunkPromises = [];
-                    for (let start = 0; start <= 12000; start += 1000) {
+                    const maxFetchRange = Math.max(16000, (totalCount || 15000) + 1000);
+                    for (let start = 0; start <= maxFetchRange; start += 1000) {
                         chunkPromises.push(
                             supabase
                                 .from('jobs')

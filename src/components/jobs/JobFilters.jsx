@@ -5,7 +5,7 @@ import { useData } from '../../context/DataContext';
 import { getEducationLevel, getExperienceLevel, matchesStateFilter } from '../../utils/jobUtils';
 
 const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
-    const { jobs } = useData();
+    const { jobs, totalJobCount } = useData();
     // Expand by default on mobile screens (< 768px)
     const [isExpanded, setIsExpanded] = useState(() => window.innerWidth < 768);
 
@@ -103,7 +103,7 @@ const JobFilters = ({ filters, setFilters, onSearch, onResetFilters }) => {
 
     const activeCategories = JOB_CATEGORIES.filter(cat => (facets.category[cat] || 0) > 0);
 
-    const totalActiveCount = (jobs || []).filter(j => j.active).length;
+    const totalActiveCount = Math.max(totalJobCount || 0, (jobs || []).filter(j => j.active).length);
 
     return (
         <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-2xs border border-slate-200/90 mb-4 space-y-3">
