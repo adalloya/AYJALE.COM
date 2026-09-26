@@ -377,11 +377,8 @@ const JobsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
                 {/* Left Column: Job List (1/3 Width) */}
                 <div className="lg:col-span-4 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-3 pb-16 lg:pb-24">
-                    {/* Header Row Above Job List: Result Count (Left) & Sort Dropdown (Right) */}
-                    <div className="flex items-center justify-between pb-1 text-xs font-bold text-slate-500">
-                        <span className="text-slate-700 font-extrabold text-xs">
-                            {Number(displayResultCount || 0).toLocaleString('es-MX')} {displayResultCount === 1 ? 'vacante' : 'vacantes'}
-                        </span>
+                    {/* Header Row Above Job List: Sort Dropdown (Right) */}
+                    <div className="flex items-center justify-end pb-1 text-xs font-bold text-slate-500">
                         <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                             <span>Ordenar:</span>
                             <select
@@ -564,12 +561,24 @@ const JobsPage = () => {
                         </div>
                     ) : null}
 
-                    {/* INFINITE SCROLL AUTOMATIC SENTINEL & LOAD MORE FALLBACK */}
+                    {/* INFINITE SCROLL AUTOMATIC SENTINEL */}
                     {filteredJobs.length > 0 && (visibleCount < filteredJobs.length || jobs.length < totalJobCount) && (
                         <div ref={observerTarget} className="pt-2 pb-4 text-center">
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-500 rounded-full text-xs font-bold border border-slate-200">
                                 <div className="w-3.5 h-3.5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                                 <span>Cargando más vacantes...</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* CONFIRMED END OF FEED BADGE WITH TOTAL VACANCIES COUNT */}
+                    {filteredJobs.length > 0 && visibleCount >= filteredJobs.length && jobs.length >= totalJobCount && (
+                        <div className="pt-4 pb-6 text-center">
+                            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100/90 text-slate-700 rounded-2xl text-xs font-extrabold border border-slate-200 shadow-2xs">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>
+                                    Has explorado las {filteredJobs.length.toLocaleString('es-MX')} {filteredJobs.length === 1 ? 'vacante disponible' : 'vacantes disponibles'} {filters.state ? `en ${filters.state}` : 'en todo México'}
+                                </span>
                             </div>
                         </div>
                     )}
