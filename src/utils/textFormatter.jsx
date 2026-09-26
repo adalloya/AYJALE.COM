@@ -103,15 +103,14 @@ export const FormattedDescription = ({ text, isMobileDeck = false }) => {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-4 w-full">
             {sections.map((sec, idx) => {
                 const Icon = sec.icon || ChevronRight;
-                const isFullWidth = sec.title === 'Proceso de Reclutamiento' || (sections.length % 2 !== 0 && idx === sections.length - 1);
 
                 return (
                     <div
                         key={idx}
-                        className={`transition-all ${isFullWidth ? 'md:col-span-2' : ''} ${cardBgClass}`}
+                        className={`transition-all w-full ${cardBgClass}`}
                     >
                         <div className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-slate-200/70">
                             <div className={`p-2 rounded-xl border ${sec.color || 'bg-orange-50 text-orange-600 border-orange-100'}`}>
