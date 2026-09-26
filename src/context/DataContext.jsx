@@ -217,14 +217,16 @@ export const DataProvider = ({ children }) => {
 
                     const fullEnriched = enrichBatch(dedupedRaw);
                     setJobs(fullEnriched);
-                    console.log(`[DataContext] Full 100% background hydration finished in ${Date.now() - startTime}ms. Total items: ${fullEnriched.length}`);
+                    const elapsed = startTime ? Date.now() - startTime : 0;
+                    console.log(`[DataContext] Full 100% background hydration finished in ${elapsed}ms. Total items: ${fullEnriched.length}`);
                 } catch (bgErr) {
                     console.error('[DataContext] Background hydration error:', bgErr);
                 }
             }, 10);
 
         } catch (error) {
-            console.error(`[DataContext] Error fetching jobs (${Date.now() - startTime}ms):`, error);
+            const elapsed = startTime ? Date.now() - startTime : 0;
+            console.error(`[DataContext] Error fetching jobs (${elapsed}ms):`, error);
             setJobs([]);
         }
     };
