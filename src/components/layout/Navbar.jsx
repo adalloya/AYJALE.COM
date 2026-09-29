@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Menu, X, User, LogOut, Briefcase, LayoutDashboard, PlusCircle, Users, Bell } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import logo from '../../assets/ayjale_logo_new.png';
+import logo from '../../assets/ayjale_logo_new.webp';
 
 const NotificationDropdown = ({ notifications, onClose }) => {
     const navigate = useNavigate();

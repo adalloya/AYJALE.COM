@@ -12,7 +12,7 @@ import { formatFriendlyDate } from '../utils/dateUtils';
 import { getJobCompany, matchesStateFilter, formatSalaryDisplay, getEducationLevel, getExperienceLevel } from '../utils/jobUtils';
 
 const JobsPage = () => {
-    const { jobs, totalJobCount, fetchMoreJobs, users, applications, applyToJob, loading } = useData();
+    const { jobs, totalJobCount, fetchMoreJobs, searchJobIdsByText, users, applications, applyToJob, loading } = useData();
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -91,6 +91,25 @@ const JobsPage = () => {
         setSearchParams({});
     };
 
+    // The job list may be loaded without descriptions; match keywords inside the text on the server
+    const [textMatchIds, setTextMatchIds] = useState(null);
+    useEffect(() => {
+        const keyword = filters.keyword.trim();
+        if (!keyword) {
+            setTextMatchIds(null);
+            return;
+        }
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            const ids = await searchJobIdsByText(keyword);
+            if (!cancelled) setTextMatchIds(ids);
+        }, 300);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [filters.keyword, searchJobIdsByText]);
+
     const filteredJobs = jobs
         .filter(job => {
             if (!job.active) return false;
@@ -106,7 +125,8 @@ const JobsPage = () => {
                 const matchesKeyword = jobTitle.includes(keyword) ||
                     jobLocation.includes(keyword) ||
                     companyName.includes(keyword) ||
-                    jobDesc.includes(keyword);
+                    jobDesc.includes(keyword) ||
+                    Boolean(textMatchIds?.has(job.id));
                 if (!matchesKeyword) return false;
             }
 

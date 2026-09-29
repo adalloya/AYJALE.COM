@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
-import logo from '../assets/ayjale_logo_new.png';
+import logo from '../assets/ayjale_logo_new.webp';
 
 const LoginPage = () => {
     const [searchParams] = useSearchParams();
