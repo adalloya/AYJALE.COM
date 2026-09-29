@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { Mail, Lock, User, Briefcase, ArrowRight, CheckCircle, Building, Phone, Eye, EyeOff } from 'lucide-react';
-import logo from '../assets/ayjale_logo_new.png';
+import logo from '../assets/ayjale_logo_new.webp';
 
 const AuthPage = () => {
     const navigate = useNavigate();

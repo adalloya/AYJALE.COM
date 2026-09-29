@@ -1,5 +1,5 @@
 import React from 'react';
-import placeholderImg from '../assets/placeholder_casquito.png';
+import placeholderImg from '../assets/placeholder_casquito.webp';
 
 const AvatarPlaceholder = ({ className = "w-24 h-24" }) => {
     return (
