@@ -377,8 +377,20 @@ const JobsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
                 {/* Left Column: Job List (1/3 Width) */}
                 <div className="lg:col-span-4 lg:overflow-y-auto custom-scrollbar pr-0 lg:pr-2 space-y-3 pb-16 lg:pb-24">
-                    {/* Header Row Above Job List: Sort Dropdown (Right) */}
-                    <div className="flex items-center justify-end pb-1 text-xs font-bold text-slate-500">
+                    {/* Header Row Above Job List: Vacancies Counter (Left) & Sort Dropdown (Right) */}
+                    <div className="flex items-center justify-between pb-1 text-xs font-bold text-slate-500">
+                        <div className="text-xs font-extrabold text-slate-700 tracking-tight">
+                            {(() => {
+                                const hasActiveFilters = Object.values(filters).some(Boolean);
+                                const count = filteredJobs.length;
+                                const displayCount = hasActiveFilters ? count : (totalJobCount > count ? totalJobCount : count);
+                                return (
+                                    <span>
+                                        {Number(displayCount || 0).toLocaleString('es-MX')} {displayCount === 1 ? 'vacante disponible' : 'vacantes disponibles'}
+                                    </span>
+                                );
+                            })()}
+                        </div>
                         <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                             <span>Ordenar:</span>
                             <select
