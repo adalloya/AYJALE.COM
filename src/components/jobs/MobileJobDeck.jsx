@@ -234,21 +234,16 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             // Wait for animation to complete before switching
             setTimeout(() => {
                 const swipeDir = direction;
-                
-                // 1. Advance current index first so React renders the next job
+                setExitDirection(null);
+                setDragX(0);
+                setIsSwipingOut(false); // Reset background transition FIRST
+
                 if (swipeDir === 'right') {
                     handlePrev();
                 } else {
                     handleNext();
                 }
-
-                // 2. Clear exit animation state in next frame so the transition doesn't flash back
-                requestAnimationFrame(() => {
-                    setExitDirection(null);
-                    setDragX(0);
-                    setIsSwipingOut(false);
-                });
-            }, 300); // 300ms matches transform transition timing
+            }, 200); // 200ms matches CSS transition
         } else {
             // Reset (Snap Back)
             setDragX(0);
