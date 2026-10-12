@@ -254,10 +254,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         if (currentIndex < jobs.length - 1) {
             setCurrentIndex(prev => prev + 1);
             const nextJob = jobs[currentIndex + 1];
-            navigate(`/jobs/${nextJob.id}`, {
-                replace: true,
-                state: location.state
-            });
+            window.history.replaceState(window.history.state, '', `/jobs/${nextJob.id}`);
         }
     };
 
@@ -265,10 +262,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
             const prevJob = jobs[currentIndex - 1];
-            navigate(`/jobs/${prevJob.id}`, {
-                replace: true,
-                state: location.state
-            });
+            window.history.replaceState(window.history.state, '', `/jobs/${prevJob.id}`);
         }
     };
 
