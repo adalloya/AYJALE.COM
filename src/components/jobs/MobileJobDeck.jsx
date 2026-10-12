@@ -9,13 +9,20 @@ import ApplicationModal from './ApplicationModal';
 import SwipeTutorial from './SwipeTutorial';
 import logo from '../../assets/ayjale_logo_new.webp';
 
+// Swipe-out animation length; the card swap waits for it
+const SWIPE_ANIMATION_MS = 300;
+
 const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { applications, applyToJob } = useData();
+    const { applications, applyToJob, fetchJobDetails } = useData();
     const { user, logout } = useAuth();
 
-    const [currentIndex, setCurrentIndex] = useState(0);
+    // Track the current job by id, not by position: the jobs array is replaced whenever it
+    // refreshes (background load, job details arriving), and an index would point elsewhere.
+    const [currentJobId, setCurrentJobId] = useState(() => Number(initialJobId));
+    const foundIndex = jobs.findIndex(j => j.id === currentJobId);
+    const currentIndex = foundIndex === -1 ? 0 : foundIndex;
 
     const currentJob = jobs[currentIndex];
     const nextJob = currentIndex < jobs.length - 1 ? jobs[currentIndex + 1] : null;
@@ -23,12 +30,18 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const company = currentJob?.profiles;
     const hasApplied = user && currentJob && applications.some(app => app.job_id === currentJob.id && app.candidate_id === user.id);
 
-    // Safety check: Ensure currentIndex is valid
+    // Follow real route changes only. Swipes update the URL with history.replaceState, which the
+    // router doesn't see, so initialJobId stays on the first job opened and must not be re-applied.
     useEffect(() => {
-        if (currentIndex >= jobs.length && jobs.length > 0) {
-            setCurrentIndex(0);
-        }
-    }, [currentIndex, jobs.length]);
+        setCurrentJobId(Number(initialJobId));
+    }, [initialJobId]);
+
+    // Preload the neighbours' full text so the next card appears complete
+    useEffect(() => {
+        [nextJob, prevJob].forEach(job => {
+            if (job && job.description === undefined) fetchJobDetails(job.id);
+        });
+    }, [nextJob, prevJob, fetchJobDetails]);
 
     const [touchStart, setTouchStart] = useState(null);
     const [touchStartY, setTouchStartY] = useState(null);
@@ -40,9 +53,11 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [exitDirection, setExitDirection] = useState(null); // 'left' or 'right'
 
-    // Determine which card is "behind" based on drag direction
-    // ONLY render background card when user is ACTIVELY dragging past threshold to prevent 1-frame ghost flicker
-    const backgroundJob = (isDragging && Math.abs(dragX) > 20) ? (dragX > 0 ? prevJob : nextJob) : null;
+    // Card "behind": shown while dragging past 20px, and kept while the swiped card flies out so the
+    // next card is already in place when the swap happens (removing it on release left a blank flash)
+    const backgroundJob = exitDirection
+        ? (exitDirection === 'right' ? prevJob : nextJob)
+        : (isDragging && Math.abs(dragX) > 20) ? (dragX > 0 ? prevJob : nextJob) : null;
     const backgroundCompany = backgroundJob?.profiles;
 
     const cardRef = useRef(null);
@@ -74,35 +89,6 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             replace: true // Replace current history entry so "Back" goes to previous context, not search form
         });
     };
-
-    // Initialize index based on initialJobId
-    // We split this into two effects to prevent "snap back" when polling updates 'jobs'
-
-    const isInitialized = useRef(false);
-
-    // Effect 1: Initial Load (Runs when jobs populate)
-    useEffect(() => {
-        if (isInitialized.current || jobs.length === 0) return;
-
-        const index = jobs.findIndex(j => j.id === Number(initialJobId));
-        if (index !== -1) {
-            setCurrentIndex(index);
-            isInitialized.current = true;
-        }
-    }, [jobs, initialJobId]);
-
-    // Effect 2: Navigation Sync (Runs ONLY when initialJobId changes)
-    useEffect(() => {
-        if (jobs.length > 0) {
-            const index = jobs.findIndex(j => j.id === Number(initialJobId));
-            // Only update if found AND different from current
-            if (index !== -1 && index !== currentIndex) {
-                setCurrentIndex(index);
-                // Ensure we mark as initialized if we sync from URL
-                isInitialized.current = true;
-            }
-        }
-    }, [initialJobId, jobs]); // Removed currentIndex to avoid loop
 
     // Tutorial Logic
     useEffect(() => {
@@ -228,42 +214,28 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             }
 
             // Valid Swipe
+            const targetJob = direction === 'right' ? prevJob : nextJob;
             setExitDirection(direction);
             setIsSwipingOut(true); // Trigger background transition
 
-            // Wait for animation to complete before switching
+            // Swap once the exit animation has finished. All updates land in one render, so the new
+            // foreground card replaces the identical background card in the same frame.
             setTimeout(() => {
-                const swipeDir = direction;
                 setExitDirection(null);
                 setDragX(0);
-                setIsSwipingOut(false); // Reset background transition FIRST
-
-                if (swipeDir === 'right') {
-                    handlePrev();
-                } else {
-                    handleNext();
-                }
-            }, 200); // 200ms matches CSS transition
+                setIsSwipingOut(false);
+                goToJob(targetJob);
+            }, SWIPE_ANIMATION_MS);
         } else {
             // Reset (Snap Back)
             setDragX(0);
         }
     };
 
-    const handleNext = () => {
-        if (currentIndex < jobs.length - 1) {
-            setCurrentIndex(prev => prev + 1);
-            const nextJob = jobs[currentIndex + 1];
-            window.history.replaceState(window.history.state, '', `/jobs/${nextJob.id}`);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(prev => prev - 1);
-            const prevJob = jobs[currentIndex - 1];
-            window.history.replaceState(window.history.state, '', `/jobs/${prevJob.id}`);
-        }
+    const goToJob = (job) => {
+        if (!job) return;
+        setCurrentJobId(job.id);
+        window.history.replaceState(window.history.state, '', `/jobs/${job.id}`);
     };
 
     const isProfileComplete = useCallback(() => {
@@ -321,7 +293,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
 
     // Calculate dynamic styles for smooth animation
     // We want the background card to scale up and fade in as we drag
-    const progress = Math.min(Math.abs(dragX) / threshold, 1); // 0 to 1
+    const progress = exitDirection ? 1 : Math.min(Math.abs(dragX) / threshold, 1); // 0 to 1
 
     // Background Card Styles
     // Starts at scale 0.9, opacity 0.5
@@ -340,7 +312,7 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
             ? `translateX(${exitDirection === 'right' ? '150%' : '-150%'}) rotate(${exitDirection === 'right' ? 20 : -20}deg)`
             : `translateX(${dragX}px) rotate(${rotate}deg)`,
         opacity: 1, // Keep fully opaque even when exiting
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        transition: isDragging ? 'none' : `transform ${SWIPE_ANIMATION_MS}ms ease-out`,
         zIndex: (isDragging || exitDirection) ? 60 : 40 // Fix: Only float over header when interacting
     };
 
@@ -392,11 +364,11 @@ const MobileJobDeck = ({ jobs, initialJobId, onBack }) => {
                                 transform: `scale(${bgScale})`,
                                 opacity: bgOpacity,
                                 zIndex: 1,
-                                transition: isSwipingOut ? 'all 0.2s ease-out' : 'none'
+                                transition: isSwipingOut ? `all ${SWIPE_ANIMATION_MS}ms ease-out` : 'none'
                             }}
                         >
                             <div
-                                className="h-full overflow-hidden pointer-events-none transition-all duration-200"
+                                className="h-full overflow-hidden pointer-events-none transition-all duration-300"
                                 style={{ filter: `grayscale(${bgGrayscale})` }}
                             >
                                 <JobDetailView
