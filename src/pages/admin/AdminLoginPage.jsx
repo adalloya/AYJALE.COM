@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ShieldCheck, Lock, Mail, AlertCircle } from 'lucide-react';
-import logo from '../../assets/ayjale_logo_new.png';
+import logo from '../../assets/ayjale_logo_new.webp';
 
 const AdminLoginPage = () => {
     const [email, setEmail] = useState('');

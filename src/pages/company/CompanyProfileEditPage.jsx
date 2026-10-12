@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Building2, FileText, MapPin, Phone, Upload, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { MEXICAN_STATES } from '../../data/mockData';
 import Toast from '../../components/Toast';
-import logoImg from '../../assets/ayjale_logo_new.png';
+import logoImg from '../../assets/ayjale_logo_new.webp';
 
 const CompanyProfileEditPage = () => {
     const { user, updateUser } = useAuth();

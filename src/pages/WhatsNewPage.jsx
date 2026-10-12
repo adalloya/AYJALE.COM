@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PhoneFrame, BrowserFrame } from '../components/marketing/DeviceFrames';
-import fastRegImage from '../assets/images/fast_registration.png';
+import fastRegImage from '../assets/images/fast_registration.webp';
 
 const WhatsNewPage = () => {
     const navigate = useNavigate();

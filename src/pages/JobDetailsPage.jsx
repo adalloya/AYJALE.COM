@@ -153,13 +153,13 @@ const JobDetailsPage = () => {
         <div className="max-w-4xl mx-auto py-8 px-4">
             <SEO
                 title={job.title}
-                description={`${job.title} en ${job.location}. ${job.description.substring(0, 150)}...`}
+                description={`${job.title} en ${job.location}. ${(job.description || '').substring(0, 150)}...`}
                 keywords={`${job.title}, vacantes ${job.location}, empleo ${job.category}, trabajo en ${company?.name || 'confidencial'}`}
                 structuredData={{
                     "@context": "https://schema.org/",
                     "@type": "JobPosting",
                     "title": job.title,
-                    "description": job.description,
+                    "description": job.description || job.title,
                     "datePosted": job.created_at,
                     "hiringOrganization": {
                         "@type": "Organization",

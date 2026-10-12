@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, DollarSign, Briefcase, Calendar, Building, Share2, Flag, Tag, GraduationCap } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -12,10 +12,16 @@ import ReportJobModal from './ReportJobModal';
 const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { reportJob } = useData();
+    const { reportJob, fetchJobDetails } = useData();
 
     const [showReportModal, setShowReportModal] = useState(false);
     const [submittingReport, setSubmittingReport] = useState(false);
+
+    // The job list is loaded without long text; fetch it when a job is shown
+    const needsDetails = job && job.description === undefined;
+    useEffect(() => {
+        if (needsDetails) fetchJobDetails(job.id);
+    }, [needsDetails, job?.id, fetchJobDetails]);
 
     if (!job) return <div className="p-8 text-center text-slate-500">Selecciona una vacante para ver los detalles.</div>;
 
@@ -226,7 +232,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
 
                 {/* Content & Section Grid Cards */}
                 <div className="space-y-6">
-                    <FormattedDescription text={job.description} isMobileDeck={true} />
+                    {needsDetails ? <p className="text-slate-400 text-sm animate-pulse">Cargando descripción...</p> : <FormattedDescription text={job.description} isMobileDeck={true} />}
 
                     <div className="pt-6 border-t border-slate-100 flex justify-between items-center pb-4">
                         <button
@@ -358,7 +364,7 @@ const JobDetailView = ({ job, company, onApply, hasApplied, isMobileDeck = false
             <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div className="space-y-8">
                     <section>
-                        <FormattedDescription text={job.description} isMobileDeck={false} />
+                        {needsDetails ? <p className="text-slate-400 text-sm animate-pulse">Cargando descripción...</p> : <FormattedDescription text={job.description} isMobileDeck={false} />}
                     </section>
 
                     <div className="pt-8 border-t border-slate-100 flex justify-between items-center">

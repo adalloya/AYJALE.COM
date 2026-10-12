@@ -1,9 +1,9 @@
 import logo1 from '../assets/company_logo_1.png';
 import logo2 from '../assets/company_logo_2.png';
-import logo3 from '../assets/company_logo_3.png';
-import logo4 from '../assets/company_logo_4.png';
-import logo5 from '../assets/company_logo_5.png';
-import logo6 from '../assets/company_logo_6.png';
+import logo3 from '../assets/company_logo_3.webp';
+import logo4 from '../assets/company_logo_4.webp';
+import logo5 from '../assets/company_logo_5.webp';
+import logo6 from '../assets/company_logo_6.webp';
 
 export const MEXICAN_STATES = [
     "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua",

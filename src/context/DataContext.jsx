@@ -1,10 +1,21 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
 import { MEXICAN_STATES } from '../data/mockData';
 import { matchesStateFilter } from '../utils/jobUtils';
 
 const DataContext = createContext();
+
+const JOB_PROFILE_EMBED = 'profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
+const JOB_FULL_FIELDS = `*, ${JOB_PROFILE_EMBED}`;
+// Candidates/visitors get the list without the long text columns (description/requirements/benefits
+// were ~75% of a ~40 MB payload). education_level/experience_level are generated columns
+// (migration/2026-09-28_job_listing_labels.sql); full text is loaded per job via fetchJobDetails.
+const JOB_LIST_FIELDS = `id, company_id, title, location, type, category, salary, salary_min, salary_max, salary_currency, salary_period, currency, hide_salary, active, is_active, is_confidential, views, created_at, updated_at, expires_at, source, source_id, empresa_override, logo_override, education_level, experience_level, ${JOB_PROFILE_EMBED}`;
+const JOB_DETAIL_FIELDS = 'id, description, requirements, benefits';
+
+// Escapes a user-typed term for use inside a quoted PostgREST filter value.
+const toIlikeValue = (term) => `"%${term.replace(/[\\"]/g, '\\$&')}%"`;
 
 export const useData = () => useContext(DataContext);
 
@@ -18,6 +29,72 @@ export const DataProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [contactUnlocks, setContactUnlocks] = useState([]);
+
+    // Light listing is used until the DB proves it lacks the label columns (migration not applied yet)
+    const listFieldsSupportedRef = useRef(true);
+    // Full text fetched on demand, re-applied when the job list is replaced by a refetch/hydration
+    const jobDetailsCacheRef = useRef(new Map());
+
+    const isLightJobList = !user || (user.role !== 'company' && user.role !== 'admin');
+
+    // Runs a jobs query with the listing fields, falling back to full rows if the columns are missing
+    const queryJobs = async (buildQuery) => {
+        if (isLightJobList && listFieldsSupportedRef.current) {
+            const res = await buildQuery(JOB_LIST_FIELDS);
+            if (!res.error) return res;
+            console.warn('[DataContext] Listing fields unavailable, falling back to full job rows:', res.error.message);
+            listFieldsSupportedRef.current = false;
+        }
+        return buildQuery(JOB_FULL_FIELDS);
+    };
+
+    const withCachedDetails = (job) => {
+        const details = jobDetailsCacheRef.current.get(job.id);
+        return details && job.description === undefined ? { ...job, ...details } : job;
+    };
+
+    const fetchJobDetails = useCallback(async (jobId) => {
+        if (!jobId || jobDetailsCacheRef.current.has(jobId)) return;
+        const { data, error } = await supabase
+            .from('jobs')
+            .select(JOB_DETAIL_FIELDS)
+            .eq('id', jobId)
+            .maybeSingle();
+        if (error || !data) {
+            if (error) console.error('[DataContext] Error fetching job details:', error);
+            return;
+        }
+        const details = {
+            description: data.description ?? '',
+            requirements: data.requirements ?? '',
+            benefits: data.benefits ?? null
+        };
+        jobDetailsCacheRef.current.set(jobId, details);
+        setJobs(prev => prev.map(j => (j.id === jobId ? { ...j, ...details } : j)));
+    }, []);
+
+    // IDs of active jobs whose description/requirements contain the term (keyword search without full text)
+    const searchJobIdsByText = useCallback(async (term) => {
+        const value = toIlikeValue(term.trim());
+        const ids = new Set();
+        const pageSize = 1000;
+        for (let start = 0; start < 20000; start += pageSize) {
+            const { data, error } = await supabase
+                .from('jobs')
+                .select('id')
+                .neq('active', false)
+                .or(`description.ilike.${value},requirements.ilike.${value}`)
+                .order('id')
+                .range(start, start + pageSize - 1);
+            if (error) {
+                console.error('[DataContext] Error searching job text:', error);
+                break;
+            }
+            data.forEach(row => ids.add(row.id));
+            if (data.length < pageSize) break;
+        }
+        return ids;
+    }, []);
 
     const [siteSettings, setSiteSettings] = useState(() => {
         const defaults = { showCompanyCarousel: false, showMexicoMap: false, showWhatsNew: false, showAiTalentProfile: false, showChatSystem: false };
@@ -115,17 +192,18 @@ export const DataProvider = ({ children }) => {
             }).catch(err => console.error('[DataContext] Count query error:', err));
 
             // 2. Step 1: Fast initial batch (200 items for instant render & deep facet coverage)
-            let initialQuery = supabase
-                .from('jobs')
-                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)', { count: 'exact' })
-                .order('created_at', { ascending: false })
-                .range(0, 199);
+            const { data: firstData, count: totalCount, error: firstErr } = await queryJobs(fields => {
+                let initialQuery = supabase
+                    .from('jobs')
+                    .select(fields, { count: 'exact' })
+                    .order('created_at', { ascending: false })
+                    .range(0, 199);
 
-            if (!user || (!isCompany && !isAdmin)) {
-                initialQuery = initialQuery.neq('active', false);
-            }
-
-            const { data: firstData, count: totalCount, error: firstErr } = await initialQuery;
+                if (!user || (!isCompany && !isAdmin)) {
+                    initialQuery = initialQuery.neq('active', false);
+                }
+                return initialQuery;
+            });
             if (firstErr) throw firstErr;
 
             if (typeof totalCount === 'number' && totalCount > 0) {
@@ -158,7 +236,7 @@ export const DataProvider = ({ children }) => {
                     const resolvedName = compName || 'Confidencial';
                     const resolvedLogo = compLogo || profile?.logo || null;
 
-                    return {
+                    return withCachedDetails({
                         ...job,
                         empresa_override: job.empresa_override || null,
                         logo_override: job.logo_override || null,
@@ -170,7 +248,7 @@ export const DataProvider = ({ children }) => {
                             name: resolvedName,
                             logo: resolvedLogo
                         }
-                    };
+                    });
                 });
             };
 
@@ -184,24 +262,23 @@ export const DataProvider = ({ children }) => {
             // Step 2: Controlled Sequential Hydration (1 connection at a time for Supabase NANO tier stability)
             setTimeout(async () => {
                 try {
-                    const selectFields = '*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)';
-                    
                     let fullRaw = [];
                     const maxCount = Math.min(totalCount || 13000, 15000);
                     const chunkSize = 1000;
 
                     for (let start = 0; start <= maxCount; start += chunkSize) {
-                        let q = supabase
-                            .from('jobs')
-                            .select(selectFields)
-                            .order('created_at', { ascending: false })
-                            .range(start, start + chunkSize - 1);
+                        const { data: chunkData, error: chunkErr } = await queryJobs(fields => {
+                            let q = supabase
+                                .from('jobs')
+                                .select(fields)
+                                .order('created_at', { ascending: false })
+                                .range(start, start + chunkSize - 1);
 
-                        if (!user || (!isCompany && !isAdmin)) {
-                            q = q.neq('active', false);
-                        }
-
-                        const { data: chunkData, error: chunkErr } = await q;
+                            if (!user || (!isCompany && !isAdmin)) {
+                                q = q.neq('active', false);
+                            }
+                            return q;
+                        });
 
                         if (!chunkErr && Array.isArray(chunkData)) {
                             fullRaw.push(...chunkData);
@@ -289,20 +366,21 @@ export const DataProvider = ({ children }) => {
 
     const fetchMoreJobs = async (offset) => {
         try {
-            let query = supabase
-                .from('jobs')
-                .select('*, profiles:company_id(id, name, logo, logo_url, role, recruiter_name)')
-                .order('created_at', { ascending: false })
-                .range(offset, offset + 199);
-
             const isCompany = user?.role === 'company';
             const isAdmin = user?.role === 'admin';
 
-            if (!user || (!isCompany && !isAdmin)) {
-                query = query.neq('active', false);
-            }
+            const { data, error } = await queryJobs(fields => {
+                let query = supabase
+                    .from('jobs')
+                    .select(fields)
+                    .order('created_at', { ascending: false })
+                    .range(offset, offset + 199);
 
-            const { data, error } = await query;
+                if (!user || (!isCompany && !isAdmin)) {
+                    query = query.neq('active', false);
+                }
+                return query;
+            });
             if (error) throw error;
 
             const companyCache = getJobCompanyCache();
@@ -329,7 +407,7 @@ export const DataProvider = ({ children }) => {
                 const resolvedName = compName || 'Confidencial';
                 const resolvedLogo = compLogo || profile?.logo || null;
 
-                return {
+                return withCachedDetails({
                     ...job,
                     empresa_override: job.empresa_override || null,
                     logo_override: job.logo_override || null,
@@ -341,7 +419,7 @@ export const DataProvider = ({ children }) => {
                         name: resolvedName,
                         logo: resolvedLogo
                     }
-                };
+                });
             });
 
             setJobs(prev => {
@@ -1124,6 +1202,8 @@ export const DataProvider = ({ children }) => {
         jobs,
         totalJobCount,
         fetchMoreJobs,
+        fetchJobDetails,
+        searchJobIdsByText,
         applications,
         users,
         loading,

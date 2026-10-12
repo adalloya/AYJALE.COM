@@ -1,32 +1,35 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import Layout from './components/layout/Layout';
 import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import AuthPage from './pages/AuthPage';
 import JobsPage from './pages/JobsPage';
-import CandidateDashboard from './pages/candidate/CandidateDashboard';
-import CompanyDashboard from './pages/company/CompanyDashboard';
-import CompanyAuthPage from './pages/company/CompanyAuthPage';
-import JobApplicantsPage from './pages/company/JobApplicantsPage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminLoginPage from './pages/admin/AdminLoginPage';
-import PostJobPage from './pages/company/PostJobPage';
 import JobDetailsPage from './pages/JobDetailsPage';
-import ProfilePage from './pages/candidate/ProfilePage';
-import ProfileEditPage from './pages/candidate/ProfileEditPage';
-import CompanyProfileEditPage from './pages/company/CompanyProfileEditPage';
-import PrivacyPage from './pages/PrivacyPage';
-import TermsPage from './pages/TermsPage';
-import OnboardingPage from './pages/OnboardingPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import CandidateSearchPage from './pages/company/CandidateSearchPage';
-import EvaluationCenterPage from './pages/candidate/EvaluationCenterPage';
-import TestExecutionPage from './pages/candidate/TestExecutionPage';
-import TestRunner from './pages/assessment/TestRunner';
-import WhatsNewPage from './pages/WhatsNewPage';
-import CompanySolutionsPage from './pages/CompanySolutionsPage';
+
+// Route-level code splitting: pages load on demand (landing, jobs & job details stay in the main bundle)
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const CandidateDashboard = lazy(() => import('./pages/candidate/CandidateDashboard'));
+const CompanyDashboard = lazy(() => import('./pages/company/CompanyDashboard'));
+const CompanyAuthPage = lazy(() => import('./pages/company/CompanyAuthPage'));
+const JobApplicantsPage = lazy(() => import('./pages/company/JobApplicantsPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const PostJobPage = lazy(() => import('./pages/company/PostJobPage'));
+const ProfilePage = lazy(() => import('./pages/candidate/ProfilePage'));
+const ProfileEditPage = lazy(() => import('./pages/candidate/ProfileEditPage'));
+const CompanyProfileEditPage = lazy(() => import('./pages/company/CompanyProfileEditPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const CandidateSearchPage = lazy(() => import('./pages/company/CandidateSearchPage'));
+const EvaluationCenterPage = lazy(() => import('./pages/candidate/EvaluationCenterPage'));
+const TestExecutionPage = lazy(() => import('./pages/candidate/TestExecutionPage'));
+const TestRunner = lazy(() => import('./pages/assessment/TestRunner'));
+const WhatsNewPage = lazy(() => import('./pages/WhatsNewPage'));
+const CompanySolutionsPage = lazy(() => import('./pages/CompanySolutionsPage'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -60,6 +63,7 @@ function App() {
       <DataProvider>
         <Router>
           <Layout>
+            <Suspense fallback={<div className="flex justify-center items-center min-h-[50vh]">Cargando...</div>}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
@@ -157,6 +161,7 @@ function App() {
               {/* Placeholder for other routes */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </Layout>
         </Router>
       </DataProvider>
