@@ -6,6 +6,7 @@ import {
     Search, MapPin, Briefcase, User, Phone, Mail, ShieldCheck, Clock,
     GraduationCap, Award, FileText, Lock, ArrowLeft, LockKeyhole
 } from 'lucide-react';
+import { formatPhoneNumber as formatPhoneUtil } from '../../utils/phoneUtils';
 
 const CandidateSearchPage = () => {
     const navigate = useNavigate();
@@ -22,11 +23,7 @@ const CandidateSearchPage = () => {
 
     const formatPhoneNumber = (val) => {
         if (!val) return 'No disponible';
-        const digits = String(val).replace(/\D/g, '');
-        if (digits.length === 0) return val;
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+        return formatPhoneUtil(val) || val;
     };
 
     const getFullName = (u) => {

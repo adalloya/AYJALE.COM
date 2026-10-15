@@ -12,13 +12,13 @@ export const formatFriendlyDate = (dateString) => {
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-        return 'Hoy';
+        return 'Publicado hoy';
     } else if (diffDays === 1) {
-        return 'Ayer';
+        return 'Publicado ayer';
     } else if (diffDays > 1) {
-        return `Hace ${diffDays} días`;
+        return `Publicado hace ${diffDays} días`;
     } else {
         // Future dates (shouldn't happen for created_at, but just in case)
-        return 'Hoy';
+        return 'Publicado hoy';
     }
 };

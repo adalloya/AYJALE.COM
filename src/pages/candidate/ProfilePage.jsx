@@ -7,6 +7,7 @@ import {
     Calendar, DollarSign, Clock, CheckCircle2, Edit3, FileText, Download,
     ExternalLink, Sparkles, Building2, ChevronRight, AlertCircle
 } from 'lucide-react';
+import { formatPhoneNumber as formatPhoneUtil } from '../../utils/phoneUtils';
 
 const ProfilePage = () => {
     const { user } = useAuth();
@@ -16,11 +17,7 @@ const ProfilePage = () => {
 
     const formatPhoneNumber = (val) => {
         if (!val) return 'No especificado';
-        const digits = val.replace(/\D/g, '');
-        if (digits.length === 0) return val;
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+        return formatPhoneUtil(val) || val;
     };
 
     const calculateCompletion = (u) => {

@@ -10,6 +10,7 @@ import {
 import AvatarPlaceholder from '../../components/AvatarPlaceholder';
 import TalentProfileCard from '../../components/assessment/TalentProfileCard';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
+import { formatPhoneNumber as formatPhoneUtil } from '../../utils/phoneUtils';
 
 const JobApplicantsPage = () => {
     const { id } = useParams();
@@ -30,11 +31,7 @@ const JobApplicantsPage = () => {
 
     const formatPhoneNumber = (val) => {
         if (!val) return 'No disponible';
-        const digits = String(val).replace(/\D/g, '');
-        if (digits.length === 0) return val;
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+        return formatPhoneUtil(val) || val;
     };
 
     const getFullName = (u) => {

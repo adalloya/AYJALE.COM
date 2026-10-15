@@ -5,6 +5,7 @@ import { Building2, FileText, MapPin, Phone, Upload, CheckCircle, ArrowRight, Ar
 import { MEXICAN_STATES } from '../../data/mockData';
 import Toast from '../../components/Toast';
 import logoImg from '../../assets/ayjale_logo_new.webp';
+import { formatPhoneNumber } from '../../utils/phoneUtils';
 
 const CompanyProfileEditPage = () => {
     const { user, updateUser } = useAuth();
@@ -61,15 +62,6 @@ const CompanyProfileEditPage = () => {
             .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
             .join(' ');
         return (hasTrailingSpace && !formatted.endsWith(' ')) ? formatted + ' ' : formatted;
-    };
-
-    const formatPhoneNumber = (val) => {
-        if (!val) return '';
-        const digits = val.replace(/\D/g, '');
-        if (digits.length === 0) return '';
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
     };
 
     const handleLogoUpload = (e) => {
@@ -282,7 +274,7 @@ const CompanyProfileEditPage = () => {
                                 type="tel"
                                 required
                                 className="pl-11 block w-full rounded-xl border border-slate-300 py-3 px-3.5 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
-                                placeholder="Ej. (999) 123-4567"
+                                placeholder="Ej. 55 1234 5678"
                                 value={formData.phone_number}
                                 onChange={e => setFormData({ ...formData, phone_number: formatPhoneNumber(e.target.value) })}
                             />

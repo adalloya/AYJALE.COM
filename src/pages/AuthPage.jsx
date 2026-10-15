@@ -29,10 +29,8 @@ const AuthPage = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        phone: '',
         termsAccepted: false
     });
-    const [phoneDisplay, setPhoneDisplay] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
     if (user) {
@@ -44,29 +42,6 @@ const AuthPage = () => {
         number: /\d/.test(formData.password),
         symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password),
         upperLower: /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password)
-    };
-
-    const handlePhoneChange = (inputVal) => {
-        let digits = inputVal.replace(/\D/g, '');
-        if (digits.startsWith('52') && digits.length >= 12) {
-            digits = digits.slice(2);
-        }
-        digits = digits.slice(0, 10);
-
-        let formatted = '';
-        if (digits.length > 0) {
-            if (digits.length <= 3) {
-                formatted = `(${digits}`;
-            } else if (digits.length <= 6) {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-            } else {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6)}`;
-            }
-        }
-
-        setPhoneDisplay(formatted);
-        const rawValue = digits ? `+52${digits}` : '';
-        setFormData(prev => ({ ...prev, phone: rawValue }));
     };
 
     const handleSubmit = async (e) => {
@@ -97,7 +72,6 @@ const AuthPage = () => {
                     lastName: firstLastName,
                     last_name: firstLastName,
                     email: formData.email,
-                    phone: formData.phone,
                     termsAccepted: formData.termsAccepted
                 }, formData.password, userType);
                 
@@ -258,28 +232,7 @@ const AuthPage = () => {
                                 </p>
                             )}
                         </div>
-                        {!isLogin && (
-                            <div>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 font-semibold text-sm select-none">
-                                        🇲🇽 +52
-                                    </div>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        autoComplete="tel"
-                                        required
-                                        className="appearance-none rounded-lg relative block w-full pl-20 pr-4 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-secondary-500 focus:border-secondary-500 text-sm"
-                                        placeholder="(999) 123 4567 *"
-                                        value={phoneDisplay}
-                                        onChange={(e) => handlePhoneChange(e.target.value)}
-                                    />
-                                </div>
-                                <p className="text-[11px] text-slate-500 mt-1 pl-1 font-medium">
-                                    💡 Ingresa tus 10 dígitos (Ej. 999 123 4567)
-                                </p>
-                            </div>
-                        )}
+
                         <div>
                             <div className="relative">
                                 <Lock className="absolute top-3.5 left-3 text-slate-400 w-5 h-5" />

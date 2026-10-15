@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Plus, Trash2, FileTe
 
 import Toast from '../../components/Toast';
 import PhotoCapture from '../../components/PhotoCapture';
+import { formatPhoneNumber } from '../../utils/phoneUtils';
 
 const ProfileEditPage = () => {
     const { user, updateUser } = useAuth();
@@ -117,15 +118,6 @@ const ProfileEditPage = () => {
         if (!str || typeof str !== 'string') return str || '';
         const lower = str.toLowerCase();
         return lower.replace(/(^\s*|[.!?]\s+)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
-    };
-
-    const formatPhoneNumber = (val) => {
-        if (!val) return '';
-        const digits = val.replace(/\D/g, '');
-        if (digits.length === 0) return '';
-        if (digits.length <= 3) return `(${digits}`;
-        if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
     };
 
     useEffect(() => {
@@ -853,10 +845,10 @@ const ProfileEditPage = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">Teléfono o WhatsApp de contacto</label>
+                                    <label className="block text-sm font-medium text-slate-700">Ingresa tu número de WhatsApp</label>
                                     <input
                                         type="tel"
-                                        placeholder="Ej. (999) 123-4567"
+                                        placeholder="Ej. 55 1234 5678 o 999 123 4567"
                                         className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5"
                                         value={formData.phone}
                                         onChange={e => updateFormField('phone', e.target.value)}
@@ -1589,7 +1581,7 @@ const ProfileEditPage = () => {
                                             <label className="block text-sm font-medium text-slate-700">Teléfono de contacto</label>
                                             <input
                                                 type="tel"
-                                                placeholder="Ej. (999) 123-4567"
+                                                placeholder="Ej. 55 1234 5678"
                                                 className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs text-sm border p-2.5"
                                                 value={ref.ref_phone}
                                                 onChange={e => handleReferenceChange(idx, 'ref_phone', e.target.value)}
