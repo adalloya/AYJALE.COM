@@ -239,15 +239,23 @@ const ProfileEditPage = () => {
     const jobToApply = applyingToId ? jobs.find(j => j.id === Number(applyingToId)) : null;
     const [comments, setComments] = useState('');
 
+    const isValidCurp = (curp) => {
+        if (!curp || curp.length !== 18) return false;
+        return /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/.test(curp);
+    };
+
     const updateFormField = (field, value) => {
         let formattedValue = value;
 
         if (field === 'phone') {
             formattedValue = formatPhoneNumber(value);
+        } else if (field === 'curp') {
+            // Strictly alphanumeric, uppercase, max 18 chars
+            formattedValue = String(value).replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 18);
+        } else if (field === 'rfc') {
+            formattedValue = String(value).replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 13);
         } else if (['name', 'first_last_name', 'second_last_name', 'municipality', 'address_street', 'colonia', 'institution_name'].includes(field)) {
             formattedValue = capitalizeWords(value);
-        } else if (field === 'curp' || field === 'rfc') {
-            formattedValue = String(value).toUpperCase();
         }
 
         setFormData(prev => ({ ...prev, [field]: formattedValue }));
@@ -543,6 +551,12 @@ const ProfileEditPage = () => {
 
     const saveProfileData = async (dataToSave, sectionName) => {
         const cleanData = sanitizeFormData(dataToSave);
+
+        if (cleanData.curp && cleanData.curp.length > 0 && cleanData.curp.length !== 18) {
+            setToast({ message: 'El CURP debe contener exactamente 18 caracteres.', type: 'error' });
+            return;
+        }
+
         setFormData(cleanData);
 
         const updatedData = {
@@ -872,15 +886,50 @@ const ProfileEditPage = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700">CURP</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="block text-sm font-medium text-slate-700">CURP</label>
+                                        {formData.curp.length > 0 && (
+                                            <span className={`text-[11px] font-mono font-semibold ${
+                                                formData.curp.length === 18
+                                                    ? (isValidCurp(formData.curp) ? 'text-emerald-600' : 'text-amber-600')
+                                                    : 'text-slate-400'
+                                            }`}>
+                                                {formData.curp.length}/18
+                                            </span>
+                                        )}
+                                    </div>
                                     <input
                                         type="text"
                                         autoCapitalize="characters"
-                                        placeholder="Ej. ABCD901234HDFXYZ01"
-                                        className="mt-1 block w-full rounded-lg border-slate-300 shadow-2xs focus:border-secondary-500 focus:ring-secondary-500 text-sm border p-2.5 uppercase"
+                                        autoCorrect="off"
+                                        spellCheck="false"
+                                        maxLength={18}
+                                        placeholder="ABCD901234HDFXYZ01"
+                                        className={`mt-1 block w-full rounded-lg border shadow-2xs text-sm border p-2.5 uppercase font-mono tracking-wider ${
+                                            formData.curp.length === 18
+                                                ? (isValidCurp(formData.curp)
+                                                    ? 'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500 bg-emerald-50/20'
+                                                    : 'border-amber-400 focus:border-amber-500 focus:ring-amber-500 bg-amber-50/20')
+                                                : 'border-slate-300 focus:border-secondary-500 focus:ring-secondary-500'
+                                        }`}
                                         value={formData.curp}
                                         onChange={e => updateFormField('curp', e.target.value)}
                                     />
+                                    {formData.curp.length > 0 && formData.curp.length < 18 && (
+                                        <p className="text-[11px] text-slate-500 mt-1">
+                                            Faltan {18 - formData.curp.length} caracteres para completar tu CURP (18 en total).
+                                        </p>
+                                    )}
+                                    {formData.curp.length === 18 && !isValidCurp(formData.curp) && (
+                                        <p className="text-[11px] text-amber-600 font-medium mt-1">
+                                            ⚠️ Verifica el formato de tu CURP (4 letras, 6 dígitos de fecha, sexo H/M, estado y homoclave).
+                                        </p>
+                                    )}
+                                    {formData.curp.length === 18 && isValidCurp(formData.curp) && (
+                                        <p className="text-[11px] text-emerald-600 font-medium mt-1">
+                                            ✓ Formato de CURP válido
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">RFC con homoclave</label>
