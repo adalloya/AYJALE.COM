@@ -18,15 +18,25 @@ const SEO = ({ title, description, image, url, keywords, structuredData }) => {
             <meta name="description" content={description || defaultDescription} />
             <link rel="canonical" href={url || siteUrl} />
 
+            <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+            <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+            <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="website" />
             <meta property="og:url" content={url || siteUrl} />
             <meta property="og:title" content={fullTitle} />
             <meta property="og:description" content={description || defaultDescription} />
             <meta property="og:image" content={image || defaultImage} />
+            <meta property="og:image:secure_url" content={image || defaultImage} />
+            <meta property="og:image:type" content="image/png" />
+            <meta property="og:image:width" content="500" />
+            <meta property="og:image:height" content="500" />
 
             {/* Twitter */}
-            <meta property="twitter:card" content="summary_large_image" />
+            <meta name="twitter:card" content="summary" />
+            <meta property="twitter:card" content="summary" />
             <meta property="twitter:url" content={url || siteUrl} />
             <meta property="twitter:title" content={fullTitle} />
             <meta property="twitter:description" content={description || defaultDescription} />
